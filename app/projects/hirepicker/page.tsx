@@ -13,6 +13,7 @@ import {
   type Role,
   type Trouble,
 } from "@/components/project-detail/blocks";
+import { EngineeringJourney } from "./_components/journey";
 import { getProjectBySlug } from "@/lib/projects";
 
 const SLUG = "hirepicker";
@@ -168,6 +169,10 @@ export default function HirePickerPage() {
             <CodeBlock code={tokenCode} lang="java" filename="TokenService.java" />
           </div>
         </div>
+      </Section>
+
+      <Section id="journey" title="Engineering Journey">
+        <EngineeringJourney />
       </Section>
 
       <Section id="trouble" title="Trouble-shooting">

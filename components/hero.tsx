@@ -41,7 +41,7 @@ export function Hero() {
         className="mt-6 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground"
       >
         언어와 사람을 잇는 AI 제품을 만듭니다. 자연어 처리, 데이터 파이프라인,
-        그리고 끝단의 사용자 경험까지 — 전 스택을 오가며 일합니다.
+        그리고 끝단의 사용자 경험까지 — 전 스택을 오가며 학습합니다.
       </motion.p>
     </section>
   );

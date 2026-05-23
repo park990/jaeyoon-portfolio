@@ -48,7 +48,7 @@ export function Contact() {
           variants={item}
           className="max-w-xl text-balance text-2xl font-medium leading-[1.5] text-foreground sm:text-3xl"
         >
-          함께 일하고 싶다면 연락 주세요
+          함께하고 싶다면 연락 주세요.
         </motion.p>
 
         {/* 주요 CTA 버튼 두 개 */}
