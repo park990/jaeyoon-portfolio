@@ -14,6 +14,10 @@ import {
   type Role,
   type Trouble,
 } from "@/components/project-detail/blocks";
+import {
+  PhotoTodoBanner,
+  PhotoPlaceholder,
+} from "@/components/project-detail/photo";
 import { PipelineDiagram, EAVDiagram } from "./_components/architecture";
 import { getProjectBySlug } from "@/lib/projects";
 
@@ -143,6 +147,8 @@ export default function StructVerifyPage() {
       className="mx-auto max-w-3xl px-6 pb-24 pt-12 sm:pt-16"
       style={{ "--accent": ACCENT } as React.CSSProperties}
     >
+      <PhotoTodoBanner count={2} />
+
       <ProjectHeader
         project={project}
         oneLiner="도메인 비의존적으로 문서 내 수치 주장을 자동 추출하고, KOSIS 통계 및 사용자 정답과 비교하여 판정을 자동화."
@@ -180,6 +186,10 @@ export default function StructVerifyPage() {
         <div className="space-y-5">
           <PipelineDiagram />
           <EAVDiagram />
+          <PhotoPlaceholder
+            n={1}
+            caption="직접 그린 전체 시스템 아키텍처 도식 (LLM 모듈 4종 + DB + KOSIS 흐름) 또는 실제 PostgreSQL EAV ERD 캡처. 박스 다이어그램은 추상적이라 면접관에게 '실제로 어떻게 생긴 시스템'인지 한 장으로 보여주는 게 임팩트 큼."
+          />
         </div>
       </Section>
 
@@ -215,6 +225,12 @@ export default function StructVerifyPage() {
             "pgvector Docker 환경 전환 완료",
           ]}
         />
+        <div className="mt-5">
+          <PhotoPlaceholder
+            n={2}
+            caption="실제 운영 증거 1장 — KOSIS 262,783건 적재 로그 / 32건 claim 추출이 DB에 들어간 캡처 / 또는 GitHub Actions 빌드 성공 화면. 숫자만 적힌 카드보다 '실제로 돌아가는 시스템' 한 장이 면접관에게 신뢰를 줌."
+          />
+        </div>
       </Section>
 
       <Section id="lessons" title="Lessons Learned">
