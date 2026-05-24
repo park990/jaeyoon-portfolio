@@ -68,8 +68,8 @@ export const projects: Project[] = [
     title: "Booming",
     subtitle: "AI 대화 코칭 커뮤니티 (모바일 앱)",
     oneLiner:
-      "WebSocket Simple Broker + flutter_secure_storage 모바일 인증 적용",
-    stack: ["Flutter", "Spring Boot", "WebSocket(STOMP)", "JWT", "Redis", "MySQL"],
+      "토큰 전부 Redis 통합 + SimpleBroker 단순화 + 채팅 메시지 MongoDB 분리 — 환경에 맞춰 저장소 결정",
+    stack: ["Flutter", "Spring Boot", "JWT + Redis", "WebSocket(STOMP)", "MySQL"],
     period: "2025.11 ~ 진행 중",
     team: 3,
     group: "Full-Stack",
@@ -81,8 +81,8 @@ export const projects: Project[] = [
     title: "HirePicker",
     subtitle: "구인구직 플랫폼",
     oneLiner:
-      "Redis Pub/Sub 메시지 브로커 직접 구현, JWT+Redis 인증 시스템 학습",
-    stack: ["Spring Boot", "Next.js", "Redis", "JWT", "Selenium", "Docker Compose"],
+      "HttpSession 한계를 JWT로 도입, 휴게소 좋아요의 다대다를 공고 즐겨찾기로 재설계",
+    stack: ["Spring Boot", "Next.js", "JWT", "Redis", "WebSocket", "Docker Compose"],
     period: "2025.10 ~ 2025.11",
     team: 5,
     group: "Full-Stack",
@@ -94,8 +94,8 @@ export const projects: Project[] = [
     title: "HighWay Guide",
     subtitle: "고속도로 통합 정보 플랫폼",
     oneLiner:
-      "MVC Model 2 Front Controller 직접 설계, 카카오→네이버 폴백 자동화",
-    stack: ["Java", "JSP/Servlet", "MyBatis", "Kakao Map", "Naver Geocoding", "MySQL"],
+      "첫 풀스택 — BCrypt + HttpSession 인증, 휴게소 좋아요 다대다 첫 설계, Action 강결합의 한계 체감",
+    stack: ["Java", "JSP/Servlet", "MyBatis", "BCrypt", "HttpSession", "MySQL"],
     period: "2025.07 ~ 2025.08",
     team: 5,
     group: "Full-Stack",

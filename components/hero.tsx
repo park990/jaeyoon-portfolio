@@ -40,8 +40,8 @@ export function Hero() {
         transition={{ duration: 0.5, ease: "easeOut", delay: 0.25 }}
         className="mt-6 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground"
       >
-        언어와 사람을 잇는 AI 제품을 만듭니다. 자연어 처리, 데이터 파이프라인,
-        그리고 끝단의 사용자 경험까지 — 전 스택을 오가며 학습합니다.
+        백엔드에서 AI/NLP로 영역을 넓혀가는 신입 엔지니어입니다. LLM
+        파이프라인과 NLP 모델 학습을 풀스택 기반 위에 쌓아가고 있습니다.
       </motion.p>
     </section>
   );

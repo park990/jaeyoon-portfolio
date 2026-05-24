@@ -8,8 +8,9 @@ export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
-  // next-themes는 마운트 전에 테마를 알 수 없음.
-  // 서버에서 무엇을 그릴지 모르니 자리만 잡아두고 깜빡임 방지.
+  // next-themes는 마운트 전에 테마를 알 수 없음 — 서버/클라이언트 mismatch 방지를 위해
+  // mount 후에만 실제 아이콘을 렌더. next-themes 공식 권장 패턴이라 lint 룰은 disable.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   React.useEffect(() => setMounted(true), []);
 
   const isDark = mounted && resolvedTheme === "dark";
