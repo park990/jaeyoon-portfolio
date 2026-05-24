@@ -40,37 +40,50 @@ const techStack = [
   },
 ];
 
+// Part 1 — "What I built": 단순 구현 작업 망라 (발전 narrative와 분리)
+const builtItems = [
+  "Flutter Riverpod 2.x 상태 관리 + MVVM 구조",
+  "flutter_secure_storage로 OS 보안 영역에 토큰 저장",
+  "회원가입 / 로그인 / 마이페이지 / 게시판 / 채팅 UI 디자인·구현",
+  "하단 탭 네비게이션 + 전체 화면 구성",
+  "Spring REST API (인증, 게시판 도메인 — 모임 도메인 제외)",
+  "JPA Entity 매핑 (사용자 / 게시판)",
+  "MongoDB 채팅 메시지 컬렉션 설계",
+  "Docker Compose 환경 (Spring Boot + Redis + MySQL + MongoDB)",
+];
+
+// Part 2 — "What carried forward": 다음 프로젝트로 이어진 학습 사이클 (존댓말)
 const roles: Role[] = [
   {
     title: "인증 — 토큰 전부 Redis로 통합 (HirePicker 반쪽 변경의 완성)",
     bullets: [
-      "Access + Refresh 둘 다 Redis에 저장 — TTL 자동 만료로 회수 로직 자체 제거",
-      "HirePicker에서 'Refresh도 영속 데이터가 아니라 세션 성격'이라는 결론을 코드로 옮김",
-      "Flutter 측은 flutter_secure_storage(iOS Keychain / Android Keystore)로 OS 보안 영역에 저장 — 웹의 HttpOnly Cookie가 모바일에선 통하지 않는 환경 차이를 반영",
+      "Access + Refresh 둘 다 Redis에 저장했고, TTL 자동 만료로 회수 로직 자체를 제거했습니다.",
+      "HirePicker에서 얻은 ‘Refresh도 영속 데이터가 아니라 세션 성격’이라는 결론을 코드로 옮겼습니다.",
+      "Flutter 측은 flutter_secure_storage(iOS Keychain / Android Keystore)로 OS 보안 영역에 저장해, 웹의 HttpOnly Cookie가 모바일에선 통하지 않는 환경 차이를 반영했습니다.",
     ],
   },
   {
     title: "WebSocket — SimpleBroker로 단순화 + JWT ChannelInterceptor",
     bullets: [
-      "HirePicker의 Redis Pub/Sub '과한 설계' 회고를 받아, 단일 인스턴스 모바일 환경엔 Spring 내장 SimpleBroker로 충분하다고 판단",
-      "WebSocket의 ThreadLocal 한계(CONNECT/SEND 스레드 다름)를 JwtChannelInterceptor + 세션 속성에 userDetails 저장 패턴으로 해결",
-      "메시지 유실 우려는 영속 저장으로 보완 — 외부 네트워크 I/O 비용은 제거됨",
+      "HirePicker의 Redis Pub/Sub ‘과한 설계’ 회고를 받아, 단일 인스턴스 모바일 환경에는 Spring 내장 SimpleBroker로 충분하다고 판단했습니다.",
+      "WebSocket의 ThreadLocal 한계(CONNECT/SEND 스레드가 다름)를 JwtChannelInterceptor와 세션 속성에 userDetails를 저장하는 패턴으로 해결했습니다.",
+      "메시지 유실 우려는 영속 저장으로 보완했고, 외부 네트워크 I/O 비용은 제거했습니다.",
     ],
   },
   {
     title: "메시지 저장소 — MySQL에서 MongoDB로 (데이터 성격에 맞춰)",
     bullets: [
-      "HirePicker는 ChatMessage를 MySQL 관계형 테이블로 저장 — 컬럼 스키마가 채팅 메시지의 다양성(첨부·이모지·시스템 메시지·메타데이터)을 표현하기 부족했음",
-      "Booming은 채팅 메시지가 본질적으로 '문서(document)'에 가깝다고 판단해 MongoDB로 전환 — 스키마 자유도 + 메시지 단위 쿼리/페이지네이션 효율",
-      "JPA 관계형 모델은 사용자/모임/게시판처럼 정형 도메인에 유지, 채팅 메시지만 MongoDB로 분리하는 폴리글랏 구조",
+      "HirePicker는 ChatMessage를 MySQL 관계형 테이블로 저장했지만, 컬럼 스키마가 채팅 메시지의 다양성(첨부·이모지·시스템 메시지·메타데이터)을 표현하기에 부족했습니다.",
+      "Booming은 채팅 메시지가 본질적으로 ‘문서(document)’에 가깝다고 판단해 MongoDB로 전환했고, 스키마 자유도와 메시지 단위 쿼리·페이지네이션 효율을 얻었습니다.",
+      "JPA 관계형 모델은 사용자·모임·게시판처럼 정형 도메인에 유지하고, 채팅 메시지만 MongoDB로 분리하는 폴리글랏 구조로 정리했습니다.",
     ],
   },
   {
     title: "Spring Boot 백엔드 + Flutter 기획/디자인/구현 단독",
     bullets: [
-      "백엔드 전반(인증·게시판·세션·DB)을 모임 도메인 제외하고 단독 담당 — HirePicker의 분리 구조(REST + 분리된 클라이언트)를 모바일 컨텍스트로 그대로 이식",
-      "Flutter Riverpod 2.x 상태관리·MVVM 구조·하단 탭 네비·전체 화면 디자인 단독",
-      "기획 단계의 핵심 아이디어(AI가 대화의 정적 시간을 메우고 다음 발화를 제안)까지 직접 정의",
+      "백엔드 전반(인증·게시판·세션·DB)을 모임 도메인 제외하고 단독으로 담당했고, HirePicker의 분리 구조(REST + 분리된 클라이언트)를 모바일 컨텍스트로 그대로 이식했습니다.",
+      "Flutter Riverpod 2.x 상태관리·MVVM 구조·하단 탭 네비·전체 화면 디자인을 단독으로 진행했습니다.",
+      "기획 단계의 핵심 아이디어(AI가 대화의 정적 시간을 메우고 다음 발화를 제안)까지 직접 정의했습니다.",
     ],
   },
 ];
@@ -80,20 +93,29 @@ const troubles: Trouble[] = [
     title: "WebSocket에서 @AuthenticationPrincipal이 null",
     star: true,
     problem:
-      "HTTP의 JwtAuthenticationFilter는 SecurityContextHolder만 박아두면 @AuthenticationPrincipal로 잘 받음. WebSocket은 CONNECT 스레드와 SEND 스레드가 달라서 ThreadLocal 기반 SecurityContextHolder가 다음 메시지에서 null로 보임.",
+      "HTTP의 JwtAuthenticationFilter는 SecurityContextHolder에 박아두면 @AuthenticationPrincipal로 잘 받았습니다. 그러나 WebSocket은 CONNECT 스레드와 SEND 스레드가 달라서 ThreadLocal 기반의 SecurityContextHolder가 다음 메시지에서 null로 보였습니다.",
     solve:
-      "JwtChannelInterceptor에서 CONNECT 시 검증한 CustomUserDetails를 accessor.getSessionAttributes()에 저장 → SEND/SUBSCRIBE에서 같은 세션 속성에서 복원. 컨트롤러는 @Header(\"simpSessionAttributes\")로 직접 접근.",
+      "JwtChannelInterceptor에서 CONNECT 시 검증한 CustomUserDetails를 accessor.getSessionAttributes()에 저장하고, SEND/SUBSCRIBE에서 같은 세션 속성에서 복원하는 패턴으로 해결했습니다. 컨트롤러는 @Header(\"simpSessionAttributes\")로 직접 접근하도록 했습니다.",
     lesson:
-      "Spring Security가 ThreadLocal 가정으로 만들어졌다는 사실 — 'HTTP에서 잘 되던' 패턴을 다른 통신 모델에 그대로 옮기면 안 된다.",
+      "Spring Security가 ThreadLocal 가정 위에 만들어졌다는 사실을 체감했습니다. ‘HTTP에서 잘 되던’ 패턴을 다른 통신 모델에 그대로 옮기면 안 된다는 교훈을 얻었습니다.",
   },
   {
     title: "웹의 HttpOnly Cookie 패턴이 모바일에서 작동 X",
     problem:
-      "HirePicker(웹)는 브라우저가 자동으로 쿠키를 실어 보내는 가정에 의존했음. Flutter는 OS 단위 HTTP 클라이언트라 쿠키 자동 관리가 안 됨.",
+      "HirePicker(웹)는 브라우저가 자동으로 쿠키를 실어 보내는 가정에 의존했습니다. Flutter는 OS 단위 HTTP 클라이언트라 쿠키 자동 관리가 되지 않았습니다.",
     solve:
-      "flutter_secure_storage로 Access/Refresh Token을 OS 보안 영역에 저장 + 모든 API 요청에 Bearer 헤더 명시. 같은 JWT라도 플랫폼에 따라 저장 전략이 완전히 달라짐을 반영.",
+      "flutter_secure_storage로 Access/Refresh Token을 OS 보안 영역에 저장하고, 모든 API 요청에 Bearer 헤더를 명시했습니다. 같은 JWT라도 플랫폼에 따라 저장 전략이 완전히 달라진다는 점을 반영했습니다.",
     lesson:
-      "인증은 토큰 알고리즘이 아니라 '토큰을 어디 두고 어떻게 실어 보내느냐'의 문제 — 플랫폼 컨텍스트가 저장소를 결정한다.",
+      "인증은 토큰 알고리즘이 아니라 ‘토큰을 어디 두고 어떻게 실어 보내느냐’의 문제라는 것을 배웠습니다. 플랫폼 컨텍스트가 저장소를 결정합니다.",
+  },
+  {
+    title: "모바일 게시판 — 다른 사용자의 좋아요 +1이 즉시 보이지 않음",
+    problem:
+      "게시판 좋아요는 HighWay Guide·HirePicker에서 두 번 다뤄본 다대다 매핑이라 DB 설계 자체는 어렵지 않았습니다. 다만 Booming은 모바일이라 한 번 그려진 화면이 상태를 오래 들고 있는 환경이라, 내가 좋아요를 누른 변화가 다른 사용자에게는 그 사용자가 직접 새로고침할 때까지 +1로 보이지 않았습니다. 웹에선 페이지 이동·새 요청 흐름에 묻혀 보이지 않던 동기화 문제가, 모바일 컨텍스트에서 새 난이도로 드러났습니다.",
+    solve:
+      "Riverpod로 게시글 상태를 좋아요 액션 직후 낙관적으로 갱신하고, 게시판 진입·pull-to-refresh·화면 재포커스 시점에 서버 카운트로 재조회하는 패턴으로 정리했습니다. 같은 다대다 모델이지만 ‘언제 다시 가져올지’를 클라이언트가 명시적으로 결정해야 한다는 점을 반영했습니다.",
+    lesson:
+      "DB 모델은 HighWay·HirePicker의 다대다 그대로지만, 모바일에서는 ‘서버 상태와 클라이언트 상태를 언제 동기화할지’가 새 설계 축이 된다는 것을 배웠습니다. 다대다 매핑은 두 번 해보며 모델 자체는 익숙해졌고, Booming에서는 그 위에 갱신 시점이라는 한 층이 더 필요했습니다.",
   },
 ];
 
@@ -146,7 +168,7 @@ export default function BoomingPage() {
     >
       <ProjectHeader
         project={project}
-        oneLiner="풀스택 학습 사이클의 종착점 — HirePicker의 'Refresh DB·Redis Pub/Sub' 반쪽/과한 설계를 받아 토큰 전부 Redis 통합 + SimpleBroker 단순화로 정리. 동시에 모바일이라는 새 환경 조건이 추가됨."
+        oneLiner="풀스택 학습 사이클의 종착점 — HirePicker의 ‘Refresh DB·Redis Pub/Sub’ 반쪽/과한 설계를 받아 토큰 전부 Redis 통합 + SimpleBroker 단순화로 정리. 동시에 모바일이라는 새 환경 조건이 추가됨."
         period="2025.11 ~ 진행 중"
         team="3명"
       />
@@ -154,12 +176,12 @@ export default function BoomingPage() {
       <Section id="overview" title="Overview">
         <Prose>
           <p>
-            세 번째 풀스택 프로젝트이자 학습 사이클의 종착점.{" "}
+            세 번째 풀스택 프로젝트이자 학습 사이클의 종착점입니다.{" "}
             <span className="font-medium text-foreground">
               HirePicker에서 미완으로 남긴 두 결정
             </span>
-            을 받아 정리했습니다 — (1) Refresh Token DB 저장 → Redis 통합,
-            (2) WebSocket Redis Pub/Sub → SimpleBroker 단순화. 동시에 모바일이라는
+            을 받아 정리했습니다 — (1) Refresh Token DB 저장 → Redis 통합, (2)
+            WebSocket Redis Pub/Sub → SimpleBroker 단순화. 동시에 모바일이라는
             새 환경 조건이 더해져, 같은 JWT라도 저장소 전략을 다시 짜야 한다는
             교훈을 직접 적용했습니다.
           </p>
@@ -169,21 +191,69 @@ export default function BoomingPage() {
       <Section id="stack" title="Tech Stack">
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
           ※ <span className="text-foreground">직접 다룬 영역</span>의 기술 세트.
-    
         </p>
         <TechStackGrid groups={techStack} />
       </Section>
 
       <Section id="role" title="My Role">
-        <MyRoleCards roles={roles} accent={ACCENT} />
+        {/* 의도 인용문 — Part 1·2를 나누는 이유 */}
+        <blockquote className="mb-8 border-l-2 border-[var(--accent)]/40 pl-4 text-sm italic leading-[1.7] text-muted-foreground">
+          AI가 단순 구현을 빠르게 대체하는 시대에, 구현 자체보다 그 안에서 얻은
+          학습이 다음 프로젝트의 결정으로 이어진 사이클이 더 중요하다고
+          생각합니다. 그래서 둘을 나누어 정리했습니다.
+        </blockquote>
+
+        {/* Part 1 — What I built (보조 정보, 톤다운) */}
+        <div className="mb-12">
+          <h3 className="text-lg font-semibold tracking-tight text-foreground/70">
+            What I built
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground/80">
+            이 프로젝트에서 직접 구현한 영역
+          </p>
+          <ul className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-[13px] leading-[1.6] text-foreground/65 sm:grid-cols-2">
+            {builtItems.map((b) => (
+              <li key={b} className="relative pl-4">
+                <span
+                  className="absolute left-0 top-[0.7em] h-1 w-1 rounded-full bg-muted-foreground/60"
+                  aria-hidden="true"
+                />
+                {b}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* 두 섹션 시각 구분 */}
+        <div className="my-12 border-t border-border/40 sm:my-16" />
+
+        {/* Part 2 — What carried forward (핵심 정보, 강조) */}
+        <div>
+          <div className="border-l-[3px] border-[var(--accent)] pl-4 sm:pl-5">
+            <h3 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              What carried forward
+            </h3>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              다음 프로젝트의 결정 근거가 된 학습 사이클
+            </p>
+          </div>
+          <div className="mt-6">
+            <MyRoleCards roles={roles} accent={ACCENT} />
+          </div>
+        </div>
       </Section>
 
       <Section id="evolution" title="Evolution — 이전 두 프로젝트의 결정이 어떻게 이어졌나">
-        <div className="mt-2 space-y-3">
+        <Prose>
+          <p>
+            위 학습 사이클을 한 표로 비교해 보면 다음과 같습니다.
+          </p>
+        </Prose>
+        <div className="mt-5 space-y-3">
           <EvolutionRow
             from="HirePicker — Refresh=DB / Access=Redis (반쪽 변경)"
             to="Booming — 둘 다 Redis + TTL 자동 만료 (회수 로직 자체 제거)"
-            note="'토큰은 영속 데이터가 아니라 세션' 결론을 코드로 옮김"
+            note="‘토큰은 영속 데이터가 아니라 세션’ 결론을 코드로 옮김"
           />
           <EvolutionRow
             from="HirePicker — STOMP + Redis Pub/Sub (과한 설계 회고)"
@@ -200,6 +270,11 @@ export default function BoomingPage() {
             to="Booming — MongoDB 문서 기반 (사용자/모임 등 정형은 MySQL 그대로)"
             note="메시지의 schemaless 본질에 맞춰 저장소를 분리 — 폴리글랏 모델링"
           />
+          <EvolutionRow
+            from="HighWay·HirePicker — 학습용 프로젝트 (좋아요·즐겨찾기 토글만, 카운트 표시 X)"
+            to="Booming — 배포 목표 (게시판 좋아요 카운트 표시 + 회원가입 중복 등록 → 동시성 제어 도입)"
+            note="프로젝트 가정이 ‘학습’에서 ‘배포’로 바뀌니, 같은 다대다 모델 위에서도 동시 누름의 race condition·카운트 정합성·중복 가입이 새 설계 축이 됨"
+          />
         </div>
       </Section>
 
@@ -207,7 +282,7 @@ export default function BoomingPage() {
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">
             WebSocket의 ThreadLocal 한계를 세션 속성으로 우회한 JWT 인증
-            인터셉터 — 이 프로젝트에서 가장 정교한 트러블슈팅.
+            인터셉터 — 이 프로젝트에서 가장 정교한 트러블슈팅이었습니다.
           </p>
           <CodeBlock
             code={interceptorCode}
@@ -224,10 +299,10 @@ export default function BoomingPage() {
       <Section id="lessons" title="Lessons Learned">
         <LessonsList
           items={[
-            "이전 프로젝트의 '미완·과한 설계'를 다음 프로젝트의 결정 근거로 들고 가는 사이클이 가장 효율적인 학습 방식이다.",
-            "Spring Security는 ThreadLocal 가정 위에 만들어졌다 — HTTP 패턴을 다른 통신 모델에 그대로 옮기지 않는다.",
-            "인증은 토큰 알고리즘이 아니라 '저장소·전달 방식'의 문제 — 플랫폼 컨텍스트가 결정한다.",
-            "데이터의 성격(관계형 vs 문서)에 따라 저장소를 분리하는 폴리글랏 모델링이 단일 DB로 억지로 표현하는 것보다 깔끔하다.",
+            "이전 프로젝트의 ‘미완·과한 설계’를 다음 프로젝트의 결정 근거로 들고 가는 사이클이 가장 효율적인 학습 방식이었습니다.",
+            "Spring Security는 ThreadLocal 가정 위에 만들어졌으므로, HTTP 패턴을 다른 통신 모델에 그대로 옮기지 말아야 합니다.",
+            "인증은 토큰 알고리즘이 아니라 ‘저장소·전달 방식’의 문제이고, 플랫폼 컨텍스트가 결정합니다.",
+            "데이터의 성격(관계형 vs 문서)에 따라 저장소를 분리하는 폴리글랏 모델링이 단일 DB로 억지로 표현하는 것보다 깔끔합니다.",
           ]}
         />
       </Section>

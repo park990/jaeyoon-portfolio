@@ -53,6 +53,12 @@ const rows: Row[] = [
     hire: "MySQL — 관계형 ChatMessage 테이블",
     booming: "MongoDB — 문서 기반 (대화 단위 schemaless)",
   },
+  {
+    axis: "프로젝트 가정 / 동시성",
+    highway: "학습용 — 좋아요 토글 (카운트 표시 X)",
+    hire: "학습용 — 즐겨찾기 토글 (카운트 표시 X)",
+    booming: "배포 목표 — 좋아요 카운트 + 회원가입 동시 등록 → 동시성 제어",
+  },
 ];
 
 export function EngineeringJourney() {

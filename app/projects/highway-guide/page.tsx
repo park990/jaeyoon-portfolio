@@ -186,16 +186,19 @@ function SearchResultShot() {
 }
 
 // 좌측 텍스트 + 우측 시각자료 카드. wide=true면 우측 visual을 더 넓게.
+// description(prose 한 단락) 또는 bullets(존댓말 항목) 중 하나를 받음.
 function RoleGridCard({
   n,
   title,
   bullets,
+  description,
   visual,
   wide = false,
 }: {
   n: number;
   title: string;
-  bullets: string[];
+  bullets?: string[];
+  description?: string;
   visual: React.ReactNode;
   wide?: boolean;
 }) {
@@ -217,18 +220,24 @@ function RoleGridCard({
               {title}
             </h3>
           </div>
-          <ul className="ml-10 space-y-2 text-sm leading-[1.8] text-foreground/85">
-            {bullets.map((b) => (
-              <li key={b} className="relative pl-4">
-                <span
-                  className="absolute left-0 top-[0.7em] h-1 w-1 rounded-full"
-                  style={{ backgroundColor: ACCENT }}
-                  aria-hidden="true"
-                />
-                {b}
-              </li>
-            ))}
-          </ul>
+          {description ? (
+            <p className="ml-10 text-sm leading-[1.8] text-foreground/85">
+              {description}
+            </p>
+          ) : (
+            <ul className="ml-10 space-y-2 text-sm leading-[1.8] text-foreground/85">
+              {bullets?.map((b) => (
+                <li key={b} className="relative pl-4">
+                  <span
+                    className="absolute left-0 top-[0.7em] h-1 w-1 rounded-full"
+                    style={{ backgroundColor: ACCENT }}
+                    aria-hidden="true"
+                  />
+                  {b}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <div className={visualSpan}>{visual}</div>
       </div>
@@ -260,20 +269,19 @@ const techStack = [
 ];
 
 // 3개 role을 한 객체로 묶음 — 모두 좌측 텍스트 + 우측 시각자료 grid 카드로 렌더.
+// actionRole만 description(prose 한 단락), 나머지는 bullets(존댓말 항목).
 const actionRole = {
   title: "MVC Model 2 Front Controller 설계 (Action 라우팅 전체)",
-  bullets: [
-    "URI 기반 Action 매핑 — init() 시점 등록, service()에서 forward 라우팅",
-    "한 Action 클래스가 JSP forward(request.setAttribute)와 AJAX JSON 응답(PrintWriter)을 동시에 처리하는 강결합 구조로 작성",
-  ],
+  description:
+    "MVC Model 2를 직접 설계해 흐름을 이해했지만, 하나의 Action에서 request.setAttribute(JSP용)와 PrintWriter JSON 직조립(AJAX용)이 뒤섞이는 강결합 구조가 발생했습니다. 사소한 UI 수정에도 자바 코드와 서버 재빌드가 필요했고, 이 한계가 다음 프로젝트 HirePicker에서 Next.js + Spring REST 분리 결정의 근거가 되었습니다.",
 };
 
 const authRole = {
   title: "BCrypt 비밀번호 해시 + HttpSession 기반 사용자 인증",
   bullets: [
-    "회원가입 시 BCrypt로 비밀번호 해시 → DB 저장 (토큰 개념 없이 평문 비교만 차단)",
-    "로그인 성공 시 HttpSession에 loginUser(UserVO) 적재 → 이후 마이페이지·즐겨찾기에서 재사용",
-    "이때는 JWT를 도입하지 않음 — 단일 서버 가정 하의 가장 단순한 형태로 출발",
+    "회원가입 시 BCrypt로 비밀번호를 해시해 DB에 저장했습니다 (토큰 개념 없이 평문 비교만 차단).",
+    "로그인 성공 시 HttpSession에 loginUser(UserVO)를 적재해 이후 마이페이지·즐겨찾기에서 재사용했습니다.",
+    "이때는 JWT를 도입하지 않고, 단일 서버 가정 하의 가장 단순한 형태로 출발했습니다.",
   ],
 };
 
@@ -291,9 +299,9 @@ const builtItems = [
 const bookmarkRole = {
   title: "휴게소-사용자 다대다 관계 첫 설계 (BookMark 테이블)",
   bullets: [
-    "한 사용자가 여러 휴게소를 좋아요할 수 있고, 한 휴게소도 여러 사용자에게 좋아요 받을 수 있는 다대다(N:M) 관계를 BookMark 연결 테이블로 첫 모델링",
-    "AJAX로 하트 토글 — add/delete 액션 + 휴게소 PK saKey + 사용자 PK 조합으로 PK 구성",
-    "지도/경로/마이페이지 3개 페이지에서 같은 상태를 봐야 했지만, 모달이 페이지마다 복사되어 있어 데이터 불일치가 발생 → modal.jsp 분리 + 공통 JS로 정리",
+    "한 사용자가 여러 휴게소를 좋아요할 수 있고, 한 휴게소도 여러 사용자에게 좋아요 받을 수 있는 다대다(N:M) 관계를 BookMark 연결 테이블로 처음 모델링했습니다.",
+    "AJAX로 하트를 토글했고, add/delete 액션과 휴게소 PK(saKey) + 사용자 PK 조합으로 복합 PK를 구성했습니다.",
+    "지도·경로·마이페이지 세 페이지에서 같은 상태를 봐야 했지만 모달이 페이지마다 복사되어 데이터 불일치가 발생해, modal.jsp 분리와 공통 JS로 정리했습니다.",
   ],
 };
 
@@ -302,21 +310,21 @@ const troubles: Trouble[] = [
     title: "HttpSession Stateful 한계 — 토큰 없는 단일 서버 의존",
     star: true,
     problem:
-      "첫 풀스택이라 가장 직관적인 HttpSession + 평문 비밀번호 → BCrypt 해시 구조로 출발. 단일 서버에서는 문제 없었지만, Scale-out 가정에선 세션 불일치 + 메모리 부하라는 Stateful의 근본 한계가 보임. 이때는 토큰(JWT)을 아예 도입하지 않았음.",
+      "첫 풀스택이라 가장 직관적인 HttpSession + 평문 비밀번호 → BCrypt 해시 구조로 출발했습니다. 단일 서버에서는 문제가 없었지만, Scale-out 가정에서는 세션 불일치와 메모리 부하라는 Stateful의 근본 한계가 보였습니다. 이때는 토큰(JWT)을 아예 도입하지 않았습니다.",
     solve:
-      "이 프로젝트 안에서는 해결하지 않았고, 한계 그대로 인정하며 마무리. 다음 프로젝트 HirePicker에서 무상태(Stateless) JWT 도입의 결정 근거가 됨.",
+      "이 프로젝트 안에서는 해결하지 않고 한계를 그대로 인정하며 마무리했습니다. 다음 프로젝트 HirePicker에서 무상태(Stateless) JWT 도입의 결정 근거가 되었습니다.",
     lesson:
-      "첫 구현은 가장 단순한 형태로 끝까지 가본 뒤, 그 한계를 다음 결정의 근거로 들고 가는 게 학습 효율이 가장 높다는 걸 체감.",
+      "첫 구현은 가장 단순한 형태로 끝까지 가본 뒤, 그 한계를 다음 결정의 근거로 들고 가는 것이 학습 효율이 가장 높다는 것을 체감했습니다.",
   },
   {
     title: "Action 클래스 한 곳에서 JSP Forward + JSON 응답 동시 처리",
     star: true,
     problem:
-      "MVC Model 2 자체는 직접 설계해 흐름을 이해했지만, 한 Action 안에서 request.setAttribute(뷰용)와 PrintWriter JSON 직조립(AJAX용)이 뒤섞임. 사소한 UI 수정에도 자바 코드 + 서버 재빌드가 필요한 강결합.",
+      "MVC Model 2 자체는 직접 설계해 흐름을 이해했지만, 한 Action 안에서 request.setAttribute(뷰용)와 PrintWriter JSON 직조립(AJAX용)이 뒤섞였습니다. 사소한 UI 수정에도 자바 코드 수정과 서버 재빌드가 필요한 강결합이었습니다.",
     solve:
-      "이 프로젝트에서는 구조를 그대로 유지. 다음 프로젝트 HirePicker에서 Next.js(렌더링) + Spring Boot REST(순수 JSON)로 완전 분리하는 결정 근거가 됨.",
+      "이 프로젝트에서는 구조를 그대로 유지했고, 다음 프로젝트 HirePicker에서 Next.js(렌더링) + Spring Boot REST(순수 JSON)로 완전 분리하는 결정 근거가 되었습니다.",
     lesson:
-      "프론트/백 분리가 왜 현대 웹의 표준이 됐는지 — 추상적인 모범 사례가 아니라 손으로 겪은 고통에서 답을 얻음.",
+      "프론트/백 분리가 왜 현대 웹의 표준이 됐는지를 — 추상적인 모범 사례가 아니라 손으로 겪은 고통에서 답을 얻었습니다.",
   },
 ];
 
@@ -343,7 +351,7 @@ export default function HighwayGuidePage() {
     >
       <ProjectHeader
         project={project}
-        oneLiner="첫 풀스택 프로젝트 가장 단순한 형태(BCrypt + HttpSession + Action Forward)로 출발해, 그 한계를 다음 프로젝트의 결정 근거로 들고 갈 수 있게 만든 출발점."
+        oneLiner="가장 단순한 형태(BCrypt + HttpSession + Action Forward)로 출발해, 그 한계를 다음 프로젝트의 결정 근거로 들고 갈 수 있게 만든 출발점."
         period="2025.07 ~ 2025.08"
         team="5명"
         links={[{ label: "GitHub", href: REPO }]}
@@ -357,12 +365,13 @@ export default function HighwayGuidePage() {
       <Section id="overview" title="Overview">
         <Prose>
           <p>
-            JSP/Servlet 기반 첫 풀스택 프로젝트. 아는게 별로 없어{" "}
+            JSP/Servlet 기반의 첫 풀스택 프로젝트입니다. 아는 것이 별로
+            없어서{" "}
             <span className="font-medium text-foreground">가장 단순한 형태</span>
-            로 끝까지 가봤습니다. JWT 없이 BCrypt + HttpSession, JSP
-            Forward와 AJAX JSON을 한 Action에서 같이 처리하는 구조. 그 단순함이
-            만든 한계가 그대로 다음 프로젝트(HirePicker)의 기술 선택 근거가
-            되었기에, 이 프로젝트의 가치는 결과물보다{" "}
+            로 끝까지 가봤습니다. JWT 없이 BCrypt + HttpSession을 사용했고, JSP
+            Forward와 AJAX JSON을 한 Action에서 같이 처리하는 구조였습니다. 그
+            단순함이 만든 한계가 그대로 다음 프로젝트(HirePicker)의 기술 선택
+            근거가 되었기에, 이 프로젝트의 가치는 결과물보다{" "}
             <span className="font-medium text-foreground">
               학습 사이클의 출발점
             </span>
@@ -389,19 +398,19 @@ export default function HighwayGuidePage() {
           생각합니다. 그래서 둘을 나누어 정리했습니다.
         </blockquote>
 
-        {/* Part 1 — What I built (외부 박스 없음, Part 2와 톤 통일) */}
-        <div className="mb-10">
-          <h3 className="text-base font-semibold tracking-tight text-foreground">
+        {/* Part 1 — What I built (보조 정보, 톤다운) */}
+        <div className="mb-12">
+          <h3 className="text-lg font-semibold tracking-tight text-foreground/70">
             What I built
           </h3>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-xs text-muted-foreground/80">
             이 프로젝트에서 직접 구현한 영역
           </p>
-          <ul className="mt-4 grid grid-cols-1 gap-x-6 gap-y-2 text-sm leading-[1.6] text-foreground/85 sm:grid-cols-2">
+          <ul className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-[13px] leading-[1.6] text-foreground/65 sm:grid-cols-2">
             {builtItems.map((b) => (
               <li key={b} className="relative pl-4">
                 <span
-                  className="absolute left-0 top-[0.7em] h-1 w-1 rounded-full bg-muted-foreground"
+                  className="absolute left-0 top-[0.7em] h-1 w-1 rounded-full bg-muted-foreground/60"
                   aria-hidden="true"
                 />
                 {b}
@@ -410,15 +419,21 @@ export default function HighwayGuidePage() {
           </ul>
         </div>
 
-        {/* Part 2 — What carried forward (기존 큰 카드) */}
+        {/* 두 섹션 시각 구분 — 얇은 구분선 + 충분한 여백 */}
+        <div className="my-12 border-t border-border/40 sm:my-16" />
+
+        {/* Part 2 — What carried forward (핵심 정보, 강조) */}
         <div>
-          <h3 className="text-base font-semibold tracking-tight text-foreground">
-            What carried forward
-          </h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            다음 프로젝트의 결정 근거가 된 학습 사이클
-          </p>
-          <div className="mt-4 space-y-4">
+          {/* 헤딩만 감싸는 좌측 빨강 액센트 보더 — "이게 핵심" 시각 신호 */}
+          <div className="border-l-[3px] border-[var(--accent)] pl-4 sm:pl-5">
+            <h3 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              What carried forward
+            </h3>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              다음 프로젝트의 결정 근거가 된 학습 사이클
+            </p>
+          </div>
+          <div className="mt-6 space-y-4">
             <RoleGridCard n={1} {...actionRole} visual={<ActionFlowShot />} />
             <RoleGridCard n={2} {...authRole} visual={<UserTableShot />} />
             <RoleGridCard n={3} {...bookmarkRole} visual={<BookmarkShot />} />
@@ -455,7 +470,8 @@ export default function HighwayGuidePage() {
       <Section id="code" title="Code Highlight">
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            다대다 관계 첫 설계 — 다음 프로젝트에서 같은 패턴을 재사용할 토대가 됨.
+            다대다 관계 첫 설계 — 다음 프로젝트에서 같은 패턴을 재사용할 토대가
+            되었습니다.
           </p>
           <CodeBlock code={bookmarkCode} lang="sql" filename="BookMark 테이블 + 토글 패턴" />
         </div>
@@ -468,8 +484,8 @@ export default function HighwayGuidePage() {
       <Section id="lessons" title="Lessons Learned">
         <LessonsList
           items={[
-            "첫 구현은 가장 단순한 형태로 끝까지 가본 뒤, 그 한계를 다음 결정의 근거로 들고 가는 게 학습 효율이 가장 높다.",
-            "프론트/백 분리·무상태 토큰·연결 테이블 정합성 같은 '모범 사례'는 추상적으로 읽을 때보다 직접 부딪힌 후에 훨씬 깊게 박힌다.",
+            "첫 구현은 가장 단순한 형태로 끝까지 가본 뒤, 그 한계를 다음 결정의 근거로 들고 가는 것이 학습 효율이 가장 높습니다.",
+            "프론트/백 분리·무상태 토큰·연결 테이블 정합성 같은 '모범 사례'는 추상적으로 읽을 때보다 직접 부딪힌 후에 훨씬 깊게 박힙니다.",
           ]}
         />
       </Section>
