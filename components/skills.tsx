@@ -13,6 +13,7 @@ const categories: { title: string; items: string[] }[] = [
     items: [
       "PyTorch",
       "HuggingFace Transformers",
+      "HyperCLOVA X (HCX)",
       "LoRA",
       "RAG",
       "LangChain",
@@ -30,7 +31,7 @@ const categories: { title: string; items: string[] }[] = [
   },
   {
     title: "Database",
-    items: ["PostgreSQL", "pgvector", "MySQL", "Redis", "ChromaDB"],
+    items: ["PostgreSQL", "pgvector", "MySQL", "MongoDB", "Redis", "ChromaDB"],
   },
   {
     title: "DevOps / Infra",

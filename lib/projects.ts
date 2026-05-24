@@ -38,7 +38,7 @@ export const projects: Project[] = [
     subtitle: "범용 수치 팩트체크 플랫폼",
     oneLiner:
       "초기 파이프라인 전체를 단일 test.py로 구현해 모듈화 baseline 제공",
-    stack: ["Python", "PostgreSQL", "pgvector", "FastAPI", "LLM", "AWS EC2"],
+    stack: ["Python", "FastAPI", "PostgreSQL", "pgvector", "HyperCLOVA X", "AWS EC2"],
     period: "2026.04 ~ 진행 중",
     team: 4,
     group: "AI/NLP",
@@ -69,7 +69,7 @@ export const projects: Project[] = [
     subtitle: "AI 대화 코칭 커뮤니티 (모바일 앱)",
     oneLiner:
       "토큰 전부 Redis 통합 + SimpleBroker 단순화 + 채팅 메시지 MongoDB 분리 — 환경에 맞춰 저장소 결정",
-    stack: ["Flutter", "Spring Boot", "JWT + Redis", "WebSocket(STOMP)", "MySQL"],
+    stack: ["Flutter", "Spring Boot", "JWT + Redis", "WebSocket(STOMP)", "MySQL", "MongoDB"],
     period: "2025.11 ~ 진행 중",
     team: 3,
     group: "Full-Stack",
