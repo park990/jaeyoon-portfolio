@@ -15,12 +15,9 @@ import {
   type Trouble,
 } from "@/components/project-detail/blocks";
 import {
-  PhotoTodoBanner,
-  PhotoPlaceholder,
-} from "@/components/project-detail/photo";
-import {
   AgentFlowDiagram,
   DataLayersDiagram,
+  WorkScopeTable,
 } from "./_components/architecture";
 import { getProjectBySlug } from "@/lib/projects";
 
@@ -31,30 +28,21 @@ const REPO = "https://github.com/orgs/2026-StructVerify-Lab/repositories";
 export const metadata: Metadata = {
   title: "StructVerify-Lab v2.0 · Jaeyoon Park",
   description:
-    "도메인 적응형 LLM 사실검증 플랫폼 — 2-Agent + Graph/JSON 하이브리드 + LoRA. 인프라·적재·KOSIS 커넥터·LLM 안정화·검증 파이프라인 광범위 담당.",
+    "v2.0 LLM 사실검증 플랫폼. 인프라·데이터 적재·KOSIS 메타/검색·LLM 429 backoff·runtime 병렬화·검증 판단까지 8개 모듈 담당.",
 };
 
 const techStack = [
   {
     category: "Infra",
-    items: [
-      "Docker Compose",
-      "PostgreSQL 16 + pgvector",
-      "Neo4j",
-      "MinIO",
-      "Elasticsearch",
-      "Redis",
-    ],
+    items: ["Docker Compose", "PostgreSQL 16 + pgvector"],
   },
   {
     category: "Backend",
-    items: ["Python 3.13", "FastAPI", "asyncpg / psycopg2", "Pydantic v2"],
+    items: ["Python 3.13", "FastAPI", "psycopg2", "Pydantic v2"],
   },
   {
-    category: "LLM / Agent",
+    category: "LLM (HCX)",
     items: [
-      "2-Agent (Runtime + Builder)",
-      "ReAct + Planner/Loop",
       "HCX-DASH-001 (경량)",
       "HCX-003 (중량)",
       "HCX 임베딩 v2 (1024차원)",
@@ -65,12 +53,8 @@ const techStack = [
     items: ["KOSIS Open API", "pgvector 코사인 검색", "deterministic 수치 비교"],
   },
   {
-    category: "Data Ingestion (담당)",
-    items: [
-      "KOSIS Open API",
-      "NCP HCX 임베딩 v2 (1024차원)",
-      "Self-Instruct seed 데이터 적재",
-    ],
+    category: "Data Ingestion",
+    items: ["KOSIS Open API", "NCP HCX 임베딩 v2 (1024차원)"],
   },
   {
     category: "Cloud / CI",
@@ -80,20 +64,17 @@ const techStack = [
 
 const roles: Role[] = [
   {
-    title: "인프라 · 5개 서비스 단일 docker-compose",
+    title: "인프라 · docker-compose 환경 통합",
     bullets: [
-      "PostgreSQL 16 + pgvector / Neo4j / MinIO / Elasticsearch / Redis 5개 컨테이너를 단일 compose로 묶어 팀원이 git clone 후 한 줄(`make dev`)로 동일 환경 재현",
-      "Makefile 타깃 정비 (make health 5개 서비스 헬스체크 / make psql DB 접속 / make neo4j-init 인덱스 초기화)",
+      "PostgreSQL 16 + pgvector를 메인으로, 향후 확장용 4종(Redis · Neo4j · MinIO · Elasticsearch)을 함께 docker-compose에 묶어 팀원이 git clone 후 한 줄(`make dev`)로 동일 환경 재현",
+      "Makefile 타깃 정비 (`make health` 헬스체크 / `make psql` DB 접속 / `make neo4j-init` 인덱스 초기화)",
       "init_db.sql 직접 작성 — pgvector 확장 + 13 테이블(documents, claims, verification_results, execution_runs, artifacts, graph_nodes/edges, kosis_stat_catalog, kosis_data_cache, feedback_events, training_jobs, model_versions, domain_packs) 자동 생성",
     ],
   },
   {
-    title: "데이터 적재 — storage / 어댑터 4종",
+    title: "데이터 적재 — PostgreSQL",
     bullets: [
-      "db_manager.py — PostgreSQL psycopg2 연결, save_claims/save_results 배치 INSERT, save_document/save_feedback 진행",
-      "dwh_manager.py — Snowflake 적재 어댑터 (피드백 이벤트 DWH 동기화)",
-      "raw_storage.py — MinIO 원본 PDF/DOCX/URL 본문 업로드",
-      "graph_store.py — Neo4j MERGE 시 일괄 처리용 클라이언트 (graph_builder가 만든 노드/엣지 배치 적재)",
+      "db_manager.py — psycopg2 연결, save_claims/save_results 배치 INSERT, save_document/save_feedback 진행",
       "core/pipeline.py에 DBManager 초기화·Claims/Results 적재 연동 + 기사 텍스트 해시로 doc_id 고정 (재실행 중복 방지)",
     ],
   },
@@ -152,14 +133,14 @@ const roles: Role[] = [
 
 const troubles: Trouble[] = [
   {
-    title: "KOSIS API rate limit + 임베딩 비용 폭주",
+    title: "KOSIS API rate limit + 임베딩 호출 폭증",
     star: true,
     problem:
-      "27개 카테고리에 대해 메타를 수집하면 통계표가 수십만 건. 한 건씩 임베딩하면 NCP 임베딩 API 비용 폭증 + KOSIS API rate limit 위반. 초기엔 단순 for 루프로 돌렸다가 차단 직전까지 감.",
+      "27개 카테고리에 대해 메타를 수집하면 통계표가 수십만 건. 한 건씩 임베딩하면 NCP HCX 임베딩 API 호출 횟수 폭증 + KOSIS API rate limit 위반. 초기엔 단순 for 루프로 돌렸다가 KOSIS 차단 직전까지 감.",
     solve:
       "(1) NCP HCX 임베딩 v2 배치 100건 단위로 묶어 호출 횟수 1/100로 절감, (2) KOSIS API에 asyncio.Semaphore(3)로 동시 호출 3개 제한 + 재시도 백오프. 메타 수집 + 임베딩 INSERT를 한 파이프라인에 묶어 ETL 중간 산출물 관리 부담 제거.",
     lesson:
-      "처음에는 메타 수집 코드를 짜기 바빠서 그냥 동기 루프로 KOSIS·HCX를 두드렸는데, 몇 분 만에 429와 비용 알림이 동시에 떴습니다. 코드를 좋게 쓰는 문제가 아니라 ‘한 번에 몇 개, 얼마 간격으로 부를지’를 처음부터 설계해야 한다는 걸 그때 알게 됐고, 이후로는 새로운 외부 API를 붙일 때 가장 먼저 배치·세마포어·재시도 자리를 비워두고 시작하게 됐습니다.",
+      "처음에는 메타 수집 코드를 짜기 바빠서 그냥 동기 루프로 KOSIS·HCX를 두드렸는데, 몇 분 만에 KOSIS 429와 HCX 동시 호출 한도 경고가 동시에 떴습니다. 코드를 좋게 쓰는 문제가 아니라 ‘한 번에 몇 개, 얼마 간격으로 부를지’를 처음부터 설계해야 한다는 걸 그때 알게 됐고, 이후로는 새로운 외부 API를 붙일 때 가장 먼저 배치·세마포어·재시도 자리를 비워두고 시작하게 됐습니다.",
   },
   {
     title: "KOSIS 통계표 매칭 오류 — '전체 사망자'에 '영아 사망률'이 잡힘",
@@ -307,11 +288,9 @@ export default function StructVerifyPage() {
       className="mx-auto max-w-3xl px-6 pb-24 pt-12 sm:pt-16"
       style={{ "--accent": ACCENT } as React.CSSProperties}
     >
-      <PhotoTodoBanner count={2} />
-
       <ProjectHeader
         project={project}
-        oneLiner="도메인 적응형 LLM 사실검증 플랫폼 v2.0. 5개 서비스 단일 docker-compose · 13 테이블 init_db · KOSIS 27 카테고리 크롤러 · 표 매칭 필터 4종 · LLM 429 백오프 · runtime 병렬화 · 검증 로직 통합까지 광범위하게 담당."
+        oneLiner="도메인 적응형 LLM 사실검증 플랫폼 v2.0. 데이터·검증 흐름 8개 모듈 담당 — docker-compose 환경 + PostgreSQL 13 테이블 init_db · KOSIS 27 카테고리 메타 262,783건 적재 · 표 매칭 필터 4종 · LLM 429 exponential backoff · runtime 병렬화 ~7분→~1/3 · 검증 판단 로직(verifier)."
         period="2026.04 ~ 진행 중"
         team="4명 (멋쟁이사자)"
         links={[{ label: "GitHub", href: REPO }]}
@@ -324,20 +303,23 @@ export default function StructVerifyPage() {
             KOSIS Open API 등 공식 통계 데이터와 비교해 사실 여부를 검증하는 LLM
             기반 플랫폼입니다. v2.0에서 <span className="font-medium text-foreground">
             2-Agent 아키텍처</span> + <span className="font-medium text-foreground">
-            Graph/JSON 하이브리드 저장</span> + <span className="font-medium text-foreground">
-            도메인 적응형 LoRA 학습 루프</span>로 재설계되어, 뉴스는 실험 도메인일
+            도메인 적응 학습 루프</span>로 재설계되어, 뉴스는 실험 도메인일
             뿐 시스템 자체는 자기 적응형 범용 검증 플랫폼을 지향합니다.
           </p>
           <p>
-            4명 팀에서 인프라·데이터 적재부터 KOSIS 커넥터의 도메인 필터, LLM
-            클라이언트 안정화, runtime 검증 파이프라인 병렬화·통합까지 가로축으로
-            넓게 담당했습니다. 인프라 단독 + 검증 흐름의 안정성/정확도 보정이라는
-            두 축이 동시에 진행됐습니다.
+            4명 팀에서 인프라·데이터 적재부터 KOSIS 메타 수집·표 매칭 필터,
+            LLM 클라이언트 안정화, runtime 검증 파이프라인 병렬화, 검증 판단
+            로직(verifier)까지 데이터·검증 흐름의 8개 모듈을 담당했습니다.
+            아래 Work Scope 표가 다룬 모듈 목록입니다.
           </p>
         </Prose>
       </Section>
 
       <Section id="stack" title="Tech Stack">
+        <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+          ※ <span className="text-foreground">직접 다룬 영역</span>의 기술 세트 — 자세한 모듈
+          분포는 아래 Architecture · Work Scope 표 참고.
+        </p>
         <TechStackGrid groups={techStack} />
       </Section>
 
@@ -349,10 +331,7 @@ export default function StructVerifyPage() {
         <div className="space-y-5">
           <AgentFlowDiagram />
           <DataLayersDiagram />
-          <PhotoPlaceholder
-            n={1}
-            caption="(선택) 직접 그린 v2.0 시스템 아키텍처 다이어그램 또는 PostgreSQL 13 테이블 ERD 캡처. 위 다이어그램이 박스 기반이라, 면접관에게 '실제 시스템 한 장' 느낌을 더 주려면 손으로 그린 그림 1장이 좋음. 없으면 건너뛰어도 OK."
-          />
+          <WorkScopeTable />
         </div>
       </Section>
 
@@ -360,8 +339,10 @@ export default function StructVerifyPage() {
         <div className="space-y-5">
           <div>
             <p className="mb-3 text-sm text-muted-foreground">
-              5개 서비스 단일 docker-compose + Makefile — `make dev` 한 줄로 동일
-              환경 재현.
+              docker-compose + Makefile — <span className="font-mono">make dev</span> 한
+              줄로 동일 환경 재현. PostgreSQL이 실제 호출 중인 메인 저장소이고,
+              나머지 컨테이너(Redis/Neo4j/MinIO/Elasticsearch)는 향후 확장용으로
+              함께 띄움.
             </p>
             <CodeBlock
               code={composeCode}
@@ -413,7 +394,7 @@ export default function StructVerifyPage() {
         <ResultsGrid
           items={[
             "KOSIS stat_catalog 262,783건 적재 + 1024차원 임베딩 INSERT 완료",
-            "5개 서비스 단일 docker-compose — `make dev` 한 줄 환경 재현",
+            "docker-compose + Makefile — `make dev` 한 줄로 PostgreSQL 환경 재현",
             "init_db.sql 13 테이블 + pgvector 확장 자동 생성",
             "KOSIS 표 매칭 4종 필터로 영아·UN·IMF·장래추계 오매칭 차단",
             "runtime 병렬화로 claim 8건 직렬 ~7분 → ~1/3 단축",
@@ -421,18 +402,12 @@ export default function StructVerifyPage() {
             "GitHub Actions CI/CD + AWS EC2 (nginx + pm2) 배포",
           ]}
         />
-        <div className="mt-5">
-          <PhotoPlaceholder
-            n={2}
-            caption="실제 운영 증거 1장 — `make health` 5개 서비스 OK / `kosis_stat_catalog` 262,783건 SELECT / claim 병렬 처리 로그 / GitHub Actions 빌드 성공 중 1장. 숫자 카드보다 '실제로 돌아가는 시스템' 한 장이 신뢰감 큼."
-          />
-        </div>
       </Section>
 
       <Section id="lessons" title="Lessons Learned">
         <LessonsList
           items={[
-            "동기 루프로 KOSIS·HCX를 두드리다 429와 비용 알림을 동시에 받은 한 번이, 새 외부 API를 붙일 때 배치·세마포어·재시도 자리부터 비워두고 시작하는 습관을 만들었다.",
+            "동기 루프로 KOSIS·HCX를 두드리다 KOSIS 429와 HCX 동시 호출 한도 경고를 동시에 받은 한 번이, 새 외부 API를 붙일 때 배치·세마포어·재시도 자리부터 비워두고 시작하는 습관을 만들었다.",
             "코사인 0.85가 나왔는데 단위·연도가 어긋난 통계를 몇 번 마주치고 나서야, 임베딩 후보 위에 결정론적 조건을 한 층 더 두는 게 기본 구조가 됐다.",
             "동시 호출 수를 키웠다가 오히려 429로 전체가 더 느려진 경험 한 번이, 병렬화 한도를 외부 API가 받아주는 양에 맞추는 편이 결국 가장 빠른 길이라는 걸 정직하게 인정하게 만들었다.",
             "호출부마다 try/except가 흩어진 코드를 한 번 정리해보고 나니, 재시도는 utils/llm_client.py 한 곳에 모아두는 편이 손대기도 쉽고 빠뜨리는 일도 없다는 걸 알게 됐다.",

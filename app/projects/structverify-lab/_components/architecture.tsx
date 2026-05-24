@@ -76,39 +76,15 @@ const layers = [
     detail: "13 테이블 (documents, claims, verification_results, kosis_stat_catalog, feedback_events, training_jobs, …) + HCX 임베딩 v2 1024차원",
     mine: true,
   },
-  {
-    name: "Neo4j",
-    role: "Graph",
-    detail: "ClaimNode · MetricNode · TimeNode · EntityNode + Evidence 서브그래프",
-    mine: true,
-  },
-  {
-    name: "MinIO",
-    role: "Raw Storage",
-    detail: "원본 PDF/DOCX/URL 본문 (raw_storage.py)",
-    mine: true,
-  },
-  {
-    name: "Elasticsearch",
-    role: "Full-text Search",
-    detail: "KOSIS 메타 키워드 검색 보조",
-    mine: true,
-  },
-  {
-    name: "Redis",
-    role: "Cache",
-    detail: "kosis_data_cache 응답 캐시 + 학습 잡 큐",
-    mine: true,
-  },
 ];
 
 export function DataLayersDiagram() {
   return (
     <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
       <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-        Phase 0 · 5개 데이터 레이어 (단일 docker-compose)
+        Phase 0 · 데이터 레이어 (실제 호출 중인 저장소)
       </p>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3">
         {layers.map((l) => (
           <div
             key={l.name}
@@ -146,10 +122,91 @@ export function DataLayersDiagram() {
         ))}
       </div>
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-        Snowflake는 DWH로 별도 구성. init_db.sql 한 번으로 13 테이블 + pgvector
-        확장이 자동 적용되어 팀원이 git clone 후 <span className="font-mono">make dev</span>
-        한 줄로 동일 환경 재현.
+        init_db.sql 한 번으로 13 테이블 + pgvector 확장이 자동 적용되어 팀원이
+        git clone 후 <span className="font-mono">make dev</span> 한 줄로 동일
+        환경 재현.
       </p>
+    </div>
+  );
+}
+
+// 박재윤이 담당한 모듈 — README todo(main) + v3 브랜치 작업 종합.
+type ScopeRow = { area: string; module: string };
+const scopeRows: ScopeRow[] = [
+  {
+    area: "인프라",
+    module: "docker-compose · Makefile · init_db.sql (13 테이블 + pgvector)",
+  },
+  {
+    area: "데이터 적재 (PostgreSQL)",
+    module:
+      "storage/db_manager.py (psycopg2 · save_claims/save_results 배치 INSERT) + core/pipeline.py 적재 연동",
+  },
+  {
+    area: "KOSIS 메타 크롤러",
+    module:
+      "adaptation/kosis_crawler.py (27 카테고리 · 배치 100 임베딩 · Semaphore(3))",
+  },
+  {
+    area: "KOSIS 표 매칭 필터 4종",
+    module:
+      "retrieval/kosis_connector._is_table_relevant (국제기구 · 추계 · 해외지역 · 세부대상)",
+  },
+  {
+    area: "LLM 클라이언트 429 backoff",
+    module:
+      "utils/llm_client._call_hcx_{v1,v3,structured} (exponential backoff 1→2→4s)",
+  },
+  {
+    area: "Runtime 검증 병렬화",
+    module:
+      "agent/runtime_agent.py (asyncio.gather + Semaphore(3) — claim 8건 ~7분 → ~1/3)",
+  },
+  {
+    area: "검증 판단 로직",
+    module:
+      "verification/verifier.py (단위명/연도/90%+ 오차 처리 · LLM 재판정 트리거)",
+  },
+  {
+    area: "Cloud / CI/CD",
+    module: "GitHub Actions · AWS EC2 (nginx reverse proxy + pm2)",
+  },
+];
+
+export function WorkScopeTable() {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <p className="border-b border-border bg-background/40 px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        Work Scope — 담당 모듈 ({scopeRows.length}개)
+      </p>
+      <table className="w-full text-sm">
+        <thead className="border-b border-border bg-background/40">
+          <tr>
+            <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              영역
+            </th>
+            <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              주요 파일 · 모듈
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {scopeRows.map((r, i) => (
+            <tr
+              key={r.area}
+              className={
+                "bg-[var(--accent)]/5 " +
+                (i < scopeRows.length - 1 ? "border-b border-border/60" : "")
+              }
+            >
+              <td className="px-4 py-2.5 font-medium text-foreground">{r.area}</td>
+              <td className="px-4 py-2.5 font-mono text-xs leading-relaxed text-foreground/80">
+                {r.module}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
