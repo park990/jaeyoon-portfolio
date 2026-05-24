@@ -70,12 +70,61 @@ export function StagesDiagram() {
   );
 }
 
+// Stage 1 → Stage 2 핵심 변경 5축. ATLOP (Zhou 2021) + DREEAM (Ma 2023) 적용 영역.
+type ChangeRow = { axis: string; stage1: string; stage2: string };
+const changeRows: ChangeRow[] = [
+  { axis: "Entity Pooling", stage1: "mean", stage2: "logsumexp" },
+  { axis: "Classifier", stage1: "Bilinear MLP", stage2: "ATLOP Grouped Bilinear" },
+  { axis: "Threshold", stage1: "Fixed (0.5)", stage2: "Adaptive (pair별 학습)" },
+  { axis: "Loss", stage1: "BCE", stage2: "ATL Ranking Loss" },
+  { axis: "Evidence Head", stage1: "없음", stage2: "DREEAM Evidence Head + KL Loss" },
+];
+
+export function Stage2ChangesTable() {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <p className="border-b border-border bg-background/40 px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        Stage 1 baseline에서 5개 축을 강화 — ATLOP + DREEAM 논문 적용
+      </p>
+      <table className="w-full text-sm">
+        <thead className="border-b border-border bg-background/40">
+          <tr>
+            <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              구성 요소
+            </th>
+            <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Stage 1
+            </th>
+            <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-[var(--accent)]">
+              Stage 2 (담당)
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {changeRows.map((r, i) => (
+            <tr
+              key={r.axis}
+              className={i < changeRows.length - 1 ? "border-b border-border/60" : ""}
+            >
+              <td className="px-4 py-2.5 font-medium text-foreground">{r.axis}</td>
+              <td className="px-4 py-2.5 text-foreground/70">{r.stage1}</td>
+              <td className="bg-[var(--accent)]/5 px-4 py-2.5 font-medium text-foreground">
+                {r.stage2}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // V1/V2 Results 비교 표
 type Row = { metric: string; v1: string; v2: string };
 const rows: Row[] = [
-  { metric: "Micro F1", v1: "60.71%", v2: "59.25%" },
-  { metric: "Precision", v1: "65.34%", v2: "63.11%" },
-  { metric: "Recall", v1: "56.70%", v2: "55.83%" },
+  { metric: "Micro F1", v1: "56.64%", v2: "59.25%" },
+  { metric: "Precision", v1: "60.74%", v2: "63.11%" },
+  { metric: "Recall", v1: "53.06%", v2: "55.83%" },
 ];
 
 export function MetricsTable() {
