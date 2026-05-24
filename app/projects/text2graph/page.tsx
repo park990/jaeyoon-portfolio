@@ -67,7 +67,8 @@ const troubles: Trouble[] = [
       "학습된 adaptive threshold가 inference 시점에서 제대로 적용되지 않아 F1 56.64%에 정체. validation 평가 로직 점검 중 threshold가 학습된 값이 아닌 고정값으로 적용되고 있음을 확인.",
     solve:
       "threshold 적용 로직 수정 → F1 56.64% → 60.71% (+4.07pt)",
-    lesson: "모델 자체보다 모델을 어떻게 평가하고 추론할 것인가가 최종 성능에 큰 영향",
+    lesson:
+      "Adaptive Threshold가 학습된 값이 아니라 고정값으로 적용되던 한 줄을 잡고 나니 F1이 단번에 +4pt 가까이 올라가는 걸 직접 보고 나서야, 모델 가중치보다 평가·추론 코드가 최종 수치에 더 직결될 수 있다는 걸 손에 잡았습니다. 그 뒤로는 점수가 안 오를 때 모델을 만지기 전에 평가·추론 코드부터 의심하게 됐습니다.",
   },
   {
     title: "ATLOP Loss 구현 오류",
@@ -75,7 +76,8 @@ const troubles: Trouble[] = [
     problem: "초기 구현이 BCE + concat 방식으로 되어 있어 논문 원본 의도와 다름",
     solve:
       "논문의 Ranking Loss로 재구현 — loss = log(1+Σexp(neg-TH)) + log(1+Σexp(TH-pos)). V2 F1 59.25% (V1과 ablation 비교 가능한 baseline 제공).",
-    lesson: "논문 구현은 수식 단위까지 정확히 옮겨야 함. 약식 구현은 성능 저하의 원인.",
+    lesson:
+      "기존의 BCE + concat 약식 구현을 ATLOP 원논문 Ranking Loss 수식 그대로 다시 풀어 옮기고 나서야 학습 곡선이 의도대로 흐르기 시작했습니다. 그 전후 차이를 직접 비교해 본 뒤로는 논문 구현을 ‘비슷하게’로 두지 않고 수식 단위까지 맞춰서 옮기게 됐습니다.",
   },
 ];
 
@@ -191,9 +193,9 @@ export default function Text2GraphPage() {
       <Section id="lessons" title="Lessons Learned">
         <LessonsList
           items={[
-            "평가 로직 버그는 모델 자체 결함보다 더 큰 성능 손실을 만들 수 있다.",
-            "논문 Loss 함수는 수식 단위까지 정확히 옮겨야 의도된 학습 효과를 얻는다.",
-            "HuggingFace 배포는 코드 외에 README, config, tokenizer 등 메타데이터 정리가 핵심이다.",
+            "Adaptive Threshold 한 줄의 버그가 모델 학습 결함보다 더 큰 점수 손실을 만드는 걸 직접 보고 나서야, 모델을 만지기 전에 평가·추론 코드부터 의심하는 습관이 생겼다.",
+            "ATLOP Loss를 수식 그대로 다시 옮기기 전후의 학습 곡선이 달라지는 걸 보고 나서야, 논문 구현을 ‘비슷하게’로 두면 의도가 절반밖에 안 살아난다는 걸 받아들였다.",
+            "모델 weight만 올렸을 때 같은 출력이 재현되지 않아 한참 헤맨 뒤에야, HuggingFace 배포는 코드 push가 아니라 README·config·tokenizer까지 한 셋으로 정리하는 작업이라는 걸 알게 됐다.",
           ]}
         />
       </Section>
