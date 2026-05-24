@@ -11,6 +11,7 @@ import {
   LessonsList,
   type Trouble,
 } from "@/components/project-detail/blocks";
+import { QuoteBanner } from "@/components/quote-banner";
 import { getProjectBySlug } from "@/lib/projects";
 
 const SLUG = "highway-guide";
@@ -243,10 +244,17 @@ export const metadata: Metadata = {
 };
 
 const techStack = [
-  { category: "Frontend", items: ["JSP", "JavaScript", "AJAX"] },
+  { category: "Frontend", items: ["JSP", "JavaScript", "AJAX", "Kakao Map JS API"] },
   {
     category: "Backend",
-    items: ["Java Servlet (MVC Model 2)", "MyBatis", "BCrypt", "HttpSession"],
+    items: [
+      "Java Servlet (MVC Model 2)",
+      "MyBatis",
+      "BCrypt",
+      "HttpSession",
+      "OAuth 2.0 (Kakao · Naver)",
+      "JavaMail (Gmail SMTP)",
+    ],
   },
   { category: "Database", items: ["MySQL"] },
 ];
@@ -265,9 +273,20 @@ const authRole = {
   bullets: [
     "회원가입 시 BCrypt로 비밀번호 해시 → DB 저장 (토큰 개념 없이 평문 비교만 차단)",
     "로그인 성공 시 HttpSession에 loginUser(UserVO) 적재 → 이후 마이페이지·즐겨찾기에서 재사용",
-    "이때는 JWT나 OAuth를 도입하지 않음 — 단일 서버 가정 하의 가장 단순한 형태로 출발",
+    "이때는 JWT를 도입하지 않음 — 단일 서버 가정 하의 가장 단순한 형태로 출발",
   ],
 };
+
+// Part 1 — "What I built": 단순 구현 작업 망라 (발전 narrative와 분리)
+const builtItems = [
+  "BCrypt 비밀번호 해시 + HttpSession 사용자 인증",
+  "OAuth 2.0 소셜 로그인 (Kakao · Naver)",
+  "Google SMTP 기반 이메일 인증 + 비밀번호 재발급",
+  "Kakao Map · Mobility API 지도/경로 시각화",
+  "Naver Geocoding API 좌표 변환",
+  "AJAX 비동기 통신 (즐겨찾기 실시간 토글 등)",
+  "MVC Model 2 Front Controller (Action 라우팅 설계)",
+];
 
 const bookmarkRole = {
   title: "휴게소-사용자 다대다 관계 첫 설계 (BookMark 테이블)",
@@ -324,7 +343,7 @@ export default function HighwayGuidePage() {
     >
       <ProjectHeader
         project={project}
-        oneLiner="첫 풀스택 프로젝트 — 가장 단순한 형태(BCrypt + HttpSession + Action Forward)로 출발해, 그 한계를 다음 프로젝트의 결정 근거로 들고 갈 수 있게 만든 출발점."
+        oneLiner="첫 풀스택 프로젝트 가장 단순한 형태(BCrypt + HttpSession + Action Forward)로 출발해, 그 한계를 다음 프로젝트의 결정 근거로 들고 갈 수 있게 만든 출발점."
         period="2025.07 ~ 2025.08"
         team="5명"
         links={[{ label: "GitHub", href: REPO }]}
@@ -338,9 +357,9 @@ export default function HighwayGuidePage() {
       <Section id="overview" title="Overview">
         <Prose>
           <p>
-            JSP/Servlet 기반 첫 풀스택 프로젝트. 의도적으로{" "}
+            JSP/Servlet 기반 첫 풀스택 프로젝트. 아는게 별로 없어{" "}
             <span className="font-medium text-foreground">가장 단순한 형태</span>
-            로 끝까지 가봤습니다 — JWT나 OAuth 없이 BCrypt + HttpSession, JSP
+            로 끝까지 가봤습니다. JWT 없이 BCrypt + HttpSession, JSP
             Forward와 AJAX JSON을 한 Action에서 같이 처리하는 구조. 그 단순함이
             만든 한계가 그대로 다음 프로젝트(HirePicker)의 기술 선택 근거가
             되었기에, 이 프로젝트의 가치는 결과물보다{" "}
@@ -357,24 +376,61 @@ export default function HighwayGuidePage() {
 
       <Section id="stack" title="Tech Stack">
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
-          ※ 5명 팀 프로젝트 중 <span className="text-foreground">본인이 직접 다룬 영역</span>의 기술 세트.
-          그 외 영역(OAuth, 이메일 인증, Kakao Map, CCTV, Selenium 리뷰 크롤링 등)은 다른 팀원 담당.
+          ※ <span className="text-foreground">직접 다룬 영역</span>의 기술 세트.
         </p>
         <TechStackGrid groups={techStack} />
       </Section>
 
       <Section id="role" title="My Role">
-        <div className="space-y-4">
-          <RoleGridCard n={1} {...actionRole} visual={<ActionFlowShot />} />
-          <RoleGridCard n={2} {...authRole} visual={<UserTableShot />} />
-          <RoleGridCard n={3} {...bookmarkRole} visual={<BookmarkShot />} />
+        {/* 의도 인용문 — Part 1·2를 나누는 이유 */}
+        <blockquote className="mb-8 border-l-2 border-[var(--accent)]/40 pl-4 text-sm italic leading-[1.7] text-muted-foreground">
+          AI가 단순 구현을 빠르게 대체하는 시대에, 구현 자체보다 그 안에서 얻은
+          학습이 다음 프로젝트의 결정으로 이어진 사이클이 더 중요하다고
+          생각합니다. 그래서 둘을 나누어 정리했습니다.
+        </blockquote>
+
+        {/* Part 1 — What I built (외부 박스 없음, Part 2와 톤 통일) */}
+        <div className="mb-10">
+          <h3 className="text-base font-semibold tracking-tight text-foreground">
+            What I built
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            이 프로젝트에서 직접 구현한 영역
+          </p>
+          <ul className="mt-4 grid grid-cols-1 gap-x-6 gap-y-2 text-sm leading-[1.6] text-foreground/85 sm:grid-cols-2">
+            {builtItems.map((b) => (
+              <li key={b} className="relative pl-4">
+                <span
+                  className="absolute left-0 top-[0.7em] h-1 w-1 rounded-full bg-muted-foreground"
+                  aria-hidden="true"
+                />
+                {b}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Part 2 — What carried forward (기존 큰 카드) */}
+        <div>
+          <h3 className="text-base font-semibold tracking-tight text-foreground">
+            What carried forward
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            다음 프로젝트의 결정 근거가 된 학습 사이클
+          </p>
+          <div className="mt-4 space-y-4">
+            <RoleGridCard n={1} {...actionRole} visual={<ActionFlowShot />} />
+            <RoleGridCard n={2} {...authRole} visual={<UserTableShot />} />
+            <RoleGridCard n={3} {...bookmarkRole} visual={<BookmarkShot />} />
+          </div>
         </div>
       </Section>
 
       <Section id="evolution" title="Evolution — 다음 프로젝트로의 발전">
         <Prose>
           <p>
-            이 프로젝트의 세 가지 한계가 그대로 HirePicker의 결정으로 이어졌습니다.
+            위 학습 사이클을 한 표로 비교해 보면 다음과 같습니다. 이 프로젝트의
+            세 가지 한계가 그대로 HirePicker의 결정으로 이어졌습니다.
           </p>
         </Prose>
         <div className="mt-5 space-y-3">

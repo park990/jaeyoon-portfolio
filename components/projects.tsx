@@ -9,6 +9,7 @@ import {
   type ProjectFilter,
 } from "@/lib/projects";
 import { ProjectCard } from "@/components/project-card";
+import { QuoteBanner } from "@/components/quote-banner";
 
 const container: Variants = {
   hidden: {},
@@ -38,14 +39,12 @@ export function Projects() {
         viewport={{ once: true, margin: "-80px" }}
         className="flex flex-col gap-10"
       >
-        {/* 제목 + 부제 */}
-        <motion.div variants={headingItem} className="flex flex-col gap-2">
+        {/* 제목 + 인용문 부제 */}
+        <motion.div variants={headingItem} className="flex flex-col gap-4">
           <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             Projects
           </h2>
-          <p className="text-base text-muted-foreground sm:text-lg">
-            AI/NLP과 Full-Stack 양쪽에서 진행한 프로젝트들
-          </p>
+          <QuoteBanner />
         </motion.div>
 
         {/* 필터 토글 */}

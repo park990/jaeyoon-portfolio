@@ -159,8 +159,7 @@ export default function HirePickerPage() {
 
       <Section id="stack" title="Tech Stack">
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
-          ※ 5명 팀 프로젝트 중 <span className="text-foreground">본인이 직접 다룬 영역</span>의 기술 세트.
-          그 외 영역(결제·외부 API 통합·AI 챗봇·관리자 페이지 등)은 다른 팀원 담당.
+          ※ <span className="text-foreground">직접 다룬 영역</span>의 기술 세트.
         </p>
         <TechStackGrid groups={techStack} />
       </Section>

@@ -168,8 +168,8 @@ export default function BoomingPage() {
 
       <Section id="stack" title="Tech Stack">
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
-          ※ 3명 팀 프로젝트 중 <span className="text-foreground">본인이 직접 다룬 영역</span>의 기술 세트.
-          모임(gathering) 도메인은 다른 팀원 담당.
+          ※ <span className="text-foreground">직접 다룬 영역</span>의 기술 세트.
+    
         </p>
         <TechStackGrid groups={techStack} />
       </Section>

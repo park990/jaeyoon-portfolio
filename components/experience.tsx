@@ -7,7 +7,7 @@ type Entry = {
   role: string;
   period: string;
   location?: string;
-  description: string;
+  bullets: string[];
 };
 
 const entries: Entry[] = [
@@ -16,8 +16,11 @@ const entries: Entry[] = [
     role: "여객운송 인턴",
     period: "2024.06 ~ 2024.09 (4개월)",
     location: "인천국제공항 (KAL/AAR)",
-    description:
-      "대규모 여객 운송 시스템에서 데이터 정합성과 실시간 처리의 중요성을 현장에서 학습",
+    bullets: [
+      "인천국제공항 카운터에서 항공권 발권 · 수하물 · 탑승수속 시스템 운영 지원",
+      "다국적 승객과 다양한 성격의 사람들을 피크 시간대에 동시 응대하며 커뮤니케이션과 우선순위 판단 능력 학습",
+      "대규모 여객 운송 시스템에서 데이터 정합성과 실시간 처리의 중요성을 현장에서 체감",
+    ],
   },
 ];
 
@@ -67,9 +70,17 @@ export function Experience() {
                 {e.location && (
                   <p className="mt-1 text-xs text-muted-foreground">{e.location}</p>
                 )}
-                <p className="mt-3 text-sm leading-[1.8] text-foreground/80">
-                  {e.description}
-                </p>
+                <ul className="mt-3 space-y-1.5 text-sm leading-[1.7] text-foreground/80">
+                  {e.bullets.map((b) => (
+                    <li key={b} className="relative pl-4">
+                      <span
+                        className="absolute left-0 top-[0.7em] h-1 w-1 rounded-full bg-primary"
+                        aria-hidden="true"
+                      />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </motion.li>
           ))}
