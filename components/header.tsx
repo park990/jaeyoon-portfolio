@@ -22,7 +22,7 @@ export function Header() {
           href="/"
           className="font-semibold tracking-tight text-foreground transition-colors hover:text-primary"
         >
-          jaeyoon.dev
+          Jaeyoon-Portfolio
         </Link>
 
         {/* 데스크탑(md+)에서만 풀 nav 노출. 모바일은 일단 숨김 — 햄버거는 다음 단계. */}
