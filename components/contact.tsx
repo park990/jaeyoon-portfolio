@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { motion, type Variants } from "framer-motion";
-import { Mail, FileText, MapPin } from "lucide-react";
+import { Mail, FileText, MapPin, Copy, Check } from "lucide-react";
 
 const EMAIL = "rhkgkrwk2008@gmail.com";
 const GITHUB = "https://github.com/park990";
@@ -28,6 +29,18 @@ const item: Variants = {
 };
 
 export function Contact() {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(EMAIL);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // clipboard API 미지원/거부 환경에서는 그냥 무시 (mailto + 노출된 주소가 fallback)
+    }
+  };
+
   return (
     <section id="contact" className="mx-auto max-w-3xl px-6 py-24 sm:py-32">
       <motion.div
@@ -110,6 +123,23 @@ export function Contact() {
             >
               {EMAIL}
             </a>
+            <button
+              type="button"
+              onClick={handleCopyEmail}
+              aria-label={copied ? "이메일 주소 복사됨" : "이메일 주소 복사"}
+              className="inline-flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {copied ? (
+                <Check className="h-3.5 w-3.5 text-foreground" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
+            </button>
+            {copied && (
+              <span className="text-xs text-foreground" aria-hidden="true">
+                복사됨
+              </span>
+            )}
           </div>
           <div className="flex items-center justify-center gap-2 sm:justify-start">
             <MapPin className="h-4 w-4" />
