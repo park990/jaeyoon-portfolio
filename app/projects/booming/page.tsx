@@ -28,15 +28,19 @@ const techStack = [
   { category: "Mobile", items: ["Flutter", "Riverpod 2.x", "flutter_secure_storage"] },
   {
     category: "Backend",
-    items: ["Spring Boot 3.5+ (Java 21)", "Spring Security", "JPA"],
+    items: ["Spring Boot 3.5+ (Java 21)", "Spring Security", "JWT", "JPA"],
   },
   {
     category: "Realtime / Cache",
-    items: ["WebSocket (STOMP) + SimpleBroker", "JWT ChannelInterceptor", "Redis (토큰 전부)"],
+    items: ["WebSocket (STOMP) + SimpleBroker", "JwtChannelInterceptor", "Redis (토큰 전부)"],
   },
   {
     category: "DB",
     items: ["MySQL (사용자·모임·게시판)", "MongoDB (채팅 메시지)"],
+  },
+  {
+    category: "Infra",
+    items: ["Docker Compose (Spring Boot + Redis + MySQL + MongoDB)"],
   },
 ];
 
@@ -83,7 +87,7 @@ const roles: Role[] = [
     bullets: [
       "백엔드 전반(인증·게시판·세션·DB)을 모임 도메인 제외하고 단독으로 담당했고, HirePicker의 분리 구조(REST + 분리된 클라이언트)를 모바일 컨텍스트로 그대로 이식했습니다.",
       "Flutter Riverpod 2.x 상태관리·MVVM 구조·하단 탭 네비·전체 화면 디자인을 단독으로 진행했습니다.",
-      "기획 단계의 핵심 아이디어(AI가 대화의 정적 시간을 메우고 다음 발화를 제안)까지 직접 정의했습니다.",
+      "기획 단계의 핵심 아이디어(AI가 대화의 정적 시간을 메우고 다음 발화를 제안)까지 직접 정의했고, AI 코칭 모듈은 수료 후 구현 예정입니다.",
     ],
   },
 ];

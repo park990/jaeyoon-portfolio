@@ -51,9 +51,9 @@ export const projects: Project[] = [
     title: "Text2Graph",
     subtitle: "Document-level Relation Extraction (Stage 2)",
     oneLiner:
-      "Adaptive Threshold 버그 + ATLOP Loss 구현 오류 수정으로 F1 +4.07pt",
+      "Adaptive Threshold 버그 + ATLOP Loss 구현 오류 수정으로 F1 +2.61pt (56.64 → 59.25)",
     stack: ["PyTorch", "HuggingFace", "ATLOP", "DREEAM", "BERT", "NetworkX"],
-    period: "2026.03 (1주)",
+    period: "2026.04 (1주)",
     team: 5,
     group: "AI/NLP",
     accent: "#A78BFA",
@@ -66,7 +66,7 @@ export const projects: Project[] = [
   {
     slug: "booming",
     title: "Booming",
-    subtitle: "AI 대화 코칭 커뮤니티 (모바일 앱)",
+    subtitle: "커뮤니티·랜덤 매칭 모바일 앱 (AI 코칭 모듈 수료 후 구현 예정)",
     oneLiner:
       "토큰 전부 Redis 통합 + SimpleBroker 단순화 + 채팅 메시지 MongoDB 분리 — 환경에 맞춰 저장소 결정",
     stack: ["Flutter", "Spring Boot", "JWT + Redis", "WebSocket(STOMP)", "MySQL", "MongoDB"],

@@ -33,7 +33,7 @@ const techStack = [
     items: ["Spring Boot", "JPA", "Spring Security", "JWT", "WebSocket (STOMP)"],
   },
   { category: "Cache / DB", items: ["Redis (Access Token, Pub/Sub)", "MySQL"] },
-  { category: "Data / Infra", items: ["Python Selenium", "Docker Compose"] },
+  { category: "Data / Infra", items: ["Python Selenium", "Docker Compose", "AWS S3"] },
 ];
 
 // Part 1 — "What I built": 단순 구현 작업 망라 (발전 narrative와 분리)
@@ -44,7 +44,8 @@ const builtItems = [
   "Axios 인터셉터 (자동 토큰 갱신)",
   "HttpOnly Cookie + Axios 통합 (인증 토큰 전달)",
   "공고 검색 / 필터 / 즐겨찾기 API 구현",
-  "Python Selenium 공고 사진 수집 자동화",
+  "Python Selenium 공고 사진 수집",
+  "AWS S3 이미지 업로드 (공고 이미지 저장)",
   "Docker Compose 환경 통합 (Spring Boot + Redis + MySQL)",
   "수집 데이터 이미지 정제 처리",
 ];

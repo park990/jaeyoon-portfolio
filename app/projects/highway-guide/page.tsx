@@ -253,7 +253,7 @@ export const metadata: Metadata = {
 };
 
 const techStack = [
-  { category: "Frontend", items: ["JSP", "JavaScript", "AJAX", "Kakao Map JS API"] },
+  { category: "Frontend", items: ["JSP", "JavaScript", "AJAX", "Kakao Map · Mobility API", "Naver Geocoding API"] },
   {
     category: "Backend",
     items: [
