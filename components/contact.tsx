@@ -6,7 +6,7 @@ import { Mail, FileText, MapPin } from "lucide-react";
 const EMAIL = "rhkgkrwk2008@gmail.com";
 const GITHUB = "https://github.com/park990";
 const HUGGINGFACE = "https://huggingface.co/park990";
-const RESUME = "#"; // 추후 /resume.pdf 같은 정적 경로로 교체
+const RESUME = "/jaeyoon-park-resume.pdf";
 
 // lucide 1.x에 브랜드 아이콘 없음 → 인라인 SVG.
 function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -65,6 +65,8 @@ export function Contact() {
           </a>
           <a
             href={RESUME}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-6 text-sm font-medium text-foreground transition-colors hover:border-primary/60 hover:text-primary sm:w-auto"
           >
             <FileText className="h-4 w-4" />
