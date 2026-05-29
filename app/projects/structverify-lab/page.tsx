@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Award, Database, Zap } from "lucide-react";
+import { Award, Database, Zap, type LucideIcon } from "lucide-react";
 import { Section, Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
 import {
@@ -282,7 +282,15 @@ async def _call_hcx_v3(messages, **kwargs):
 
 // 페이지 최상단 TL;DR 박스에 노출할 핵심 결과 3개.
 // 브리프 §1·§4(1)에 따라 수치/수상으로만 채움 — 형용사 금지.
-const HIGHLIGHTS = [
+type Highlight = {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  note: string;
+  accent?: boolean;
+};
+
+const HIGHLIGHTS: Highlight[] = [
   {
     icon: Award,
     label: "수상",
@@ -302,7 +310,7 @@ const HIGHLIGHTS = [
     value: "~7분 → ~1/3",
     note: "claim 8건 직렬 vs asyncio.gather + Semaphore(3)",
   },
-] as const;
+];
 
 // 핵심 결정·이유 — 사용자가 합격 포트폴리오 브리프에서 직접 지정한 카피.
 // Snowflake 표현 주의: "사용/도입"이 아니라 "검토 후 기각, 직접 운영 경험 없음".
@@ -415,7 +423,7 @@ export default function StructVerifyPage() {
       <Section id="decisions" title="핵심 결정 · 이유">
         <p className="mb-5 text-sm leading-[1.7] text-muted-foreground">
           무엇을 골랐나보다 <span className="text-foreground">왜 골랐고 뭘 안 골랐나</span>를
-          먼저 적습니다. 사용한 적 없는 대안은 "검토 후 기각"으로 표기.
+          먼저 적습니다. 사용한 적 없는 대안은 &ldquo;검토 후 기각&rdquo;으로 표기.
         </p>
         <div className="space-y-3">
           {KEY_DECISIONS.map((d, i) => (

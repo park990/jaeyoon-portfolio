@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { TrendingUp, Network, BarChart3, type LucideIcon } from "lucide-react";
 import { Section, Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
 import {
@@ -8,11 +9,9 @@ import {
 import {
   TechStackGrid,
   MyRoleCards,
-  TroubleCards,
   ResultsGrid,
   LessonsList,
   type Role,
-  type Trouble,
 } from "@/components/project-detail/blocks";
 import {
   StagesDiagram,
@@ -63,26 +62,66 @@ const roles: Role[] = [
   },
 ];
 
-const troubles: Trouble[] = [
+// TL;DR — 이 프로젝트의 강점은 기술 선택이 아니라 진단 능력.
+type Highlight = {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  note: string;
+  accent?: boolean;
+};
+
+const HIGHLIGHTS: Highlight[] = [
   {
-    title: "ATLOP Loss 구현 오류 — BCE 단순 이진 분류 형태",
-    star: true,
-    problem:
-      "v1의 src/losses.py → ATLOPLoss가 ‘BCE with threshold class concat’으로 작성되어 있어 단순 이진 분류 형태였고, ATLOP 원논문의 Positive/Negative 분리 + Threshold 비교 의도가 살아나지 않았습니다. v1 F1 56.64%에서 학습 곡선이 정체했습니다.",
-    solve:
-      "src/losses.py의 ATLOPLoss를 논문 원본 Ranking Loss로 재구현 — Positive relation은 Threshold보다 높게, Negative relation은 Threshold보다 낮게 학습되도록 분리. 수식: loss = log(1+Σexp(neg−TH)) + log(1+Σexp(TH−pos)).",
-    lesson:
-      "기존의 BCE + concat 약식 구현을 ATLOP 원논문 Ranking Loss 수식 그대로 다시 풀어 옮기고 나서야 학습 곡선이 의도대로 흐르기 시작했습니다. 그 전후 차이를 직접 비교해 본 뒤로는 논문 구현을 ‘비슷하게’로 두지 않고 수식 단위까지 맞춰서 옮기게 됐습니다.",
+    icon: TrendingUp,
+    label: "Dev F1",
+    value: "+2.61pt",
+    note: "56.64% → 59.25% (두 디버깅 수정의 합산 효과)",
+    accent: true,
   },
   {
-    title: "Evaluation 시 Adaptive Threshold 적용 누락",
-    star: true,
-    problem:
-      "scripts/train.py → evaluate_on_dev에서 평가 시 고정 threshold(0.5)로 relation 채택 여부를 판단하고 있었습니다. 모델은 pair별 adaptive threshold를 학습하고 있었지만, 평가 단계에서 그 학습값이 무시되고 있어 ATLOP의 핵심 이점이 수치에 반영되지 않았습니다.",
-    solve:
-      "evaluate_on_dev를 ATLOP 평가 방식으로 정상화 — 모델이 출력하는 threshold_logits와 각 relation logit을 비교하여 채택 판단. 위 ATLOP Loss 수정과 함께 적용해 v1 56.64% → v2 59.25% (+2.61pt) 도달.",
-    lesson:
-      "Adaptive Threshold가 학습된 값이 아니라 고정값으로 적용되던 평가 코드를 잡고 나니 학습 측 변경이 비로소 수치로 드러나는 걸 직접 보고 나서야, 모델 가중치보다 평가·추론 코드가 최종 수치에 더 직결될 수 있다는 걸 손에 잡았습니다. 그 뒤로는 점수가 안 오를 때 모델을 만지기 전에 평가·추론 코드부터 의심하게 됐습니다.",
+    icon: Network,
+    label: "Triple 추출",
+    value: "10,494",
+    note: "dev 998 문서 → NetworkX 기반 KG 시각화",
+  },
+  {
+    icon: BarChart3,
+    label: "관계별 정성분석",
+    value: "80~90% vs 0~12.5%",
+    note: "표면 패턴 관계 vs 상식 추론 관계의 성능 격차",
+  },
+];
+
+// 디버깅 추론 — 가설 → 검증 → 수정 3단계로 진단 능력을 보여줌.
+// 일반적인 Trouble-shooting 카드와 의도적으로 다른 frame: 무엇이 깨졌나가 아니라 어떻게 의심·검증·수정했나.
+const DEBUGGING_REASONING = [
+  {
+    title: "Evaluation의 Adaptive Threshold 적용 누락 — 평가 코드부터 의심",
+    hypothesis:
+      "학습은 pair별 adaptive threshold를 출력하는데 dev F1이 56.64%에서 정체. 모델 가중치보다 평가/추론 코드를 먼저 의심.",
+    verification:
+      "scripts/train.py의 evaluate_on_dev를 따라가 보니 고정 threshold(0.5)로 relation 채택 여부를 판단. 학습된 threshold_logits 값이 평가 단계에서 무시되고 있음을 확인.",
+    fix:
+      "evaluate_on_dev를 ATLOP 정상 평가 방식으로 정정 — 모델이 출력하는 threshold_logits와 각 relation logit을 비교해 채택 판단. 이 한 수정만으로도 F1이 즉시 반영됨.",
+  },
+  {
+    title: "ATLOP ranking loss 오구현 — 원 논문 수식과 직접 대조",
+    hypothesis:
+      "학습 곡선이 일찍 정체. 모델 구조보다 손실 함수 구현을 의심.",
+    verification:
+      "src/losses.py의 ATLOPLoss가 'BCE with threshold class concat' 약식 형태 — 단순 이진 분류처럼 작성됨. 원 논문의 Positive/Negative 분리 + threshold 비교 의도가 살아나지 않음을 확인.",
+    fix:
+      "원 논문 ranking loss 수식 그대로 재구현: loss = log(1+Σexp(neg−TH)) + log(1+Σexp(TH−pos)). 위 평가 수정과 함께 적용해 v1 56.64% → v2 59.25% (+2.61pt) 도달.",
+  },
+  {
+    title: "관계별 성능 격차 해석 — 전체 F1만 보지 않기",
+    hypothesis:
+      "F1 평균이 같아도 관계 종류별로 성능이 균일하지 않을 것. 어떤 관계 유형에 약한지 봐야 모델 한계를 진단할 수 있다.",
+    verification:
+      "dev 998 문서 → 10,494 triple 추출 후 관계 종류별 정밀도 측정. 생년월일/사망일 같은 표면 패턴 관계는 80~90%인 반면, 민족/하위분류처럼 상식 추론이 필요한 관계는 0~12.5%로 격차가 큼.",
+    fix:
+      "결론: BERT-base는 표면 패턴은 잡지만 상식 추론은 약하다. 단순 모델 교체보다 commonsense KG 외부 지식 주입이 다음 라운드 방향이라는 판단. F1 수치 위에서 1단계 더 들어가는 분석 습관이 자리잡음.",
   },
 ];
 
@@ -126,6 +165,51 @@ export default function Text2GraphPage() {
         links={project.links}
       />
 
+      {/* TL;DR Highlights — 진단 능력에 초점 */}
+      <section
+        aria-label="Highlights"
+        className="-mt-2 mb-12 grid grid-cols-1 gap-3 sm:grid-cols-3"
+      >
+        {HIGHLIGHTS.map((h) => {
+          const Icon = h.icon;
+          return (
+            <div
+              key={h.label}
+              className={
+                "rounded-xl border p-4 sm:p-5 " +
+                (h.accent
+                  ? "border-[var(--accent)]/50 bg-[var(--accent)]/5"
+                  : "border-border bg-card")
+              }
+            >
+              <div className="flex items-center gap-2">
+                <Icon
+                  className={
+                    "h-4 w-4 " +
+                    (h.accent ? "text-[var(--accent)]" : "text-muted-foreground")
+                  }
+                  aria-hidden="true"
+                />
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  {h.label}
+                </p>
+              </div>
+              <p
+                className={
+                  "mt-2 text-xl font-semibold tracking-tight sm:text-2xl " +
+                  (h.accent ? "text-[var(--accent)]" : "text-foreground")
+                }
+              >
+                {h.value}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                {h.note}
+              </p>
+            </div>
+          );
+        })}
+      </section>
+
       <Section id="overview" title="Overview">
         <Prose>
           <p>
@@ -142,6 +226,55 @@ export default function Text2GraphPage() {
 
       <Section id="stack" title="Tech Stack">
         <TechStackGrid groups={techStack} />
+      </Section>
+
+      <Section id="debugging" title="디버깅 추론 — 가설 · 검증 · 수정">
+        <p className="mb-5 text-sm leading-[1.7] text-muted-foreground">
+          이 프로젝트의 강점은 기술 선택이 아니라{" "}
+          <span className="text-foreground">진단 능력</span>입니다.
+          F1이 정체했을 때 어디를 의심하고, 어떻게 검증했고, 무엇을
+          고쳤는지를 3단계로 기록했습니다.
+        </p>
+        <div className="space-y-3">
+          {DEBUGGING_REASONING.map((d, i) => (
+            <div
+              key={d.title}
+              className="rounded-xl border border-border bg-card p-5 sm:p-6"
+            >
+              <div className="mb-3 flex items-start gap-3">
+                <span
+                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 text-xs font-semibold"
+                  style={{ color: ACCENT }}
+                >
+                  {i + 1}
+                </span>
+                <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground sm:text-lg">
+                  {d.title}
+                </h3>
+              </div>
+              <dl className="ml-10 space-y-2.5 text-sm leading-[1.7] text-foreground/85">
+                <div className="grid grid-cols-[64px_1fr] gap-x-3 gap-y-1">
+                  <dt className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    가설
+                  </dt>
+                  <dd>{d.hypothesis}</dd>
+                </div>
+                <div className="grid grid-cols-[64px_1fr] gap-x-3 gap-y-1">
+                  <dt className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    검증
+                  </dt>
+                  <dd>{d.verification}</dd>
+                </div>
+                <div className="grid grid-cols-[64px_1fr] gap-x-3 gap-y-1">
+                  <dt className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    수정
+                  </dt>
+                  <dd>{d.fix}</dd>
+                </div>
+              </dl>
+            </div>
+          ))}
+        </div>
       </Section>
 
       <Section id="role" title="My Role">
@@ -171,10 +304,6 @@ export default function Text2GraphPage() {
             <CodeBlock code={lossCode} lang="python" filename="loss.py" />
           </div>
         </div>
-      </Section>
-
-      <Section id="trouble" title="Trouble-shooting">
-        <TroubleCards troubles={troubles} accent={ACCENT} />
       </Section>
 
       <Section id="results" title="Results">

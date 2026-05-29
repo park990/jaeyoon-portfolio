@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { TrendingDown, Search, Compass } from "lucide-react";
+import { TrendingDown, Search, Compass, type LucideIcon } from "lucide-react";
 import { Section, Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
 import {
@@ -28,7 +28,15 @@ export const metadata: Metadata = {
 };
 
 // TL;DR Highlights — 음성 결과를 강점으로 framing (브리프 §4(2)).
-const HIGHLIGHTS = [
+type Highlight = {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  note: string;
+  accent?: boolean;
+};
+
+const HIGHLIGHTS: Highlight[] = [
   {
     icon: TrendingDown,
     label: "LLM 단독 vs +RAG",
@@ -48,7 +56,7 @@ const HIGHLIGHTS = [
     value: "Adaptive RAG",
     note: "relevance gate · 리랭커 · retrieval recall@k 선측정",
   },
-] as const;
+];
 
 const techStack = [
   {
