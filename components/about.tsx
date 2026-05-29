@@ -1,7 +1,6 @@
 "use client";
 
 import { motion, type Variants } from "framer-motion";
-import { LearningPathTimeline } from "@/components/learning-path-timeline";
 
 const container: Variants = {
   hidden: {},
@@ -92,10 +91,6 @@ export function About() {
               프롬프트·규칙·스키마로 잡아왔습니다.
             </Paragraph>
           </div>
-        </motion.div>
-
-        <motion.div variants={item}>
-          <LearningPathTimeline />
         </motion.div>
       </motion.div>
     </section>

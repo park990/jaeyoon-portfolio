@@ -359,6 +359,7 @@ export default function MedicalRagPage() {
           items={[
             "RAG를 켜는 순간 정답률이 오른다는 가정 자체가 우리 데이터에선 성립하지 않았다. 다음에 RAG를 붙일 땐 retrieval recall@k부터 측정한 뒤 LLM에 붙일지 결정한다.",
             "임베딩이 가깝다 = 주제가 가깝다지, 정답을 가르는 chunk가 가깝다는 보장은 아니다. 검색 단계에 도메인 규칙·리랭커 한 층을 더 두는 패턴이 다음 시도의 기본.",
+            "벡터 DB 선택 회고: 정적 코퍼스(27k chunk)를 한 번 인덱싱하고 ablation으로 반복 검색만 하는 이 실험에는 persistence·메타데이터 같은 DB 기능이 필요 없었다. ChromaDB는 Colab에서 의존성 충돌로 환경 세팅 비용이 컸고, 가벼운 in-memory 검색이라면 FAISS가 이 용도엔 더 맞았을 것이다. 다음엔 실험용 정적 인덱스는 FAISS, 운영용 동적 데이터는 벡터 DB로 분리한다.",
             "다음 시도 (이 실험에서 미구현, 다음 라운드 예정): relevance threshold/리랭커 도입 / 모델이 불확실할 때만 검색을 트리거하는 adaptive RAG / 500자보다 짧은·신호대잡음비 높은 chunk 단위 실험.",
             "RAG 검색 단계에 결정론적 한 층을 더 두는 감각은 이후 StructVerify의 KOSIS 표 매칭 필터(국제기구·추계·세부대상)로 이어졌다 — 임베딩으로 후보를 좁힌 뒤 규칙으로 한 번 더 거르는 패턴.",
           ]}

@@ -21,9 +21,50 @@ const pretendard = localFont({
   weight: "45 920",
 });
 
+const SITE_URL = "https://jaeyoon-portfolio.vercel.app";
+const SITE_TITLE = "Jaeyoon Park · AI · NLP Engineer";
+const SITE_DESCRIPTION =
+  "기사 속 수치 주장을 검증하는 LLM 파이프라인을 설계·구현하고, 모델을 감싸는 백엔드/인프라까지 다룹니다. StructVerify-Lab · Medical RAG Experiment · Text2Graph (DocRED) · Booming · HirePicker.";
+
 export const metadata: Metadata = {
-  title: "Jaeyoon Park · Portfolio",
-  description: "AI/NLP Engineer & Full-Stack Developer",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_TITLE,
+    template: "%s · Jaeyoon Park",
+  },
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "AI Engineer",
+    "NLP Engineer",
+    "LLM",
+    "RAG",
+    "HyperCLOVA X",
+    "Pydantic",
+    "pgvector",
+    "FastAPI",
+    "Spring Boot",
+    "Next.js",
+    "Portfolio",
+    "박재윤",
+  ],
+  authors: [{ name: "Jaeyoon Park", url: SITE_URL }],
+  creator: "Jaeyoon Park",
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    url: SITE_URL,
+    siteName: "Jaeyoon Park · Portfolio",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  alternates: {
+    canonical: SITE_URL,
+  },
 };
 
 export default function RootLayout({

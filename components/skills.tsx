@@ -2,7 +2,9 @@
 
 import { motion, type Variants } from "framer-motion";
 
-// 카테고리 데이터. 추후 추가/수정이 잦을 가능성 있어서 상수로 분리.
+// 카테고리 데이터 — 사용자 합격 포트폴리오 브리프 §5 Skills 매핑에 맞춰 정합.
+// 원칙: 실제로 다룬 것만. LoRA는 medical-rag에서도 팀원 담당이라 제거.
+// 벡터 DB는 ChromaDB로 통일(medical-rag 실제 사용 기준). FAISS는 Skills에 두지 않음.
 const categories: { title: string; items: string[] }[] = [
   {
     title: "Languages",
@@ -13,33 +15,31 @@ const categories: { title: string; items: string[] }[] = [
     items: [
       "PyTorch",
       "HuggingFace Transformers",
-      "HyperCLOVA X (HCX)",
-      "LoRA",
-      "RAG",
-      "LangChain",
-      "OpenAI API",
+      "NCP HCX",
+      "RAG (ChromaDB, ko-sroberta, LangChain)",
       "Pydantic",
+      "Prompt Engineering",
     ],
   },
   {
     title: "Backend",
-    items: ["FastAPI", "Spring Boot", "JPA", "WebSocket (STOMP)", "JWT", "OAuth 2.0"],
+    items: ["Spring Boot", "JPA", "REST API", "WebSocket (STOMP)", "JWT", "OAuth 2.0"],
   },
   {
     title: "Frontend",
-    items: ["Next.js", "React", "Flutter", "Riverpod", "Tailwind CSS"],
+    items: ["React", "Next.js", "Flutter (Riverpod)"],
   },
   {
     title: "Database",
-    items: ["PostgreSQL", "pgvector", "MySQL", "MongoDB", "Redis", "ChromaDB"],
+    items: ["PostgreSQL + pgvector", "MySQL", "Redis", "MongoDB"],
   },
   {
     title: "DevOps / Infra",
-    items: ["Docker", "Docker Compose", "AWS (EC2, S3)", "GitHub Actions", "nginx", "pm2"],
+    items: ["Docker", "GitHub Actions", "AWS (EC2, S3)", "nginx", "pm2"],
   },
   {
     title: "Tools",
-    items: ["Git", "Linux", "VS Code", "Colab", "DBeaver"],
+    items: ["Git", "Linux", "VS Code", "Colab"],
   },
 ];
 

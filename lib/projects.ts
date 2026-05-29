@@ -38,9 +38,6 @@ export type Project = {
   hasDetailPage?: boolean;
 };
 
-export const PROJECT_GROUPS = ["All", "AI/NLP", "Full-Stack"] as const;
-export type ProjectFilter = (typeof PROJECT_GROUPS)[number];
-
 export const projects: Project[] = [
   // ─── Featured · AI/NLP ────────────────────────────────────────────
   {
