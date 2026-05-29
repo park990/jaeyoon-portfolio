@@ -73,7 +73,7 @@ const layers = [
   {
     name: "PostgreSQL + pgvector",
     role: "관계형 + 벡터",
-    detail: "13 테이블 (documents, claims, verification_results, kosis_stat_catalog, feedback_events, training_jobs, …) + HCX 임베딩 v2 1024차원",
+    detail: "init_db.py 5 테이블 (requests/claims/truths/results/kosis_stat_catalog) + sv_platform alembic 4 테이블 (tenants/users/api_keys/jobs) = 총 9. HCX 임베딩 v2 1024차원.",
     mine: true,
   },
 ];
@@ -122,9 +122,10 @@ export function DataLayersDiagram() {
         ))}
       </div>
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-        init_db.sql 한 번으로 13 테이블 + pgvector 확장이 자동 적용되어 팀원이
-        git clone 후 <span className="font-mono">make dev</span> 한 줄로 동일
-        환경 재현.
+        init_db.py가 pgvector 확장 + 핵심 5 테이블을 만들고, 운영 플랫폼 계층은
+        alembic으로 4 테이블 추가(총 9). 팀원은 git clone 후{" "}
+        <span className="font-mono">docker-compose up -d</span> 한 줄로 동일 환경
+        재현.
       </p>
     </div>
   );
@@ -135,7 +136,7 @@ type ScopeRow = { area: string; module: string };
 const scopeRows: ScopeRow[] = [
   {
     area: "인프라",
-    module: "docker-compose · Makefile · init_db.sql (13 테이블 + pgvector)",
+    module: "docker-compose(pgvector) · init_db.py 5 테이블 + sv_platform alembic 4 테이블 = 9",
   },
   {
     area: "데이터 적재 (PostgreSQL)",
@@ -145,7 +146,7 @@ const scopeRows: ScopeRow[] = [
   {
     area: "KOSIS 메타 크롤러",
     module:
-      "adaptation/kosis_crawler.py (27 카테고리 · 배치 100 임베딩 · Semaphore(3))",
+      "adaptation/kosis_crawler.py (31 카테고리 · 배치 100 임베딩 · Semaphore(3))",
   },
   {
     area: "KOSIS 표 매칭 필터 4종",

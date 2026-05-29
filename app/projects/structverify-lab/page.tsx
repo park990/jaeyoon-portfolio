@@ -64,11 +64,11 @@ const techStack = [
 
 const roles: Role[] = [
   {
-    title: "인프라 · docker-compose 환경 통합",
+    title: "인프라 · docker-compose + DB 초기화",
     bullets: [
-      "PostgreSQL 16 + pgvector를 메인으로, 향후 확장용 4종(Redis · Neo4j · MinIO · Elasticsearch)을 함께 docker-compose에 묶어 팀원이 git clone 후 한 줄(`make dev`)로 동일 환경 재현",
-      "Makefile 타깃 정비 (`make health` 헬스체크 / `make psql` DB 접속 / `make neo4j-init` 인덱스 초기화)",
-      "init_db.sql 직접 작성 — pgvector 확장 + 13 테이블(documents, claims, verification_results, execution_runs, artifacts, graph_nodes/edges, kosis_stat_catalog, kosis_data_cache, feedback_events, training_jobs, model_versions, domain_packs) 자동 생성",
+      "PostgreSQL 16 + pgvector를 docker-compose로 묶어 팀원이 git clone 후 `docker-compose up -d` 한 줄로 동일 환경 재현",
+      "init_db.py — psycopg2 연결 + pgvector 확장 + 핵심 5 테이블(requests/claims/truths/results/kosis_stat_catalog) 자동 생성",
+      "운영 플랫폼 계층(sv_platform)은 alembic 마이그레이션으로 4 테이블(tenants/users/api_keys/jobs) 별도 관리 — 총 9 테이블",
     ],
   },
   {
@@ -81,7 +81,7 @@ const roles: Role[] = [
   {
     title: "KOSIS 통계 메타 크롤러 + 카탈로그 검색",
     bullets: [
-      "adaptation/kosis_crawler.py — 주제별 통계(MT_ZTITLE) 27개 카테고리(A~U + H1/H2, I1/I2 등 세분화) 전체 메타 수집",
+      "adaptation/kosis_crawler.py — 주제별 통계(MT_ZTITLE) 31개 카테고리(A~U + H1/H2 · I1/I2 · J1/J2 · K1/K2 · M1/M2 · N1/N2 등 세분화) 전체 메타 수집",
       "NCP HCX 임베딩 v2 (1024차원) 배치 100건 단위 + asyncio.Semaphore(3) rate limit + 재시도 백오프 → pgvector INSERT",
       "is_catalog_ready 체크로 builder_agent.pretrain_domain()에서 호출 시 중복 수집 방지",
       "retrieval/catalog_search.py — kosis_stat_catalog에 대해 category_path ILIKE + embedding 코사인 유사도 하이브리드 검색",
@@ -136,7 +136,7 @@ const troubles: Trouble[] = [
     title: "KOSIS API rate limit + 임베딩 호출 폭증",
     star: true,
     problem:
-      "27개 카테고리에 대해 메타를 수집하면 통계표가 수십만 건. 한 건씩 임베딩하면 NCP HCX 임베딩 API 호출 횟수 폭증 + KOSIS API rate limit 위반. 초기엔 단순 for 루프로 돌렸다가 KOSIS 차단 직전까지 감.",
+      "전체 카테고리(31개)에 대해 메타를 수집하면 통계표가 수십만 건. 한 건씩 임베딩하면 NCP HCX 임베딩 API 호출 횟수 폭증 + KOSIS API rate limit 위반. 초기엔 단순 for 루프로 돌렸다가 KOSIS 차단 직전까지 감.",
     solve:
       "(1) NCP HCX 임베딩 v2 배치 100건 단위로 묶어 호출 횟수 1/100로 절감, (2) KOSIS API에 asyncio.Semaphore(3)로 동시 호출 3개 제한 + 재시도 백오프. 메타 수집 + 임베딩 INSERT를 한 파이프라인에 묶어 ETL 중간 산출물 관리 부담 제거.",
     lesson:
@@ -173,36 +173,35 @@ const troubles: Trouble[] = [
   },
 ];
 
-const composeCode = `# docker-compose.yml + Makefile — 5개 서비스 단일 파일 통합
+const composeCode = `# docker-compose.yml — pgvector 단일 서비스
+version: "3.8"
+
 services:
   db:
     image: pgvector/pgvector:pg16
+    container_name: factcheck-db
     environment:
-      POSTGRES_USER: structverify
-      POSTGRES_PASSWORD: svpass123
-      POSTGRES_DB: structverify
-    ports: ["5432:5432"]
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: factcheck
+    ports:
+      - "5432:5432"
     volumes:
-      - ./infra/init_db.sql:/docker-entrypoint-initdb.d/init.sql  # 13 테이블 자동 생성
+      - pgdata:/var/lib/postgresql/data
 
-  redis:    { image: redis:7-alpine,         ports: ["6379:6379"] }
-  neo4j:    { image: neo4j:5.13,             ports: ["7474:7474", "7687:7687"] }
-  minio:    { image: minio/minio,            ports: ["9000:9000", "9001:9001"] }
-  elastic:  { image: elasticsearch:8.11,     ports: ["9200:9200"] }
+volumes:
+  pgdata:
 
-# Makefile
-# make dev        → 5개 서비스 한 줄 기동
-# make health     → 5개 서비스 헬스체크
-# make psql       → PostgreSQL 접속
-# make neo4j-init → 그래프 인덱스 초기화
+# 테이블 초기화: 별도 init_db.py에서 pgvector 확장 + 핵심 5 테이블 생성
+# 운영 플랫폼 계층(sv_platform)은 alembic 마이그레이션으로 4 테이블 추가 — 총 9
 `;
 
-const crawlerCode = `# adaptation/kosis_crawler.py — KOSIS 메타 27 카테고리 + 배치 임베딩
+const crawlerCode = `# adaptation/kosis_crawler.py — KOSIS 메타 31 카테고리 + 배치 임베딩
 
 KOSIS_TOP_CATEGORIES = [
     {"vw_cd": "MT_ZTITLE", "parent_id": "A"},   # 인구/가구
     {"vw_cd": "MT_ZTITLE", "parent_id": "B"},   # 고용/노동/임금
-    # ... (총 27개, H1·H2, I1·I2 등 세분화 ID 포함)
+    # ... (총 31개, H1·H2, I1·I2, J1·J2 등 세분화 ID 포함)
     {"vw_cd": "MT_ZTITLE", "parent_id": "U"},
 ]
 
@@ -290,7 +289,7 @@ export default function StructVerifyPage() {
     >
       <ProjectHeader
         project={project}
-        oneLiner="도메인 적응형 LLM 사실검증 플랫폼 v2.0. 데이터·검증 흐름 8개 모듈 담당 — docker-compose 환경 + PostgreSQL 13 테이블 init_db · KOSIS 27 카테고리 메타 262,783건 적재 · 표 매칭 필터 4종 · LLM 429 exponential backoff · runtime 병렬화 ~7분→~1/3 · 검증 판단 로직(verifier)."
+        oneLiner="도메인 적응형 LLM 사실검증 플랫폼 v2.0. 데이터·검증 흐름 8개 모듈 담당 — docker-compose(pgvector) + init_db.py 5 테이블 / alembic 4 테이블 · KOSIS 31 카테고리 메타 262,783건 적재 · 표 매칭 필터 4종 · LLM 429 exponential backoff · runtime 병렬화 ~7분→~1/3 · 검증 판단 로직(verifier)."
         period="2026.04 ~ 진행 중"
         team="4명 (멋쟁이사자)"
         links={[{ label: "GitHub", href: REPO }]}
@@ -339,15 +338,15 @@ export default function StructVerifyPage() {
         <div className="space-y-5">
           <div>
             <p className="mb-3 text-sm text-muted-foreground">
-              docker-compose + Makefile — <span className="font-mono">make dev</span> 한
-              줄로 동일 환경 재현. PostgreSQL이 실제 호출 중인 메인 저장소이고,
-              나머지 컨테이너(Redis/Neo4j/MinIO/Elasticsearch)는 향후 확장용으로
-              함께 띄움.
+              docker-compose — <span className="font-mono">docker-compose up -d</span> 한
+              줄로 동일 환경 재현. 현재는 pgvector 단일 서비스로 가장 단순한 형태.
+              Redis · Neo4j · MinIO · Elasticsearch는 로드맵에 두고 필요 시 추가
+              예정.
             </p>
             <CodeBlock
               code={composeCode}
               lang="yaml"
-              filename="docker-compose.yml + Makefile"
+              filename="docker-compose.yml"
             />
           </div>
           <div>
@@ -394,8 +393,8 @@ export default function StructVerifyPage() {
         <ResultsGrid
           items={[
             "KOSIS stat_catalog 262,783건 적재 + 1024차원 임베딩 INSERT 완료",
-            "docker-compose + Makefile — `make dev` 한 줄로 PostgreSQL 환경 재현",
-            "init_db.sql 13 테이블 + pgvector 확장 자동 생성",
+            "docker-compose — `docker-compose up -d` 한 줄로 PostgreSQL(pgvector) 환경 재현",
+            "init_db.py에서 pgvector 확장 + 핵심 5 테이블 자동 생성 (sv_platform alembic 4 테이블 별도 = 총 9)",
             "KOSIS 표 매칭 4종 필터로 영아·UN·IMF·장래추계 오매칭 차단",
             "runtime 병렬화로 claim 8건 직렬 ~7분 → ~1/3 단축",
             "HCX 429 exponential backoff로 schema_inductor 실패 자체 흡수",
