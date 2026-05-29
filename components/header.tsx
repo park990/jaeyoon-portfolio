@@ -6,11 +6,10 @@ import { ThemeToggle } from "@/components/theme-toggle";
 // 절대 경로("/")를 prefix로 두면 상세 페이지(/projects/[slug])에서 클릭 시
 // 홈으로 이동하면서 해당 섹션으로 스크롤됨.
 const nav = [
-  { href: "/#about", label: "About" },
   { href: "/#projects", label: "Projects" },
   { href: "/#skills", label: "Skills" },
-  { href: "/#experience", label: "Experience" },
-  { href: "/#education", label: "Education" },
+  { href: "/#about", label: "About" },
+  { href: "/#background", label: "Background" },
   { href: "/#contact", label: "Contact" },
 ];
 

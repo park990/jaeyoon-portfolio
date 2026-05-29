@@ -174,7 +174,7 @@ export default function BoomingPage() {
         project={project}
         oneLiner="풀스택 학습 사이클의 종착점 — HirePicker의 ‘Refresh DB·Redis Pub/Sub’ 반쪽/과한 설계를 받아 토큰 전부 Redis 통합 + SimpleBroker 단순화로 정리. 동시에 모바일이라는 새 환경 조건이 추가됨."
         period="2025.11 ~ 진행 중"
-        team="3명"
+        team="2명"
       />
 
       <Section id="overview" title="Overview">
