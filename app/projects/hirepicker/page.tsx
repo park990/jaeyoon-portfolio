@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { KeyRound, Lightbulb, type LucideIcon } from "lucide-react";
 import { Section, Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
 import {
@@ -13,7 +14,6 @@ import {
   type Role,
   type Trouble,
 } from "@/components/project-detail/blocks";
-import { EngineeringJourney } from "./_components/journey";
 import { getProjectBySlug } from "@/lib/projects";
 
 const SLUG = "hirepicker";
@@ -119,6 +119,31 @@ const troubles: Trouble[] = [
   },
 ];
 
+// TL;DR — 보조 카드라 2개로 최소. HighWay → HirePicker → Booming narrative의 중간 지점.
+type Highlight = {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  note: string;
+  accent?: boolean;
+};
+
+const HIGHLIGHTS: Highlight[] = [
+  {
+    icon: KeyRound,
+    label: "JWT 인증 도입",
+    value: "Stateful → Stateless",
+    note: "HighWay Guide의 HttpSession 한계를 받아 JWT Access/Refresh 이중 토큰 구조로 전환",
+    accent: true,
+  },
+  {
+    icon: Lightbulb,
+    label: "두 번의 '과한 설계' 회고",
+    value: "Refresh=DB · Redis Pub/Sub",
+    note: "단일 서버에 외부 broker · 디스크 I/O가 다음 프로젝트 Booming의 단순화 결정 근거가 됨",
+  },
+];
+
 const tokenCode = `// HirePicker — Refresh DB / Access Redis 분리 (반쪽 변경)
 // Booming에선 둘 다 Redis로 통합되고, Refresh도 TTL 자동 만료로 회수 로직 제거됨.
 
@@ -158,6 +183,51 @@ export default function HirePickerPage() {
         team="5명"
         links={[{ label: "GitHub", href: REPO }]}
       />
+
+      {/* TL;DR — 보조 카드라 2개만. narrative의 중간 지점이라는 의미만 압축. */}
+      <section
+        aria-label="Highlights"
+        className="-mt-2 mb-12 grid grid-cols-1 gap-3 sm:grid-cols-2"
+      >
+        {HIGHLIGHTS.map((h) => {
+          const Icon = h.icon;
+          return (
+            <div
+              key={h.label}
+              className={
+                "rounded-xl border p-4 sm:p-5 " +
+                (h.accent
+                  ? "border-[var(--accent)]/50 bg-[var(--accent)]/5"
+                  : "border-border bg-card")
+              }
+            >
+              <div className="flex items-center gap-2">
+                <Icon
+                  className={
+                    "h-4 w-4 " +
+                    (h.accent ? "text-[var(--accent)]" : "text-muted-foreground")
+                  }
+                  aria-hidden="true"
+                />
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  {h.label}
+                </p>
+              </div>
+              <p
+                className={
+                  "mt-2 text-base font-semibold tracking-tight sm:text-lg " +
+                  (h.accent ? "text-[var(--accent)]" : "text-foreground")
+                }
+              >
+                {h.value}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                {h.note}
+              </p>
+            </div>
+          );
+        })}
+      </section>
 
       <Section id="overview" title="Overview">
         <Prose>
@@ -226,17 +296,6 @@ export default function HirePickerPage() {
           <div className="mt-6">
             <MyRoleCards roles={roles} accent={ACCENT} />
           </div>
-        </div>
-      </Section>
-
-      <Section id="evolution" title="Evolution — 발전 라인">
-        <Prose>
-          <p>
-            위 학습 사이클을 한 표로 비교해 보면 다음과 같습니다.
-          </p>
-        </Prose>
-        <div className="mt-5">
-          <EngineeringJourney />
         </div>
       </Section>
 
