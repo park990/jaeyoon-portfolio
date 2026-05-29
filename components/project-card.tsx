@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Star, Users, Calendar, Award } from "lucide-react";
+import { ArrowRight, Users, Calendar, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/lib/projects";
 
@@ -49,7 +49,7 @@ export function ProjectCard({
           >
             {project.group}
           </span>
-          {project.badge ? (
+          {project.badge && (
             <span
               className="inline-flex items-center gap-1 truncate text-xs font-medium"
               style={{ color: project.accent }}
@@ -59,17 +59,6 @@ export function ProjectCard({
               <Award className="h-3.5 w-3.5 shrink-0 fill-current" />
               <span className="truncate">{project.badge}</span>
             </span>
-          ) : (
-            project.featured && (
-              <span
-                className="inline-flex items-center gap-1 text-xs font-medium"
-                style={{ color: project.accent }}
-                aria-label="대표 프로젝트"
-              >
-                <Star className="h-3.5 w-3.5 fill-current" />
-                대표
-              </span>
-            )
           )}
         </div>
 

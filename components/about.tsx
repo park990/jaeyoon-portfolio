@@ -77,9 +77,9 @@ export function About() {
               아니라 그걸 감싸는 서비스(백엔드·인프라)까지 봅니다.
             </Paragraph>
             <Paragraph>
-              항공산업공학과 학사 졸업 후 Java Full-Stack을 거쳐 NLP/LLM 영역으로
-              자리를 옮겼고, 지금은 멋쟁이사자처럼 NLP 과정 최우수상으로 마무리한{" "}
-              <Highlight>StructVerify-Lab</Highlight>을 이어가고 있습니다.
+              멋쟁이사자처럼 NLP 과정을{" "}
+              <Highlight>StructVerify-Lab</Highlight>으로 마무리(최우수상)했고,
+              지금도 이어가고 있습니다.
             </Paragraph>
             <Paragraph>
               RAG가 정확도를 65.4% → 63.1%로 떨어뜨린 걸 직접 측정하고 원인까지

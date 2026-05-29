@@ -160,8 +160,8 @@ export default function Text2GraphPage() {
       <ProjectHeader
         project={project}
         oneLiner="DocRED Document-level Relation Extraction 파이프라인의 Stage 2 (ATLOP + DREEAM) 단독 담당. 두 구현 오류(ATLOP Ranking Loss · Adaptive Threshold 평가)를 디버깅으로 잡아 v1 56.64% → v2 59.25% (+2.61pt) 도달."
-        period="2026.04 (1주)"
-        team="5명"
+        period="2026.03"
+        team="4명"
         links={project.links}
       />
 

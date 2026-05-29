@@ -16,7 +16,7 @@ const categories: { title: string; items: string[] }[] = [
       "PyTorch",
       "HuggingFace Transformers",
       "NCP HCX",
-      "RAG (ChromaDB, ko-sroberta, LangChain)",
+      "RAG (ChromaDB, ko-sroberta)",
       "Pydantic",
       "Prompt Engineering",
     ],

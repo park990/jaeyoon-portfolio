@@ -348,6 +348,14 @@ export default function StructVerifyPage() {
         links={[{ label: "GitHub", href: REPO }]}
       />
 
+      {/* 최우수상 텍스트 배지 — Hero/Card와 동일 패턴을 상세 페이지에도 명시 */}
+      <div className="-mt-2 mb-6">
+        <span className="inline-flex items-center gap-2 rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3 py-1 text-xs font-medium text-[var(--accent)]">
+          <Award className="h-3.5 w-3.5" aria-hidden="true" />
+          멋쟁이사자처럼 NLP 과정 최우수상
+        </span>
+      </div>
+
       {/* TL;DR Highlights — 결과·수상을 페이지 최상단에 먼저 노출 (브리프 §1) */}
       <section
         aria-label="Highlights"

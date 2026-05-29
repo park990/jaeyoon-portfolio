@@ -68,7 +68,7 @@ export function Projects() {
                   Full-Stack
                 </h3>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  서비스로 굴려본 풀스택 프로젝트
+                  한 프로젝트의 한계가 다음 결정이 된 풀스택 사이클 (HighWay → HirePicker → Booming)
                 </p>
               </div>
               <span className="text-xs text-muted-foreground">{secondary.length}개</span>

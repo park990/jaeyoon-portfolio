@@ -65,15 +65,11 @@ const techStack = [
   },
   {
     category: "RAG",
-    items: ["ChromaDB", "ko-sroberta (임베딩)", "BM25 + Dense Hybrid 옵션", "top-k = 5"],
+    items: ["ChromaDB", "ko-sroberta (임베딩)", "BM25 + Dense Hybrid 옵션 (측정은 Dense)", "top-k = 5"],
   },
   {
     category: "Evaluation",
     items: ["VL 데이터셋 자동 평가", "객관식 번호 매칭", "단답 키워드 매칭"],
-  },
-  {
-    category: "App",
-    items: ["FastAPI (서빙)", "Streamlit (데모 UI)"],
   },
 ];
 
@@ -102,8 +98,7 @@ const roles: Role[] = [
     bullets: [
       "원천 의학 텍스트 3,447개 문서를 500자 단위로 chunking → 약 27,000 chunk 생성",
       "ko-sroberta 임베딩 → ChromaDB persist (vector + 메타데이터 + 컬렉션 자동 영구화)",
-      "Dense + BM25 Hybrid retrieval 옵션 코드 단 구현 (ablation 본 측정에선 Dense 사용)",
-      "FastAPI 서빙 + Streamlit 데모 UI 연결",
+      "Dense retrieval 기반 (Hybrid fusion 옵션은 팀원이 별도 구현, ablation 본 측정은 Dense 기준)",
     ],
   },
   {
@@ -127,6 +122,8 @@ const roles: Role[] = [
     title: "Out of scope (팀원 담당)",
     bullets: [
       "LoRA fine-tuning (`training/main_train.py`, `adapter_config.json` 등) — 팀원 담당. 본 실험의 ablation에는 포함하지 않음 (LLM 단독 vs LLM+RAG 2-stage 비교만).",
+      "FastAPI 서빙 레이어 (`src/app/main.py`, `routers/chat.py`, `schemas/chat.py`) — 팀원 담당. 본 페이지의 기여 영역 외부.",
+      "Hybrid fusion 코드 (`src/retrieval/hybrid/fusion.py` — RRF · weighted_sum) — 팀원이 옵션 형태로 구현. ablation 측정에는 Dense만 사용했으므로 본 페이지 결과 수치는 hybrid 영향을 받지 않음.",
     ],
   },
 ];
@@ -181,7 +178,7 @@ export default function MedicalRagPage() {
       <ProjectHeader
         project={project}
         oneLiner="의료 챗봇에 RAG를 붙이면 정답률이 오를까. Qwen2.5-7B + ChromaDB로 ablation을 돌려 LLM 단독 65.4% → +RAG 63.1% (−2.3pt)를 측정하고, distraction 원인까지 케이스 단위로 추적."
-        period="2026.04 (1주)"
+        period="2026.04"
         team="4명 (NLP 과정 팀 프로젝트)"
         links={[{ label: "GitHub (dev)", href: REPO }]}
       />

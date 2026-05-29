@@ -62,8 +62,8 @@ export const projects: Project[] = [
     subtitle: "RAG가 정확도를 떨어뜨리는 조건을 측정한 실험",
     oneLiner:
       "Qwen2.5-7B 기반 의료 챗봇에서 LLM 단독 65.4% → +RAG 63.1%로 하락. 검색된 무관 context가 distraction이 된 원인을 케이스 단위로 분석.",
-    stack: ["Qwen2.5-7B (4bit)", "ChromaDB", "Hybrid Retrieval (BM25+Dense)", "FastAPI", "Streamlit"],
-    period: "2026.04 (1주)",
+    stack: ["Qwen2.5-7B (4bit)", "ChromaDB", "ko-sroberta", "Dense Retrieval", "Colab A100"],
+    period: "2026.04",
     team: 4,
     group: "AI/NLP",
     accent: "#F59E0B",
@@ -81,8 +81,8 @@ export const projects: Project[] = [
     oneLiner:
       "Adaptive Threshold 버그 + ATLOP Loss 구현 오류 수정으로 F1 +2.61pt (56.64 → 59.25)",
     stack: ["PyTorch", "HuggingFace", "ATLOP", "DREEAM", "BERT", "NetworkX"],
-    period: "2026.04 (1주)",
-    team: 5,
+    period: "2026.03",
+    team: 4,
     group: "AI/NLP",
     accent: "#A78BFA",
     display: "featured",
