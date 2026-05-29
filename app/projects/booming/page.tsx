@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { KeyRound, Radio, type LucideIcon } from "lucide-react";
 import { Section, Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
 import {
@@ -87,7 +88,7 @@ const roles: Role[] = [
     bullets: [
       "백엔드 전반(인증·게시판·세션·DB)을 모임 도메인 제외하고 단독으로 담당했고, HirePicker의 분리 구조(REST + 분리된 클라이언트)를 모바일 컨텍스트로 그대로 이식했습니다.",
       "Flutter Riverpod 2.x 상태관리·MVVM 구조·하단 탭 네비·전체 화면 디자인을 단독으로 진행했습니다.",
-      "기획 단계의 핵심 아이디어(AI가 대화의 정적 시간을 메우고 다음 발화를 제안)까지 직접 정의했고, AI 코칭 모듈은 수료 후 구현 예정입니다.",
+      "AI 코칭 모듈은 현재 개발 중이며 본 페이지의 구현 영역에는 포함되지 않습니다. 기획 단계의 핵심 아이디어(AI가 대화의 정적 시간을 메우고 다음 발화를 제안)는 직접 정의해뒀습니다.",
     ],
   },
 ];
@@ -120,6 +121,31 @@ const troubles: Trouble[] = [
       "Riverpod로 게시글 상태를 좋아요 액션 직후 낙관적으로 갱신하고, 게시판 진입·pull-to-refresh·화면 재포커스 시점에 서버 카운트로 재조회하는 패턴으로 정리했습니다. 같은 다대다 모델이지만 ‘언제 다시 가져올지’를 클라이언트가 명시적으로 결정해야 한다는 점을 반영했습니다.",
     lesson:
       "내 좋아요는 잘 반영되는데 다른 사람 좋아요가 한참 뒤에 보이는 걸 사용자 입장에서 겪고 나서야, 모델은 익숙해진 다대다인데 모바일에선 ‘언제 다시 가져올지’를 내가 결정해줘야 한다는 점이 새로 들어왔습니다. DB 설계가 같다고 클라이언트 상태 관리도 같지 않다는 걸, 갱신 시점이라는 한 층을 직접 끼우면서 처음 깨달았습니다.",
+  },
+];
+
+// TL;DR — 보조 카드라 2개로 최소. HirePicker 학습의 종착점이라는 narrative만.
+type Highlight = {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  note: string;
+  accent?: boolean;
+};
+
+const HIGHLIGHTS: Highlight[] = [
+  {
+    icon: KeyRound,
+    label: "토큰 통합",
+    value: "Access + Refresh → Redis",
+    note: "HirePicker '반쪽 변경'을 받아 TTL 자동 만료로 회수 로직 자체 제거",
+    accent: true,
+  },
+  {
+    icon: Radio,
+    label: "WebSocket 단순화",
+    value: "SimpleBroker + JwtChannelInterceptor",
+    note: "HirePicker Redis Pub/Sub '과한 설계' 회고 → 단일 인스턴스 환경에 맞춤",
   },
 ];
 
@@ -176,6 +202,51 @@ export default function BoomingPage() {
         period="2025.11 ~ 진행 중"
         team="2명"
       />
+
+      {/* TL;DR — 보조 카드라 2개만. 큰 그림은 'What carried forward' 섹션이 담음. */}
+      <section
+        aria-label="Highlights"
+        className="-mt-2 mb-12 grid grid-cols-1 gap-3 sm:grid-cols-2"
+      >
+        {HIGHLIGHTS.map((h) => {
+          const Icon = h.icon;
+          return (
+            <div
+              key={h.label}
+              className={
+                "rounded-xl border p-4 sm:p-5 " +
+                (h.accent
+                  ? "border-[var(--accent)]/50 bg-[var(--accent)]/5"
+                  : "border-border bg-card")
+              }
+            >
+              <div className="flex items-center gap-2">
+                <Icon
+                  className={
+                    "h-4 w-4 " +
+                    (h.accent ? "text-[var(--accent)]" : "text-muted-foreground")
+                  }
+                  aria-hidden="true"
+                />
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  {h.label}
+                </p>
+              </div>
+              <p
+                className={
+                  "mt-2 text-base font-semibold tracking-tight sm:text-lg " +
+                  (h.accent ? "text-[var(--accent)]" : "text-foreground")
+                }
+              >
+                {h.value}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                {h.note}
+              </p>
+            </div>
+          );
+        })}
+      </section>
 
       <Section id="overview" title="Overview">
         <Prose>
@@ -247,41 +318,6 @@ export default function BoomingPage() {
         </div>
       </Section>
 
-      <Section id="evolution" title="Evolution — 이전 두 프로젝트의 결정이 어떻게 이어졌나">
-        <Prose>
-          <p>
-            위 학습 사이클을 한 표로 비교해 보면 다음과 같습니다.
-          </p>
-        </Prose>
-        <div className="mt-5 space-y-3">
-          <EvolutionRow
-            from="HirePicker — Refresh=DB / Access=Redis (반쪽 변경)"
-            to="Booming — 둘 다 Redis + TTL 자동 만료 (회수 로직 자체 제거)"
-            note="‘토큰은 영속 데이터가 아니라 세션’ 결론을 코드로 옮김"
-          />
-          <EvolutionRow
-            from="HirePicker — STOMP + Redis Pub/Sub (과한 설계 회고)"
-            to="Booming — SimpleBroker + JWT ChannelInterceptor (환경에 맞춘 단순화)"
-            note="단일 인스턴스 모바일 환경에는 외부 broker 불필요 — 메시지 영속은 DB로 보완"
-          />
-          <EvolutionRow
-            from="HirePicker — Next.js + Spring REST (웹 분리)"
-            to="Booming — Flutter + Spring REST (모바일 분리) + secure_storage"
-            note="같은 분리 구조를 다른 플랫폼에 이식하면서 저장소 전략은 OS 보안 영역으로"
-          />
-          <EvolutionRow
-            from="HirePicker — 채팅 메시지를 MySQL 관계형 테이블에"
-            to="Booming — MongoDB 문서 기반 (사용자/모임 등 정형은 MySQL 그대로)"
-            note="메시지의 schemaless 본질에 맞춰 저장소를 분리 — 폴리글랏 모델링"
-          />
-          <EvolutionRow
-            from="HighWay·HirePicker — 학습용 프로젝트 (좋아요·즐겨찾기 토글만, 카운트 표시 X)"
-            to="Booming — 배포 목표 (게시판 좋아요 카운트 표시 + 회원가입 중복 등록 → 동시성 제어 도입)"
-            note="프로젝트 가정이 ‘학습’에서 ‘배포’로 바뀌니, 같은 다대다 모델 위에서도 동시 누름의 race condition·카운트 정합성·중복 가입이 새 설계 축이 됨"
-          />
-        </div>
-      </Section>
-
       <Section id="code" title="Code Highlight">
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">
@@ -313,25 +349,5 @@ export default function BoomingPage() {
 
       <ProjectFooter currentSlug={SLUG} />
     </article>
-  );
-}
-
-// 전 → 후 비교 한 줄.
-function EvolutionRow({ from, to, note }: { from: string; to: string; note: string }) {
-  return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-4">
-        <div className="rounded-md border border-border bg-background/40 px-3 py-2 text-sm text-foreground/85">
-          {from}
-        </div>
-        <span className="hidden text-muted-foreground sm:block" aria-hidden>
-          →
-        </span>
-        <div className="rounded-md border border-[var(--accent)]/40 bg-[var(--accent)]/5 px-3 py-2 text-sm text-foreground">
-          {to}
-        </div>
-      </div>
-      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{note}</p>
-    </div>
   );
 }
