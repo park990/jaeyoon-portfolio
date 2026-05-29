@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Star, Users, Calendar } from "lucide-react";
+import { ArrowRight, Star, Users, Calendar, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/lib/projects";
 
@@ -41,23 +41,35 @@ export function ProjectCard({
           "hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-lg hover:shadow-[var(--accent)]/10"
         )}
       >
-        {/* 헤더: 그룹 배지 + featured 별 */}
-        <div className="mb-3 flex items-center justify-between">
+        {/* 헤더: 그룹 배지 + 수상/대표 표시 (badge 우선) */}
+        <div className="mb-3 flex items-center justify-between gap-2">
           <span
             className="inline-flex items-center rounded-full border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-2.5 py-0.5 text-xs font-medium"
             style={{ color: project.accent }}
           >
             {project.group}
           </span>
-          {project.featured && (
+          {project.badge ? (
             <span
-              className="inline-flex items-center gap-1 text-xs font-medium"
+              className="inline-flex items-center gap-1 truncate text-xs font-medium"
               style={{ color: project.accent }}
-              aria-label="대표 프로젝트"
+              aria-label="수상"
+              title={project.badge}
             >
-              <Star className="h-3.5 w-3.5 fill-current" />
-              대표
+              <Award className="h-3.5 w-3.5 shrink-0 fill-current" />
+              <span className="truncate">{project.badge}</span>
             </span>
+          ) : (
+            project.featured && (
+              <span
+                className="inline-flex items-center gap-1 text-xs font-medium"
+                style={{ color: project.accent }}
+                aria-label="대표 프로젝트"
+              >
+                <Star className="h-3.5 w-3.5 fill-current" />
+                대표
+              </span>
+            )
           )}
         </div>
 

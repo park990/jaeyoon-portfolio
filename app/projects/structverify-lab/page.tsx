@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Award, Database, Zap } from "lucide-react";
 import { Section, Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
 import {
@@ -279,6 +280,50 @@ async def _call_hcx_v3(messages, **kwargs):
 # → schema_inductor.generate_structured 호출 시 rate limit 자체 흡수
 `;
 
+// 페이지 최상단 TL;DR 박스에 노출할 핵심 결과 3개.
+// 브리프 §1·§4(1)에 따라 수치/수상으로만 채움 — 형용사 금지.
+const HIGHLIGHTS = [
+  {
+    icon: Award,
+    label: "수상",
+    value: "최우수상",
+    note: "멋쟁이사자처럼 NLP 집중과정",
+    accent: true,
+  },
+  {
+    icon: Database,
+    label: "데이터 적재",
+    value: "262,783건",
+    note: "KOSIS 통계 카탈로그 + HCX 임베딩 v2 (1024차원)",
+  },
+  {
+    icon: Zap,
+    label: "Runtime 병렬화",
+    value: "~7분 → ~1/3",
+    note: "claim 8건 직렬 vs asyncio.gather + Semaphore(3)",
+  },
+] as const;
+
+// 핵심 결정·이유 — 사용자가 합격 포트폴리오 브리프에서 직접 지정한 카피.
+// Snowflake 표현 주의: "사용/도입"이 아니라 "검토 후 기각, 직접 운영 경험 없음".
+const KEY_DECISIONS = [
+  {
+    title: "EAV + parent_path vs 도메인별 테이블",
+    body:
+      "도메인마다 컬럼 구조가 달라 테이블을 미리 정의할 수 없었다. 도메인별 테이블은 새 도메인마다 마이그레이션 비용 발생 → EAV + parent_path 단일 테이블에 트리 계층을 인코딩해 그 비용을 제거.",
+  },
+  {
+    title: "pgvector vs Snowflake",
+    body:
+      "Snowflake를 검토했으나 PoC 단계엔 도입 비용이 과하다고 판단했다(직접 운영 경험 없음). pgvector는 벡터 검색과 RDB를 단일 인프라에서 통합할 수 있어 선택.",
+  },
+  {
+    title: "임베딩만 vs 임베딩 + 규칙 필터",
+    body:
+      "임베딩 검색만으로는 '전체 사망자' 주장에 '영아 사망률' 표가 잡히는 문제가 있었다. 임베딩으로 후보를 좁힌 뒤 결정론적 규칙(국제기구/추계/세부대상)으로 한 번 더 거르는 hybrid 구조로 해결.",
+  },
+];
+
 export default function StructVerifyPage() {
   const project = getProjectBySlug(SLUG)!;
 
@@ -289,11 +334,56 @@ export default function StructVerifyPage() {
     >
       <ProjectHeader
         project={project}
-        oneLiner="도메인 적응형 LLM 사실검증 플랫폼 v2.0. 데이터·검증 흐름 8개 모듈 담당 — docker-compose(pgvector) + init_db.py 5 테이블 / alembic 4 테이블 · KOSIS 31 카테고리 메타 262,783건 적재 · 표 매칭 필터 4종 · LLM 429 exponential backoff · runtime 병렬화 ~7분→~1/3 · 검증 판단 로직(verifier)."
-        period="2026.04 ~ 진행 중"
+        oneLiner="기사 속 수치 주장을 KOSIS 공식 통계와 비교해 진위 판정하는 LLM 플랫폼. 초기 baseline 파이프라인부터 KOSIS 262,783건 적재 · 표 매칭 필터 4종 · runtime 병렬화 ~7분→~1/3 · LLM 429 backoff까지 담당."
+        period="2026.05 ~ 진행 중"
         team="4명 (멋쟁이사자)"
         links={[{ label: "GitHub", href: REPO }]}
       />
+
+      {/* TL;DR Highlights — 결과·수상을 페이지 최상단에 먼저 노출 (브리프 §1) */}
+      <section
+        aria-label="Highlights"
+        className="-mt-2 mb-12 grid grid-cols-1 gap-3 sm:grid-cols-3"
+      >
+        {HIGHLIGHTS.map((h) => {
+          const Icon = h.icon;
+          return (
+            <div
+              key={h.label}
+              className={
+                "rounded-xl border p-4 sm:p-5 " +
+                (h.accent
+                  ? "border-[var(--accent)]/50 bg-[var(--accent)]/5"
+                  : "border-border bg-card")
+              }
+            >
+              <div className="flex items-center gap-2">
+                <Icon
+                  className={
+                    "h-4 w-4 " +
+                    (h.accent ? "text-[var(--accent)]" : "text-muted-foreground")
+                  }
+                  aria-hidden="true"
+                />
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  {h.label}
+                </p>
+              </div>
+              <p
+                className={
+                  "mt-2 text-xl font-semibold tracking-tight sm:text-2xl " +
+                  (h.accent ? "text-[var(--accent)]" : "text-foreground")
+                }
+              >
+                {h.value}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                {h.note}
+              </p>
+            </div>
+          );
+        })}
+      </section>
 
       <Section id="overview" title="Overview">
         <Prose>
@@ -320,6 +410,36 @@ export default function StructVerifyPage() {
           분포는 아래 Architecture · Work Scope 표 참고.
         </p>
         <TechStackGrid groups={techStack} />
+      </Section>
+
+      <Section id="decisions" title="핵심 결정 · 이유">
+        <p className="mb-5 text-sm leading-[1.7] text-muted-foreground">
+          무엇을 골랐나보다 <span className="text-foreground">왜 골랐고 뭘 안 골랐나</span>를
+          먼저 적습니다. 사용한 적 없는 대안은 "검토 후 기각"으로 표기.
+        </p>
+        <div className="space-y-3">
+          {KEY_DECISIONS.map((d, i) => (
+            <div
+              key={d.title}
+              className="rounded-xl border border-border bg-card p-5 sm:p-6"
+            >
+              <div className="mb-2.5 flex items-start gap-3">
+                <span
+                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 text-xs font-semibold"
+                  style={{ color: ACCENT }}
+                >
+                  {i + 1}
+                </span>
+                <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground sm:text-lg">
+                  {d.title}
+                </h3>
+              </div>
+              <p className="ml-10 text-sm leading-[1.8] text-foreground/85">
+                {d.body}
+              </p>
+            </div>
+          ))}
+        </div>
       </Section>
 
       <Section id="role" title="My Role">
@@ -390,6 +510,36 @@ export default function StructVerifyPage() {
       </Section>
 
       <Section id="results" title="Results">
+        {/* 상장 placeholder — 이미지 파일은 추후 추가, 자리만 명확히 표시 */}
+        <figure className="mb-6 overflow-hidden rounded-xl border border-[var(--accent)]/40 bg-[var(--accent)]/5">
+          <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-[180px_1fr] sm:items-center sm:gap-5 sm:p-5">
+            <div
+              className="flex aspect-[4/5] flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[var(--accent)]/40 bg-background/40 p-3 text-center text-[11px] text-muted-foreground"
+              role="img"
+              aria-label="상장 이미지 placeholder"
+            >
+              <Award className="h-7 w-7 text-[var(--accent)]/70" aria-hidden="true" />
+              <span>
+                [이미지 자리:
+                <br />
+                최우수상 상장]
+              </span>
+            </div>
+            <div>
+              <p
+                className="text-base font-semibold tracking-tight text-foreground sm:text-lg"
+                style={{ color: ACCENT }}
+              >
+                멋쟁이사자처럼 NLP 집중과정 최우수상
+              </p>
+              <p className="mt-2 text-sm leading-[1.7] text-foreground/85">
+                StructVerify-Lab(4인 팀) 발표·시연으로 NLP 집중과정 최종
+                최우수상 수상. 상장 이미지는 추후 추가합니다.
+              </p>
+            </div>
+          </div>
+        </figure>
+
         <ResultsGrid
           items={[
             "KOSIS stat_catalog 262,783건 적재 + 1024차원 임베딩 INSERT 완료",
