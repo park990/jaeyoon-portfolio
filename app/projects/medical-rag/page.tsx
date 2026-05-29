@@ -1,19 +1,167 @@
 import type { Metadata } from "next";
+import { TrendingDown, Search, Compass } from "lucide-react";
 import { Section, Prose } from "@/components/project-detail/section";
-import { ProjectHeader, ProjectFooter } from "@/components/project-detail/layout";
+import { CodeBlock } from "@/components/project-detail/code-block";
+import {
+  ProjectHeader,
+  ProjectFooter,
+} from "@/components/project-detail/layout";
+import {
+  TechStackGrid,
+  MyRoleCards,
+  TroubleCards,
+  ResultsGrid,
+  LessonsList,
+  type Role,
+  type Trouble,
+} from "@/components/project-detail/blocks";
 import { getProjectBySlug } from "@/lib/projects";
 
 const SLUG = "medical-rag";
 const ACCENT = "#F59E0B";
+const REPO = "https://github.com/ljhljh0703-cmd/Medical-Chatbot/tree/dev";
 
 export const metadata: Metadata = {
   title: "Medical RAG Experiment · Jaeyoon Park",
   description:
-    "Qwen2.5-7B + ChromaDB 의료 챗봇에서 LLM 단독 65.4% → +RAG 63.1% 하락을 측정·원인 분석한 실험.",
+    "Qwen2.5-7B + ChromaDB 의료 챗봇에서 RAG가 정확도를 65.4% → 63.1%로 떨어뜨린 걸 측정하고 원인까지 분석한 실험.",
 };
 
-// Phase 1 — IA 카드에서 detail로 들어왔을 때 라우팅 404를 막기 위한 stub.
-// 케이스 스터디 본문(문제·결정·결과·트러블슈팅)은 Phase 2(PR 3)에서 채움.
+// TL;DR Highlights — 음성 결과를 강점으로 framing (브리프 §4(2)).
+const HIGHLIGHTS = [
+  {
+    icon: TrendingDown,
+    label: "LLM 단독 vs +RAG",
+    value: "−2.3pt",
+    note: "65.4% → 63.1% (Qwen2.5-7B / VL 평가셋)",
+    accent: true,
+  },
+  {
+    icon: Search,
+    label: "원인",
+    value: "Distraction",
+    note: "주제는 비슷하지만 정답을 가르지 못하는 chunk가 맞던 문제까지 흔듦",
+  },
+  {
+    icon: Compass,
+    label: "다음 시도",
+    value: "Adaptive RAG",
+    note: "relevance gate · 리랭커 · retrieval recall@k 선측정",
+  },
+] as const;
+
+const techStack = [
+  {
+    category: "Model",
+    items: ["Qwen2.5-7B-Instruct (4bit)", "Colab A100 (Google Colab Pro)"],
+  },
+  {
+    category: "RAG",
+    items: ["ChromaDB", "ko-sroberta (임베딩)", "BM25 + Dense Hybrid 옵션", "top-k = 5"],
+  },
+  {
+    category: "Evaluation",
+    items: ["VL 데이터셋 자동 평가", "객관식 번호 매칭", "단답 키워드 매칭"],
+  },
+  {
+    category: "App",
+    items: ["FastAPI (서빙)", "Streamlit (데모 UI)"],
+  },
+];
+
+// 핵심 결정·이유 — "왜 이걸 골랐고 뭘 안 골랐나" (브리프 §1.3)
+const KEY_DECISIONS = [
+  {
+    title: "RAG를 의료 챗봇에 붙인 이유",
+    body:
+      "가설: LLM의 의학 지식 공백을 외부 자료로 메우면 정답률이 오른다. 의료 도메인은 정확도 비용이 큰 분야라 검증 가치가 큰 가설이었다. 측정 결과는 이 가설을 반박했고, 그 반박 자체가 이 실험의 결과물.",
+  },
+  {
+    title: "ChromaDB vs FAISS",
+    body:
+      "FAISS는 인덱스 직렬화·persist를 별도 단계로 관리해야 한다. ChromaDB는 PoC 규모에서 메타데이터·벡터·persist를 단일 라이브러리로 처리할 수 있어 채택. 운영 부담을 우선했다.",
+  },
+  {
+    title: "Dense vs Hybrid retrieval",
+    body:
+      "코드 단에 BM25 + Dense fusion 옵션을 두되, ablation 측정 시점엔 Dense로 측정. RAG가 가장 단순한 구성에서 도움/해가 되는지를 먼저 보는 게 목적이었다. Hybrid는 다음 라운드 변수.",
+  },
+];
+
+const roles: Role[] = [
+  {
+    title: "RAG 파이프라인 구축",
+    bullets: [
+      "원천 의학 텍스트 3,447개 문서를 500자 단위로 chunking → 약 27,000 chunk 생성",
+      "ko-sroberta 임베딩 → ChromaDB persist (vector + 메타데이터 + 컬렉션 자동 영구화)",
+      "Dense + BM25 Hybrid retrieval 옵션 코드 단 구현 (ablation 본 측정에선 Dense 사용)",
+      "FastAPI 서빙 + Streamlit 데모 UI 연결",
+    ],
+  },
+  {
+    title: "자동 평가 시스템",
+    bullets: [
+      "VL 데이터셋 기반 평가 파이프라인 (`evaluation/metrics.py` 216줄 · `notebooks/colab_generation_eval.ipynb` 449줄)",
+      "객관식: 번호 매칭 (모델 출력에서 번호 추출 → 정답 라벨 비교)",
+      "단답: 키워드 매칭 (정답 키워드 포함 여부)",
+      "Mode A (LLM only) vs Mode B (LLM + RAG) 두 경로를 동일 데이터셋에 일괄 실행",
+    ],
+  },
+  {
+    title: "Ablation 측정 + 원인 분석",
+    bullets: [
+      "LLM 단독 65.4% → +RAG 63.1% (−2.3pt) 측정",
+      "오답으로 전환된 케이스를 수동 추적해 distraction 패턴 분류",
+      "대표 사례: '대상포진 치료제' 질문에 같은 VZV로 임베딩이 가까운 '수두 백신' chunk가 top-k에 잡혀 모델이 백신 쪽으로 오답",
+    ],
+  },
+  {
+    title: "Out of scope (팀원 담당)",
+    bullets: [
+      "LoRA fine-tuning (`training/main_train.py`, `adapter_config.json` 등) — 팀원 담당. 본 실험의 ablation에는 포함하지 않음 (LLM 단독 vs LLM+RAG 2-stage 비교만).",
+    ],
+  },
+];
+
+const troubles: Trouble[] = [
+  {
+    title: "RAG가 가설과 반대로 정확도를 떨어뜨림",
+    star: true,
+    problem:
+      "측정 결과 LLM 단독 65.4% → +RAG 63.1%로 2.3pt 하락. '의학 지식 공백을 메우면 오를 것'이라는 도입 근거가 무너졌습니다. RAG는 항상 +가 아니라는 일반론은 알고 있었지만, 우리 데이터셋에서 실제로 −가 나온 원인을 짚어야 했습니다.",
+      solve:
+      "오답으로 전환된 케이스를 직접 들춰보니 두 가지 패턴이 보였습니다. (1) 모델이 이미 아는 문제가 많아 RAG로 메울 지식 공백이 작았고, (2) 검색이 '주제는 비슷하지만 정답을 가르지 못하는' chunk를 가져왔습니다. relevance gate/리랭커 없이 top-k=5를 그대로 주입한 점, 500자 chunk의 낮은 신호대잡음비가 distraction을 키운 원인.",
+    lesson:
+      "RAG를 켜는 순간 정답률이 오른다는 가정 자체가 우리 데이터에선 성립하지 않았습니다. 이 한 번의 측정으로, 새 RAG 시스템을 설계할 때 retrieval recall@k부터 먼저 측정한 뒤 LLM에 붙일지를 결정하는 습관이 생겼습니다.",
+  },
+  {
+    title: "'대상포진 치료제'에 '수두 백신' chunk가 잡힘",
+    star: true,
+    problem:
+      "구체 케이스. 사용자가 '대상포진 치료제'를 물으면 ko-sroberta 임베딩 공간에서 같은 VZV(varicella-zoster virus) 도메인의 '수두 백신' chunk가 top-k 안으로 들어왔습니다. 모델은 검색된 context에 끌려가 백신 쪽으로 답을 비틀었고, 원래 LLM 단독으로는 맞히던 문제까지 오답으로 떨어졌습니다.",
+    solve:
+      "ablation 측정 안에서는 별도 처리 없이 distraction 케이스로 분류해 기록. 구조적 해결책은 다음 시도(아래 Lessons)로 묶었습니다: relevance threshold + 리랭커로 1차 거름, 또는 모델이 불확실할 때만 검색을 트리거하는 adaptive RAG.",
+    lesson:
+      "임베딩 거리가 가깝다 = 주제가 가깝다지, 정답을 가르는 chunk가 가깝다는 보장은 아니다. 같은 도메인 어휘끼리도 '치료제 vs 백신'처럼 핵심을 다르게 가르는 축이 있는데, 임베딩만으로는 그 축을 못 잡습니다. 검색 단계에 도메인 규칙·리랭커 한 층을 더 두는 패턴을 이후 StructVerify의 KOSIS 표 매칭 필터로도 가져왔습니다.",
+  },
+];
+
+const evalCode = `# notebooks/colab_generation_eval.ipynb — 2-stage ablation (Mode A vs Mode B)
+
+# Mode A: LLM only
+out_a = generation_service.generate(question, context=None)
+
+# Mode B: LLM + RAG
+ctx = build_rag_context(question, top_k=5)   # ChromaDB 검색
+out_b = generation_service.generate(question, context=ctx)
+
+# 자동 채점 — 객관식 번호 매칭 / 단답 키워드 매칭
+score_a = match_objective(out_a, gt) or match_keywords(out_a, gt)
+score_b = match_objective(out_b, gt) or match_keywords(out_b, gt)
+
+# 결과: 같은 VL 데이터셋에서 Mode A 65.4% / Mode B 63.1% (−2.3pt)
+`;
+
 export default function MedicalRagPage() {
   const project = getProjectBySlug(SLUG)!;
 
@@ -24,29 +172,189 @@ export default function MedicalRagPage() {
     >
       <ProjectHeader
         project={project}
-        oneLiner="Qwen2.5-7B + ChromaDB 의료 챗봇에서 LLM 단독 65.4% → +RAG 63.1%로 하락. 검색된 무관 context가 distraction이 된 원인을 케이스 단위로 분석."
+        oneLiner="의료 챗봇에 RAG를 붙이면 정답률이 오를까. Qwen2.5-7B + ChromaDB로 ablation을 돌려 LLM 단독 65.4% → +RAG 63.1% (−2.3pt)를 측정하고, distraction 원인까지 케이스 단위로 추적."
         period="2026.04 (1주)"
-        team="4명"
-        links={project.links}
+        team="4명 (NLP 과정 팀 프로젝트)"
+        links={[{ label: "GitHub (dev)", href: REPO }]}
       />
+
+      {/* TL;DR — 음성 결과를 강점으로 framing */}
+      <section
+        aria-label="Highlights"
+        className="-mt-2 mb-12 grid grid-cols-1 gap-3 sm:grid-cols-3"
+      >
+        {HIGHLIGHTS.map((h) => {
+          const Icon = h.icon;
+          return (
+            <div
+              key={h.label}
+              className={
+                "rounded-xl border p-4 sm:p-5 " +
+                (h.accent
+                  ? "border-[var(--accent)]/50 bg-[var(--accent)]/5"
+                  : "border-border bg-card")
+              }
+            >
+              <div className="flex items-center gap-2">
+                <Icon
+                  className={
+                    "h-4 w-4 " +
+                    (h.accent ? "text-[var(--accent)]" : "text-muted-foreground")
+                  }
+                  aria-hidden="true"
+                />
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  {h.label}
+                </p>
+              </div>
+              <p
+                className={
+                  "mt-2 text-xl font-semibold tracking-tight sm:text-2xl " +
+                  (h.accent ? "text-[var(--accent)]" : "text-foreground")
+                }
+              >
+                {h.value}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                {h.note}
+              </p>
+            </div>
+          );
+        })}
+      </section>
 
       <Section id="overview" title="Overview">
         <Prose>
           <p>
-            <span className="rounded bg-[var(--accent)]/15 px-1.5 py-0.5 text-[var(--accent)]">
-              [작성 중]
-            </span>{" "}
-            상세 케이스 스터디는 Phase 2(PR 3)에서 채워집니다.
-            현재는 카드/라우팅 동작 확인용 stub입니다.
+            의료 도메인 챗봇에 RAG를 붙이면 정답률이 오를 것이라는 가설을
+            직접 측정해본 실험입니다. GPT 래퍼를 만들기보다,{" "}
+            <span className="font-medium text-foreground">
+              RAG가 언제 도움이 되고 언제 해가 되는지를 데이터로 검증
+            </span>
+            하는 것이 목적이었습니다. 결과는 가설을 반박했고, 이
+            프로젝트의 결과물은 음성 결과 자체와 그 원인 분석입니다.
           </p>
-          <p className="mt-4 text-sm text-muted-foreground">
-            예정 골격: 문제·제약 → 내 역할 → 핵심 결정(왜 RAG를
-            붙였나/뺐나·검색 chunk 신호대잡음비) → 아키텍처 → 측정된 결과
-            (LLM 단독 65.4% → +RAG 63.1%) → 트러블슈팅(&quot;대상포진 치료제&quot;
-            질문에 &quot;수두 백신&quot; chunk가 잡혀 오답 유도) → 다음 시도(relevance
-            gate, adaptive RAG, retrieval recall@k 선측정).
+          <p>
+            Qwen2.5-7B-Instruct(4bit) + ChromaDB 기반으로 LLM 단독(Mode A) vs
+            LLM + RAG(Mode B) 2-stage ablation을 동일 평가셋에 돌렸고,
+            전환된 오답 케이스를 수동 추적해 distraction 패턴까지 정리했습니다.
           </p>
         </Prose>
+      </Section>
+
+      <Section id="stack" title="Tech Stack">
+        <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+          ※ <span className="text-foreground">RAG 파이프라인 + 자동 평가 영역</span>
+          만 직접 다룸. LoRA fine-tuning은 팀원 담당으로 본 실험 ablation
+          외부.
+        </p>
+        <TechStackGrid groups={techStack} />
+      </Section>
+
+      <Section id="decisions" title="핵심 결정 · 이유">
+        <p className="mb-5 text-sm leading-[1.7] text-muted-foreground">
+          무엇을 골랐나보다{" "}
+          <span className="text-foreground">왜 골랐고 뭘 안 골랐나</span>를
+          먼저 적습니다.
+        </p>
+        <div className="space-y-3">
+          {KEY_DECISIONS.map((d, i) => (
+            <div
+              key={d.title}
+              className="rounded-xl border border-border bg-card p-5 sm:p-6"
+            >
+              <div className="mb-2.5 flex items-start gap-3">
+                <span
+                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 text-xs font-semibold"
+                  style={{ color: ACCENT }}
+                >
+                  {i + 1}
+                </span>
+                <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground sm:text-lg">
+                  {d.title}
+                </h3>
+              </div>
+              <p className="ml-10 text-sm leading-[1.8] text-foreground/85">
+                {d.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <Section id="role" title="My Role">
+        <MyRoleCards roles={roles} accent={ACCENT} />
+      </Section>
+
+      <Section id="code" title="Code Highlights">
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            2-stage ablation 실행 흐름 — 동일 질문을 Mode A / Mode B에 통과시켜
+            동일 채점 규칙으로 비교.
+          </p>
+          <CodeBlock
+            code={evalCode}
+            lang="python"
+            filename="notebooks/colab_generation_eval.ipynb (요약)"
+          />
+        </div>
+      </Section>
+
+      <Section id="trouble" title="Trouble-shooting">
+        <TroubleCards troubles={troubles} accent={ACCENT} />
+      </Section>
+
+      <Section id="results" title="Results">
+        {/* 평가 결과 시각 placeholder — 추후 이미지 추가 */}
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+          <div
+            className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[var(--accent)]/40 bg-[var(--accent)]/5 p-4 text-center text-xs text-muted-foreground"
+            role="img"
+            aria-label="평가 결과표 placeholder"
+          >
+            <TrendingDown
+              className="h-7 w-7 text-[var(--accent)]/70"
+              aria-hidden="true"
+            />
+            <span>
+              [이미지 자리:
+              <br />
+              평가 결과표 (Mode A 65.4% vs Mode B 63.1%)]
+            </span>
+          </div>
+          <div
+            className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/30 p-4 text-center text-xs text-muted-foreground"
+            role="img"
+            aria-label="예시 케이스 placeholder"
+          >
+            <Search className="h-7 w-7 text-muted-foreground/60" aria-hidden="true" />
+            <span>
+              [이미지 자리:
+              <br />
+              예시 케이스 (대상포진 치료제 → 수두 백신 chunk distraction)]
+            </span>
+          </div>
+        </div>
+
+        <ResultsGrid
+          items={[
+            "LLM 단독 65.4% → +RAG 63.1% (−2.3pt) — 2-stage ablation 측정 (LoRA 제외)",
+            "원천 의학 텍스트 3,447개 → 500자 chunking → 약 27,000 chunk → ko-sroberta 임베딩 → ChromaDB persist",
+            "자동 평가 파이프라인: 객관식 번호 매칭 + 단답 키워드 매칭 (VL 데이터셋 일괄)",
+            "오답 전환 케이스 수동 추적 — '대상포진 치료제' ↔ '수두 백신' 같은 같은-도메인 distraction 패턴 식별",
+          ]}
+        />
+      </Section>
+
+      <Section id="lessons" title="Lessons Learned · 다음 시도">
+        <LessonsList
+          items={[
+            "RAG를 켜는 순간 정답률이 오른다는 가정 자체가 우리 데이터에선 성립하지 않았다. 다음에 RAG를 붙일 땐 retrieval recall@k부터 측정한 뒤 LLM에 붙일지 결정한다.",
+            "임베딩이 가깝다 = 주제가 가깝다지, 정답을 가르는 chunk가 가깝다는 보장은 아니다. 검색 단계에 도메인 규칙·리랭커 한 층을 더 두는 패턴이 다음 시도의 기본.",
+            "다음 시도 (이 실험에서 미구현, 다음 라운드 예정): relevance threshold/리랭커 도입 / 모델이 불확실할 때만 검색을 트리거하는 adaptive RAG / 500자보다 짧은·신호대잡음비 높은 chunk 단위 실험.",
+            "RAG 검색 단계에 결정론적 한 층을 더 두는 감각은 이후 StructVerify의 KOSIS 표 매칭 필터(국제기구·추계·세부대상)로 이어졌다 — 임베딩으로 후보를 좁힌 뒤 규칙으로 한 번 더 거르는 패턴.",
+          ]}
+        />
       </Section>
 
       <ProjectFooter currentSlug={SLUG} />
