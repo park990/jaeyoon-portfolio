@@ -522,7 +522,7 @@ export default function StructVerifyPage() {
 
       <Section id="results" title="Results">
         <figure className="mb-6 overflow-hidden rounded-xl border border-[var(--accent)]/40 bg-[var(--accent)]/5">
-          <div className="grid grid-cols-[120px_1fr] items-center gap-4 p-4 sm:grid-cols-[140px_1fr] sm:gap-5 sm:p-5">
+          <div className="grid grid-cols-[150px_1fr] items-center gap-4 p-4 sm:grid-cols-[180px_1fr] sm:gap-5 sm:p-5">
             <div className="overflow-hidden rounded-lg border border-[var(--accent)]/40 bg-background/40">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -534,12 +534,12 @@ export default function StructVerifyPage() {
             </div>
             <div>
               <p
-                className="text-sm font-semibold tracking-tight text-foreground sm:text-base"
+                className="text-base font-semibold tracking-tight text-foreground sm:text-lg"
                 style={{ color: ACCENT }}
               >
                 멋쟁이사자처럼 NLP 집중과정 최우수상
               </p>
-              <p className="mt-1.5 text-xs leading-[1.7] text-foreground/85 sm:text-sm">
+              <p className="mt-2 text-sm leading-[1.7] text-foreground/85">
                 StructVerify-Lab(4인 팀) 발표·시연으로 NLP 집중과정 최종 최우수상 수상.
               </p>
             </div>
