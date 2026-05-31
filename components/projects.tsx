@@ -5,7 +5,6 @@ import { motion, type Variants } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { getProjectsByDisplay } from "@/lib/projects";
 import { ProjectCard } from "@/components/project-card";
-import { QuoteBanner } from "@/components/quote-banner";
 
 const container: Variants = {
   hidden: {},
@@ -31,12 +30,11 @@ export function Projects() {
         viewport={{ once: true, margin: "-80px" }}
         className="flex flex-col gap-12"
       >
-        {/* 제목 + 인용문 부제 */}
+        {/* 제목 */}
         <motion.div variants={headingItem} className="flex flex-col gap-4">
           <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             Projects
           </h2>
-          <QuoteBanner />
         </motion.div>
 
         {/* ─── Featured · AI/NLP 3카드 ─── */}

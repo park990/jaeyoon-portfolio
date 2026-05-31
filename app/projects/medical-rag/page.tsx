@@ -257,11 +257,6 @@ export default function MedicalRagPage() {
       </Section>
 
       <Section id="decisions" title="핵심 결정 · 이유">
-        <p className="mb-5 text-sm leading-[1.7] text-muted-foreground">
-          무엇을 골랐나보다{" "}
-          <span className="text-foreground">왜 골랐고 뭘 안 골랐나</span>를
-          먼저 적습니다.
-        </p>
         <div className="space-y-3">
           {KEY_DECISIONS.map((d, i) => (
             <div

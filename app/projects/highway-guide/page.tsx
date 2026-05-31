@@ -11,7 +11,6 @@ import {
   LessonsList,
   type Trouble,
 } from "@/components/project-detail/blocks";
-import { QuoteBanner } from "@/components/quote-banner";
 import { getProjectBySlug } from "@/lib/projects";
 
 const SLUG = "highway-guide";
@@ -391,13 +390,6 @@ export default function HighwayGuidePage() {
       </Section>
 
       <Section id="role" title="My Role">
-        {/* 의도 인용문 — Part 1·2를 나누는 이유 */}
-        <blockquote className="mb-8 border-l-2 border-[var(--accent)]/40 pl-4 text-sm italic leading-[1.7] text-muted-foreground">
-          AI가 단순 구현을 빠르게 대체하는 시대에, 구현 자체보다 그 안에서 얻은
-          학습이 다음 프로젝트의 결정으로 이어진 사이클이 더 중요하다고
-          생각합니다. 그래서 둘을 나누어 정리했습니다.
-        </blockquote>
-
         {/* Part 1 — What I built (보조 정보, 톤다운) */}
         <div className="mb-12">
           <h3 className="text-lg font-semibold tracking-tight text-foreground/70">
@@ -444,8 +436,7 @@ export default function HighwayGuidePage() {
       <Section id="evolution" title="Evolution — 다음 프로젝트로의 발전">
         <Prose>
           <p>
-            위 학습 사이클을 한 표로 비교해 보면 다음과 같습니다. 이 프로젝트의
-            세 가지 한계가 그대로 HirePicker의 결정으로 이어졌습니다.
+            이 프로젝트의 세 가지 한계가 그대로 HirePicker의 결정으로 이어졌습니다.
           </p>
         </Prose>
         <div className="mt-5 space-y-3">

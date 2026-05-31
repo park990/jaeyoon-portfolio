@@ -60,9 +60,7 @@ export function AgentFlowDiagram() {
       </div>
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
         Agent A (runtime_agent.py)는 ReAct 패턴으로 검증 파이프라인을 통합하고,
-        Agent B (builder_agent.py)는 사전학습 + 운영 피드백 학습 두 경로를 관리.
-        본인 담당 영역(KOSIS 메타 수집·임베딩, 5개 데이터 레이어, runtime
-        병렬화·LLM 안정화)은 아래 카드 + Code Highlights에서 확인.
+        Agent B (builder_agent.py)는 사전학습 + 운영 피드백 학습 두 경로를 관리합니다.
       </p>
     </div>
   );

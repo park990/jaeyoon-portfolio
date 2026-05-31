@@ -229,12 +229,6 @@ export default function Text2GraphPage() {
       </Section>
 
       <Section id="debugging" title="디버깅 추론 — 가설 · 검증 · 수정">
-        <p className="mb-5 text-sm leading-[1.7] text-muted-foreground">
-          이 프로젝트의 강점은 기술 선택이 아니라{" "}
-          <span className="text-foreground">진단 능력</span>입니다.
-          F1이 정체했을 때 어디를 의심하고, 어떻게 검증했고, 무엇을
-          고쳤는지를 3단계로 기록했습니다.
-        </p>
         <div className="space-y-3">
           {DEBUGGING_REASONING.map((d, i) => (
             <div

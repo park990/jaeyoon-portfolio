@@ -415,7 +415,6 @@ export default function StructVerifyPage() {
             4명 팀에서 인프라·데이터 적재부터 KOSIS 메타 수집·표 매칭 필터,
             LLM 클라이언트 안정화, runtime 검증 파이프라인 병렬화, 검증 판단
             로직(verifier)까지 데이터·검증 흐름의 8개 모듈을 담당했습니다.
-            아래 Work Scope 표가 다룬 모듈 목록입니다.
           </p>
         </Prose>
       </Section>
@@ -429,10 +428,6 @@ export default function StructVerifyPage() {
       </Section>
 
       <Section id="decisions" title="핵심 결정 · 이유">
-        <p className="mb-5 text-sm leading-[1.7] text-muted-foreground">
-          무엇을 골랐나보다 <span className="text-foreground">왜 골랐고 뭘 안 골랐나</span>를
-          먼저 적습니다. 사용한 적 없는 대안은 &ldquo;검토 후 기각&rdquo;으로 표기.
-        </p>
         <div className="space-y-3">
           {KEY_DECISIONS.map((d, i) => (
             <div
@@ -526,20 +521,16 @@ export default function StructVerifyPage() {
       </Section>
 
       <Section id="results" title="Results">
-        {/* 상장 placeholder — 이미지 파일은 추후 추가, 자리만 명확히 표시 */}
         <figure className="mb-6 overflow-hidden rounded-xl border border-[var(--accent)]/40 bg-[var(--accent)]/5">
-          <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-[180px_1fr] sm:items-center sm:gap-5 sm:p-5">
-            <div
-              className="flex aspect-[4/5] flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[var(--accent)]/40 bg-background/40 p-3 text-center text-[11px] text-muted-foreground"
-              role="img"
-              aria-label="상장 이미지 placeholder"
-            >
-              <Award className="h-7 w-7 text-[var(--accent)]/70" aria-hidden="true" />
-              <span>
-                [이미지 자리:
-                <br />
-                최우수상 상장]
-              </span>
+          <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-[200px_1fr] sm:items-center sm:gap-5 sm:p-5">
+            <div className="overflow-hidden rounded-lg border border-[var(--accent)]/40 bg-background/40">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/projects/structverify-lab/award.jpg"
+                alt="멋쟁이사자처럼 NLP 집중과정 최우수상 상장"
+                loading="lazy"
+                className="block h-auto w-full"
+              />
             </div>
             <div>
               <p
@@ -549,8 +540,7 @@ export default function StructVerifyPage() {
                 멋쟁이사자처럼 NLP 집중과정 최우수상
               </p>
               <p className="mt-2 text-sm leading-[1.7] text-foreground/85">
-                StructVerify-Lab(4인 팀) 발표·시연으로 NLP 집중과정 최종
-                최우수상 수상. 상장 이미지는 추후 추가합니다.
+                StructVerify-Lab(4인 팀) 발표·시연으로 NLP 집중과정 최종 최우수상 수상.
               </p>
             </div>
           </div>
