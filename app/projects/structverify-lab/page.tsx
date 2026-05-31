@@ -522,7 +522,7 @@ export default function StructVerifyPage() {
 
       <Section id="results" title="Results">
         <figure className="mb-6 overflow-hidden rounded-xl border border-[var(--accent)]/40 bg-[var(--accent)]/5">
-          <div className="grid grid-cols-[150px_1fr] items-center gap-4 p-4 sm:grid-cols-[180px_1fr] sm:gap-5 sm:p-5">
+          <div className="grid grid-cols-[170px_1fr] items-center gap-4 p-4 sm:grid-cols-[210px_1fr] sm:gap-5 sm:p-5">
             <div className="overflow-hidden rounded-lg border border-[var(--accent)]/40 bg-background/40">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
