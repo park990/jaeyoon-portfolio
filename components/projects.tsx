@@ -30,11 +30,21 @@ export function Projects() {
         viewport={{ once: true, margin: "-80px" }}
         className="flex flex-col gap-12"
       >
-        {/* 제목 */}
+        {/* 제목 + 인용문 부제 (manifesto) */}
         <motion.div variants={headingItem} className="flex flex-col gap-4">
           <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             Projects
           </h2>
+          <blockquote className="max-w-2xl border-l-2 border-primary/40 pl-4 sm:pl-5">
+            <p className="text-lg font-medium italic text-foreground sm:text-xl">
+              Implementation is a means, not the point.
+            </p>
+            <p className="mt-2 text-base leading-[1.7] text-muted-foreground">
+              AI가 단순 구현을 빠르게 대체하는 시대에, 구현 자체보다 그 안에서
+              얻은 학습이 다음 프로젝트의 결정으로 이어진 사이클이 더 중요하다고
+              생각합니다.
+            </p>
+          </blockquote>
         </motion.div>
 
         {/* ─── Featured · AI/NLP 3카드 ─── */}
