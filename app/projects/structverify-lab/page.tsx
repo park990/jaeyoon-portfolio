@@ -323,11 +323,6 @@ const KEY_DECISIONS = [
     body:
       "Snowflake를 검토했으나 PoC 단계엔 도입 비용이 과하다고 판단했습니다(직접 운영 경험 없음). pgvector는 벡터 검색과 RDB를 단일 인프라에서 통합할 수 있어 채택했습니다.",
   },
-  {
-    title: "임베딩만 vs 임베딩 + 규칙 필터",
-    body:
-      "임베딩 검색만으로는 '전체 사망자' 주장에 '영아 사망률' 표가 잡히는 문제가 있었습니다. 임베딩으로 후보를 좁힌 뒤 결정론적 규칙(국제기구/추계/세부대상)으로 한 번 더 거르는 hybrid 구조로 풀었습니다.",
-  },
 ];
 
 export default function StructVerifyPage() {
