@@ -412,7 +412,7 @@ export default function StructVerifyPage() {
             범용 검증 플랫폼을 지향합니다.
           </p>
           <p>
-            4명 팀에서 본인은 데이터 레이어(KOSIS 카탈로그 크롤러 · 표 매칭
+            4명 팀에서 저는 데이터 레이어(KOSIS 카탈로그 크롤러 · 표 매칭
             필터 · PostgreSQL 적재) + Agent A 측 runtime 검증 파이프라인 병렬화
             + LLM 클라이언트 안정화 + 검증 판단 로직(verifier)까지 데이터·검증
             흐름을 담당했습니다.

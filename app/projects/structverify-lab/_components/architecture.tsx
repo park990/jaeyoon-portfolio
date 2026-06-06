@@ -4,7 +4,7 @@ import { ArrowRight, ArrowDown } from "lucide-react";
 // 상단: Agent B (사전학습) → Agent A (Runtime) → 피드백 루프
 // 하단: Runtime Agent의 ReAct Step 압축 표현
 
-// owner = 'mine': 본인 담당. 'teammate': 팀원 담당.
+// owner = 'mine': 제 담당. 'teammate': 팀원 담당.
 type AgentBox = {
   en: string;
   ko: string;
@@ -48,7 +48,7 @@ export function AgentFlowDiagram() {
         <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <span className="inline-block h-2 w-2 rounded-sm border border-primary/60 bg-primary/15" />
-            본인
+            제 담당
           </span>
           <span className="inline-flex items-center gap-1.5">
             <span className="inline-block h-2 w-2 rounded-sm border border-amber-500/60 bg-amber-500/15" />
@@ -109,9 +109,9 @@ export function AgentFlowDiagram() {
       </div>
       <p className="mt-3 text-xs leading-[1.7] text-muted-foreground">
         <span className="text-foreground">Agent A(runtime_agent.py)</span>의
-        ReAct 검증 파이프라인 통합은 본인 담당.{" "}
+        ReAct 검증 파이프라인 통합은 제 담당.{" "}
         <span className="text-foreground">Agent B(사전학습·피드백 학습)</span>
-        는 팀원 담당이며, 본인이 만든 KOSIS 카탈로그가 사전학습의 입력으로
+        는 팀원 담당이며, 제가 만든 KOSIS 카탈로그가 사전학습의 입력으로
         연결됩니다.
       </p>
     </div>
