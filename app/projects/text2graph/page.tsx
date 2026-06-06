@@ -99,29 +99,29 @@ const DEBUGGING_REASONING = [
   {
     title: "Evaluation의 Adaptive Threshold 적용 누락 — 평가 코드부터 의심",
     hypothesis:
-      "학습은 pair별 adaptive threshold를 출력하는데 dev F1이 56.64%에서 정체. 모델 가중치보다 평가/추론 코드를 먼저 의심.",
+      "학습은 pair별 adaptive threshold를 출력하는데 dev F1이 56.64%에서 정체했습니다. 모델 가중치보다 평가/추론 코드를 먼저 의심했습니다.",
     verification:
-      "scripts/train.py의 evaluate_on_dev를 따라가 보니 고정 threshold(0.5)로 relation 채택 여부를 판단. 학습된 threshold_logits 값이 평가 단계에서 무시되고 있음을 확인.",
+      "scripts/train.py의 evaluate_on_dev를 따라가 보니 고정 threshold(0.5)로 relation 채택 여부를 판단하고 있었습니다. 학습된 threshold_logits 값이 평가 단계에서 무시되고 있음을 확인했습니다.",
     fix:
-      "evaluate_on_dev를 ATLOP 정상 평가 방식으로 정정 — 모델이 출력하는 threshold_logits와 각 relation logit을 비교해 채택 판단. 이 한 수정만으로도 F1이 즉시 반영됨.",
+      "evaluate_on_dev를 ATLOP 정상 평가 방식으로 정정했습니다. 모델이 출력하는 threshold_logits와 각 relation logit을 비교해 채택 판단. 이 한 수정만으로도 F1이 즉시 반영됐습니다.",
   },
   {
     title: "ATLOP ranking loss 오구현 — 원 논문 수식과 직접 대조",
     hypothesis:
-      "학습 곡선이 일찍 정체. 모델 구조보다 손실 함수 구현을 의심.",
+      "학습 곡선이 일찍 정체했습니다. 모델 구조보다 손실 함수 구현을 의심했습니다.",
     verification:
-      "src/losses.py의 ATLOPLoss가 'BCE with threshold class concat' 약식 형태 — 단순 이진 분류처럼 작성됨. 원 논문의 Positive/Negative 분리 + threshold 비교 의도가 살아나지 않음을 확인.",
+      "src/losses.py의 ATLOPLoss가 'BCE with threshold class concat' 약식 형태로, 단순 이진 분류처럼 작성돼 있었습니다. 원 논문의 Positive/Negative 분리 + threshold 비교 의도가 살아나지 않음을 확인했습니다.",
     fix:
-      "원 논문 ranking loss 수식 그대로 재구현: loss = log(1+Σexp(neg−TH)) + log(1+Σexp(TH−pos)). 위 평가 수정과 함께 적용해 v1 56.64% → v2 59.25% (+2.61pt) 도달.",
+      "원 논문 ranking loss 수식 그대로 재구현했습니다: loss = log(1+Σexp(neg−TH)) + log(1+Σexp(TH−pos)). 위 평가 수정과 함께 적용해 v1 56.64% → v2 59.25% (+2.61pt) 도달.",
   },
   {
     title: "관계별 성능 격차 해석 — 전체 F1만 보지 않기",
     hypothesis:
-      "F1 평균이 같아도 관계 종류별로 성능이 균일하지 않을 것. 어떤 관계 유형에 약한지 봐야 모델 한계를 진단할 수 있다.",
+      "F1 평균이 같아도 관계 종류별로 성능이 균일하지 않을 것이라 봤습니다. 어떤 관계 유형에 약한지 봐야 모델 한계를 진단할 수 있다고 판단했습니다.",
     verification:
-      "dev 998 문서 → 10,494 triple 추출 후 관계 종류별 정밀도 측정. 생년월일/사망일 같은 표면 패턴 관계는 80~90%인 반면, 민족/하위분류처럼 상식 추론이 필요한 관계는 0~12.5%로 격차가 큼.",
+      "dev 998 문서 → 10,494 triple 추출 후 관계 종류별 정밀도를 쟀습니다. 생년월일/사망일 같은 표면 패턴 관계는 80~90%인 반면, 민족/하위분류처럼 상식 추론이 필요한 관계는 0~12.5%로 격차가 컸습니다.",
     fix:
-      "결론: BERT-base는 표면 패턴은 잡지만 상식 추론은 약하다. 단순 모델 교체보다 commonsense KG 외부 지식 주입이 다음 라운드 방향이라는 판단. F1 수치 위에서 1단계 더 들어가는 분석 습관이 자리잡음.",
+      "결론은 BERT-base가 표면 패턴은 잡지만 상식 추론은 약하다는 것이었습니다. 단순 모델 교체보다 commonsense KG 외부 지식 주입이 다음 라운드 방향이라고 봤습니다. F1 수치 위에서 한 단계 더 들어가는 분석 습관이 그때 자리 잡았습니다.",
   },
 ];
 
@@ -323,9 +323,9 @@ export default function Text2GraphPage() {
       <Section id="lessons" title="Lessons Learned">
         <LessonsList
           items={[
-            "Adaptive Threshold 한 줄의 버그가 모델 학습 결함보다 더 큰 점수 손실을 만드는 걸 직접 보고 나서야, 모델을 만지기 전에 평가·추론 코드부터 의심하는 습관이 생겼다.",
-            "ATLOP Loss를 수식 그대로 다시 옮기기 전후의 학습 곡선이 달라지는 걸 보고 나서야, 논문 구현을 ‘비슷하게’로 두면 의도가 절반밖에 안 살아난다는 걸 받아들였다.",
-            "모델 weight만 올렸을 때 같은 출력이 재현되지 않아 한참 헤맨 뒤에야, HuggingFace 배포는 코드 push가 아니라 README·config·tokenizer까지 한 셋으로 정리하는 작업이라는 걸 알게 됐다.",
+            "Adaptive Threshold 한 줄짜리 버그가 모델 학습 결함보다 더 큰 점수 손실을 만든다는 걸 직접 본 뒤로, 모델을 만지기 전에 평가·추론 코드부터 의심하는 습관이 생겼습니다.",
+            "ATLOP Loss를 수식 그대로 다시 옮긴 전후의 학습 곡선이 달라지는 걸 보고 나서야 논문 구현을 '비슷하게'로 두면 의도가 절반밖에 안 살아난다는 걸 받아들였습니다.",
+            "모델 weight만 올렸을 때 같은 출력이 재현되지 않아 한참 헤맨 적이 있어요. 그 뒤로는 HuggingFace 배포를 코드 push가 아니라 README·config·tokenizer까지 한 셋으로 정리하는 작업으로 봅니다.",
           ]}
         />
       </Section>
