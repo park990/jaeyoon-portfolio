@@ -126,7 +126,7 @@ export function AgentFlowDiagram() {
         <span className="text-foreground">Agent A (runtime_agent.py)</span>의
         ReAct 검증 파이프라인 통합은 본인 담당.{" "}
         <span className="text-foreground">Agent B (builder_agent.py · adapter_trainer · synthetic_generator)</span>
-        의 사전학습/피드백 학습 흐름은 팀원(김예슬) 담당이며, adapter_trainer의
+        의 사전학습/피드백 학습 흐름은 팀원 담당이며, adapter_trainer의
         평가 단계와 feedback_store의 DB 영속화는 stub/TODO 상태(부분 구현).
         본인이 만든 KOSIS 카탈로그는 사전학습의 입력으로 연결됩니다.
       </p>
