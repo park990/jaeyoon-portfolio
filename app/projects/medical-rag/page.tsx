@@ -231,13 +231,13 @@ export default function MedicalRagPage() {
       <Section id="overview" title="Overview">
         <Prose>
           <p>
-            의료 도메인 챗봇에 RAG를 붙이면 정답률이 오를 것이라는 가설을
-            직접 측정해본 실험입니다. GPT 래퍼를 만들기보다,{" "}
-            <span className="font-medium text-foreground">
-              RAG가 언제 도움이 되고 언제 해가 되는지를 데이터로 검증
-            </span>
-            하는 것이 목적이었습니다. 결과는 가설을 반박했고, 이
-            프로젝트의 결과물은 음성 결과 자체와 그 원인 분석입니다.
+            팀 프로젝트 자체는 의료 도메인 챗봇을 만드는 것이었고, 그중 제가
+            맡은 부분은 RAG 파이프라인과 평가였습니다. &lsquo;RAG를 붙이면
+            정답률이 오른다&rsquo;는 가설을 같은 평가셋에서 측정해봤는데,
+            결과는 오히려 <span className="font-medium text-foreground">2.3pt 하락</span>으로
+            가설을 반박했습니다. 그래서 RAG를 붙이는 데서 멈추지 않고,
+            어떤 경우에 RAG가 정답을 흔드는지 오답 케이스를 직접 추적해
+            원인을 분석했습니다.
           </p>
           <p>
             Qwen2.5-7B-Instruct(4bit) + ChromaDB 기반으로 LLM 단독(Mode A) vs
