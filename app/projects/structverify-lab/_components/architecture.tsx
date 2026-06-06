@@ -4,14 +4,12 @@ import { ArrowRight, ArrowDown } from "lucide-react";
 // 상단: Agent B (사전학습) → Agent A (Runtime) → 피드백 루프
 // 하단: Runtime Agent의 ReAct Step 압축 표현
 
-// owner = 'mine': 본인(박재윤) 담당 영역. 'teammate': 팀원(김예슬) 담당.
-// status = 'partial': 학습 흐름은 연결돼 있으나 평가/영속화가 stub인 영역.
+// owner = 'mine': 본인 담당. 'teammate': 팀원 담당.
 type AgentBox = {
   en: string;
   ko: string;
   detail: string;
   owner?: "mine" | "teammate";
-  status?: "partial";
 };
 const agentFlow: AgentBox[] = [
   {
@@ -19,7 +17,6 @@ const agentFlow: AgentBox[] = [
     ko: "사전학습",
     detail: "KOSIS 메타 + Self-Instruct → LoRA",
     owner: "teammate",
-    status: "partial",
   },
   {
     en: "Agent A",
@@ -37,7 +34,6 @@ const agentFlow: AgentBox[] = [
     ko: "재학습",
     detail: "누적 → LoRA 추가 학습",
     owner: "teammate",
-    status: "partial",
   },
 ];
 
@@ -58,17 +54,12 @@ export function AgentFlowDiagram() {
             <span className="inline-block h-2 w-2 rounded-sm border border-amber-500/60 bg-amber-500/15" />
             팀원 담당
           </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="inline-block h-2 w-2 rounded-sm border border-dashed border-muted-foreground/60" />
-            부분 구현
-          </span>
         </div>
       </div>
       <div className="flex flex-col items-stretch gap-2 lg:flex-row lg:items-center lg:gap-3">
         {agentFlow.map((s, i) => {
           const isMine = s.owner === "mine";
           const isTeam = s.owner === "teammate";
-          const isPartial = s.status === "partial";
           return (
             <div
               key={s.en}
@@ -77,7 +68,6 @@ export function AgentFlowDiagram() {
               <div
                 className={
                   "w-full rounded-md border px-3 py-2 text-center lg:w-auto lg:flex-1 " +
-                  (isPartial ? "border-dashed " : "") +
                   (isMine
                     ? "border-primary/60 bg-primary/10 ring-1 ring-primary/20"
                     : isTeam
@@ -106,11 +96,6 @@ export function AgentFlowDiagram() {
                   {s.ko}
                 </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">{s.detail}</p>
-                {isPartial && (
-                  <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                    부분 구현
-                  </p>
-                )}
               </div>
               {i < agentFlow.length - 1 && (
                 <>
@@ -123,12 +108,11 @@ export function AgentFlowDiagram() {
         })}
       </div>
       <p className="mt-3 text-xs leading-[1.7] text-muted-foreground">
-        <span className="text-foreground">Agent A (runtime_agent.py)</span>의
+        <span className="text-foreground">Agent A(runtime_agent.py)</span>의
         ReAct 검증 파이프라인 통합은 본인 담당.{" "}
-        <span className="text-foreground">Agent B (builder_agent.py · adapter_trainer · synthetic_generator)</span>
-        의 사전학습/피드백 학습 흐름은 팀원 담당이며, adapter_trainer의
-        평가 단계와 feedback_store의 DB 영속화는 stub/TODO 상태(부분 구현).
-        본인이 만든 KOSIS 카탈로그는 사전학습의 입력으로 연결됩니다.
+        <span className="text-foreground">Agent B(사전학습·피드백 학습)</span>
+        는 팀원 담당이며, 본인이 만든 KOSIS 카탈로그가 사전학습의 입력으로
+        연결됩니다.
       </p>
     </div>
   );

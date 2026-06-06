@@ -541,7 +541,7 @@ export default function StructVerifyPage() {
                 멋쟁이사자처럼 NLP 집중과정 최우수상
               </p>
               <p className="mt-2 text-sm leading-[1.7] text-foreground/85">
-                StructVerify-Lab(4인 팀) 발표·시연으로 NLP 집중과정 최종 최우수상 수상.
+                StructVerify-Lab(4인 팀) NLP 집중과정 최종프로젝트 최우수상 수상.
               </p>
             </div>
           </div>
