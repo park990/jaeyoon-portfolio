@@ -4,63 +4,131 @@ import { ArrowRight, ArrowDown } from "lucide-react";
 // 상단: Agent B (사전학습) → Agent A (Runtime) → 피드백 루프
 // 하단: Runtime Agent의 ReAct Step 압축 표현
 
-// mine: true는 본인 작업 영역만. LoRA 학습 자체는 본인 작업 아님 — 본인 영역은
-// Agent B 안의 "KOSIS 메타 수집/임베딩" 데이터 측, 그리고 Feedback Loop 안의
-// "feedback_events 적재/model_versions 등록" DB 측에 한정. 이 다이어그램은
-// 시스템 전체 흐름 표시이므로 mine 강조는 모두 끔.
-type AgentBox = { en: string; ko: string; detail: string; mine?: boolean };
+// owner = 'mine': 본인(박재윤) 담당 영역. 'teammate': 팀원(김예슬) 담당.
+// status = 'partial': 학습 흐름은 연결돼 있으나 평가/영속화가 stub인 영역.
+type AgentBox = {
+  en: string;
+  ko: string;
+  detail: string;
+  owner?: "mine" | "teammate";
+  status?: "partial";
+};
 const agentFlow: AgentBox[] = [
-  { en: "Agent B", ko: "사전학습", detail: "KOSIS 메타 + Self-Instruct → LoRA" },
-  { en: "Agent A", ko: "Runtime", detail: "ReAct: 검증 파이프라인 통합" },
-  { en: "Human Review", ko: "검토", detail: "verdict 보정" },
-  { en: "Feedback Loop", ko: "재학습", detail: "누적 → LoRA 추가 학습" },
+  {
+    en: "Agent B",
+    ko: "사전학습",
+    detail: "KOSIS 메타 + Self-Instruct → LoRA",
+    owner: "teammate",
+    status: "partial",
+  },
+  {
+    en: "Agent A",
+    ko: "Runtime",
+    detail: "ReAct: 검증 파이프라인 통합",
+    owner: "mine",
+  },
+  {
+    en: "Human Review",
+    ko: "검토",
+    detail: "verdict 보정",
+  },
+  {
+    en: "Feedback Loop",
+    ko: "재학습",
+    detail: "누적 → LoRA 추가 학습",
+    owner: "teammate",
+    status: "partial",
+  },
 ];
 
 export function AgentFlowDiagram() {
   return (
     <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
-      <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-        2-Agent + Feedback Loop
-      </p>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          2-Agent + Feedback Loop
+        </p>
+        {/* 범례 */}
+        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block h-2 w-2 rounded-sm border border-primary/60 bg-primary/15" />
+            본인
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block h-2 w-2 rounded-sm border border-amber-500/60 bg-amber-500/15" />
+            팀원 담당
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block h-2 w-2 rounded-sm border border-dashed border-muted-foreground/60" />
+            부분 구현
+          </span>
+        </div>
+      </div>
       <div className="flex flex-col items-stretch gap-2 lg:flex-row lg:items-center lg:gap-3">
-        {agentFlow.map((s, i) => (
-          <div
-            key={s.en}
-            className="flex flex-col items-center gap-2 lg:flex-1 lg:flex-row lg:gap-3"
-          >
+        {agentFlow.map((s, i) => {
+          const isMine = s.owner === "mine";
+          const isTeam = s.owner === "teammate";
+          const isPartial = s.status === "partial";
+          return (
             <div
-              className={
-                "w-full rounded-md border px-3 py-2 text-center lg:w-auto lg:flex-1 " +
-                (s.mine
-                  ? "border-primary/50 bg-primary/10 ring-1 ring-primary/20"
-                  : "border-border bg-background/40")
-              }
+              key={s.en}
+              className="flex flex-col items-center gap-2 lg:flex-1 lg:flex-row lg:gap-3"
             >
-              <p
+              <div
                 className={
-                  "text-xs font-medium uppercase tracking-wider " +
-                  (s.mine ? "text-primary" : "text-muted-foreground")
+                  "w-full rounded-md border px-3 py-2 text-center lg:w-auto lg:flex-1 " +
+                  (isPartial ? "border-dashed " : "") +
+                  (isMine
+                    ? "border-primary/60 bg-primary/10 ring-1 ring-primary/20"
+                    : isTeam
+                    ? "border-amber-500/60 bg-amber-500/5"
+                    : "border-border bg-background/40")
                 }
               >
-                {s.en}
-              </p>
-              <p className="mt-1 text-sm font-semibold text-foreground">
-                {s.ko}
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">{s.detail}</p>
+                <p
+                  className={
+                    "text-xs font-medium uppercase tracking-wider " +
+                    (isMine
+                      ? "text-primary"
+                      : isTeam
+                      ? "text-amber-600 dark:text-amber-400"
+                      : "text-muted-foreground")
+                  }
+                >
+                  {s.en}
+                  {isTeam && (
+                    <span className="ml-1.5 font-normal normal-case tracking-normal">
+                      (팀원)
+                    </span>
+                  )}
+                </p>
+                <p className="mt-1 text-sm font-semibold text-foreground">
+                  {s.ko}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{s.detail}</p>
+                {isPartial && (
+                  <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    부분 구현
+                  </p>
+                )}
+              </div>
+              {i < agentFlow.length - 1 && (
+                <>
+                  <ArrowDown className="h-4 w-4 self-center text-muted-foreground lg:hidden" />
+                  <ArrowRight className="hidden h-4 w-4 shrink-0 text-muted-foreground lg:block" />
+                </>
+              )}
             </div>
-            {i < agentFlow.length - 1 && (
-              <>
-                <ArrowDown className="h-4 w-4 self-center text-muted-foreground lg:hidden" />
-                <ArrowRight className="hidden h-4 w-4 shrink-0 text-muted-foreground lg:block" />
-              </>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
-      <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-        Agent A (runtime_agent.py)는 ReAct 패턴으로 검증 파이프라인을 통합하고,
-        Agent B (builder_agent.py)는 사전학습 + 운영 피드백 학습 두 경로를 관리합니다.
+      <p className="mt-3 text-xs leading-[1.7] text-muted-foreground">
+        <span className="text-foreground">Agent A (runtime_agent.py)</span>의
+        ReAct 검증 파이프라인 통합은 본인 담당.{" "}
+        <span className="text-foreground">Agent B (builder_agent.py · adapter_trainer · synthetic_generator)</span>
+        의 사전학습/피드백 학습 흐름은 팀원(김예슬) 담당이며, adapter_trainer의
+        평가 단계와 feedback_store의 DB 영속화는 stub/TODO 상태(부분 구현).
+        본인이 만든 KOSIS 카탈로그는 사전학습의 입력으로 연결됩니다.
       </p>
     </div>
   );

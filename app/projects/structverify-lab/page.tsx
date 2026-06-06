@@ -122,10 +122,8 @@ const roles: Role[] = [
     ],
   },
   {
-    title: "설계 근거 — 참고 논문 4편",
+    title: "DB · 스키마 설계 시 참고한 논문 2편",
     bullets: [
-      "FEVER (NAACL 2018) → match / mismatch / unverifiable 3단계 판정 체계",
-      "ClaimBuster (VLDB 2017) → check-worthiness 이론적 근거",
       "RAG (NeurIPS 2020) → KOSIS 외부 DB 조회의 패러다임",
       "AutoSchemaKG (arXiv 2505.23628) → 도메인 비의존적 동적 스키마 유도",
     ],
@@ -406,15 +404,19 @@ export default function StructVerifyPage() {
           <p>
             비정형 텍스트(뉴스·보고서·문서)에서 수치 기반 주장을 자동으로 추출하고,
             KOSIS Open API 등 공식 통계 데이터와 비교해 사실 여부를 검증하는 LLM
-            기반 플랫폼입니다. v2.0에서 <span className="font-medium text-foreground">
-            2-Agent 아키텍처</span> + <span className="font-medium text-foreground">
-            도메인 적응 학습 루프</span>로 재설계되어, 뉴스는 실험 도메인일
-            뿐 시스템 자체는 자기 적응형 범용 검증 플랫폼을 지향합니다.
+            기반 플랫폼입니다. v2.0에서 팀이{" "}
+            <span className="font-medium text-foreground">2-Agent 아키텍처</span>
+            와{" "}
+            <span className="font-medium text-foreground">도메인 적응 학습 루프</span>
+            로 구조를 잡았고, 뉴스는 실험 도메인일 뿐 시스템 자체는 자기 적응형
+            범용 검증 플랫폼을 지향합니다.
           </p>
           <p>
-            4명 팀에서 인프라·데이터 적재부터 KOSIS 메타 수집·표 매칭 필터,
-            LLM 클라이언트 안정화, runtime 검증 파이프라인 병렬화, 검증 판단
-            로직(verifier)까지 데이터·검증 흐름의 8개 모듈을 담당했습니다.
+            4명 팀에서 본인은 데이터 레이어(KOSIS 카탈로그 크롤러 · 표 매칭
+            필터 · PostgreSQL 적재) + Agent A 측 runtime 검증 파이프라인 병렬화
+            + LLM 클라이언트 안정화 + 검증 판단 로직(verifier)까지 데이터·검증
+            흐름을 담당했습니다. Agent B(LoRA / Self-Instruct / 사전학습 루프)는
+            팀원(김예슬) 담당.
           </p>
         </Prose>
       </Section>
