@@ -349,11 +349,11 @@ export default function MedicalRagPage() {
       <Section id="lessons" title="Lessons Learned · 다음 시도">
         <LessonsList
           items={[
-            "RAG를 켜는 순간 정답률이 오른다는 가정 자체가 우리 데이터에선 성립하지 않았습니다. 다음에 RAG를 붙일 땐 retrieval recall@k부터 먼저 재고 LLM에 붙일지 결정하려고 합니다.",
-            "임베딩이 가깝다는 게 정답을 가르는 chunk가 가깝다는 보장은 아닙니다. 검색 단계에 도메인 규칙이나 리랭커 한 층을 더 두는 게 다음 라운드의 기본.",
-            "벡터 DB 선택 회고: 정적 코퍼스(27k chunk)를 한 번 인덱싱하고 ablation으로 반복 검색만 하는 용도엔 persistence·메타데이터 같은 DB 기능이 필요 없었습니다. ChromaDB는 Colab에서 의존성 충돌로 환경 세팅 비용이 컸고, 가벼운 in-memory 검색이라면 FAISS가 더 맞았을 것 같아요. 다음엔 실험용 정적 인덱스는 FAISS, 운영용 동적 데이터는 벡터 DB로 갈라두려고 합니다.",
-            "다음 시도로 남겨둔 항목 — relevance threshold / 리랭커, 모델이 불확실할 때만 검색을 트리거하는 adaptive RAG, 500자보다 짧고 신호대잡음비가 높은 chunk 단위 실험.",
-            "RAG 검색 단계에 결정론적 한 층을 더 두는 감각은 이후 StructVerify의 KOSIS 표 매칭 필터(국제기구·추계·세부대상)로 이어졌습니다. 임베딩으로 후보를 좁힌 뒤 규칙으로 한 번 더 거르는 패턴.",
+            "RAG는 켠다고 정답률이 오르는 게 아닙니다. 다음에 붙일 땐 retrieval recall@k부터 먼저 재고, 그 점수가 LLM 단독보다 의미 있게 높을 때만 붙입니다. 우리 데이터에서 -2.3pt를 본 게 이 기준의 출발이었습니다.",
+            "임베딩이 가깝다는 건 주제가 가깝다는 뜻일 뿐, 정답을 가르는 chunk가 가깝다는 보장이 아닙니다. 검색 단계에 도메인 규칙이나 리랭커 한 층을 더 두는 게 다음 라운드의 기본.",
+            "실험용 정적 인덱스에는 벡터 DB가 과합니다. 27k chunk를 한 번 인덱싱하고 ablation으로 반복 검색만 하는 데에 persistence·메타데이터는 필요 없었고, ChromaDB는 Colab에서 의존성 충돌로 세팅 비용만 늘었습니다. 정적 인덱스는 FAISS, 운영용 동적 데이터는 벡터 DB로 갈라두는 게 맞습니다.",
+            "다음 라운드 변수 — relevance threshold / 리랭커, 모델이 불확실할 때만 검색을 트리거하는 adaptive RAG, 500자보다 짧고 신호대잡음비가 높은 chunk 단위 실험.",
+            "임베딩으로 후보를 좁힌 뒤 규칙으로 한 번 더 거르는 패턴이 이 실험에서 처음 자리 잡았고, 이후 StructVerify의 KOSIS 표 매칭 필터(국제기구·추계·세부대상)로 그대로 이어졌습니다.",
           ]}
         />
       </Section>

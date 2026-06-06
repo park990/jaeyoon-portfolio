@@ -323,9 +323,9 @@ export default function Text2GraphPage() {
       <Section id="lessons" title="Lessons Learned">
         <LessonsList
           items={[
-            "Adaptive Threshold 한 줄짜리 버그가 모델 학습 결함보다 더 큰 점수 손실을 만든다는 걸 직접 본 뒤로, 모델을 만지기 전에 평가·추론 코드부터 의심하는 습관이 생겼습니다.",
-            "ATLOP Loss를 수식 그대로 다시 옮긴 전후의 학습 곡선이 달라지는 걸 보고 나서야 논문 구현을 '비슷하게'로 두면 의도가 절반밖에 안 살아난다는 걸 받아들였습니다.",
-            "모델 weight만 올렸을 때 같은 출력이 재현되지 않아 한참 헤맨 적이 있어요. 그 뒤로는 HuggingFace 배포를 코드 push가 아니라 README·config·tokenizer까지 한 셋으로 정리하는 작업으로 봅니다.",
+            "F1이 정체하면 모델 가중치보다 평가·추론 코드부터 의심합니다. Adaptive Threshold 한 줄짜리 버그가 학습 결함보다 더 큰 점수 손실을 만드는 걸 직접 본 게 이 순서의 시작이었습니다.",
+            "논문 구현은 수식 단위까지 옮겨야 의도가 살아납니다. ATLOP Loss를 'BCE + threshold class concat' 약식으로 둔 전후 학습 곡선이 분명히 달라졌습니다.",
+            "HuggingFace 배포는 코드 push가 아니라 README·config·tokenizer까지 한 셋으로 정리하는 작업입니다. weight만 올렸다가 같은 출력이 재현되지 않아 헤맨 한 번이 이 정의의 출발이었습니다.",
           ]}
         />
       </Section>
