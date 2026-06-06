@@ -323,6 +323,11 @@ const KEY_DECISIONS = [
     body:
       "Snowflake를 검토했으나 PoC 단계엔 도입 비용이 과하다고 판단했습니다(직접 운영 경험 없음). pgvector는 벡터 검색과 RDB를 단일 인프라에서 통합할 수 있어 채택했습니다.",
   },
+  {
+    title: "임베딩만 vs 임베딩 + 규칙 필터",
+    body:
+      "KOSIS 통계표 이름을 HCX로 임베딩해 코사인 검색으로 top-k 후보를 뽑으면, '전체 사망자' 검증 claim에 '영아 사망률' 표가 점수 높게 함께 잡혔습니다. 임베딩은 주제 유사도는 잘 잡지만 '전체 vs 영아' 같은 핵심 축은 못 가르기 때문입니다. 그래서 임베딩으로 후보를 좁힌 뒤 _is_table_relevant()에서 국제기구·장래추계·해외지역·세부대상(영아/신생아/모성) 4종 마커로 한 번 더 거르는 hybrid 구조로 풀었습니다.",
+  },
 ];
 
 export default function StructVerifyPage() {
