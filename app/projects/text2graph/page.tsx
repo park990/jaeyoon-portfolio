@@ -323,9 +323,9 @@ export default function Text2GraphPage() {
       <Section id="lessons" title="Lessons Learned">
         <LessonsList
           items={[
-            "F1이 정체하면 모델 가중치보다 평가·추론 코드부터 의심합니다. Adaptive Threshold 한 줄짜리 버그가 학습 결함보다 더 큰 점수 손실을 만드는 걸 직접 본 게 이 순서의 시작이었습니다.",
-            "논문 구현은 수식 단위까지 옮겨야 의도가 살아납니다. ATLOP Loss를 'BCE + threshold class concat' 약식으로 둔 전후 학습 곡선이 분명히 달라졌습니다.",
-            "HuggingFace 배포는 코드 push가 아니라 README·config·tokenizer까지 한 셋으로 정리하는 작업입니다. weight만 올렸다가 같은 출력이 재현되지 않아 헤맨 한 번이 이 정의의 출발이었습니다.",
+            "처음엔 모델이 잘못된 줄 알고 가중치부터 만지려 했는데, dev F1이 56.64%에서 계속 정체했습니다. evaluate_on_dev를 따라가 보니 학습된 adaptive threshold가 평가에서 무시되고 고정 0.5로 잘리고 있었습니다. 한 줄짜리 버그가 학습 결함보다 더 큰 점수 손실을 내는 걸 본 뒤로, F1이 안 오르면 모델보다 평가·추론 코드부터 의심합니다.",
+            "ATLOP Loss를 'BCE + threshold class concat' 약식으로 두니까 학습 곡선이 일찍 정체했습니다. 원 논문 ranking loss 수식 그대로 다시 옮기고 나서야 곡선이 의도대로 흐르기 시작했고, 그 전후 차이를 직접 본 뒤로 논문 구현은 수식 단위까지 맞춰서 옮깁니다.",
+            "weight만 올렸다가 같은 출력이 재현이 안 돼서 한참 헤맨 적이 있습니다. 그 뒤로 HuggingFace 배포는 코드 push가 아니라 README·config·tokenizer까지 한 셋으로 정리하는 작업으로 봅니다.",
           ]}
         />
       </Section>

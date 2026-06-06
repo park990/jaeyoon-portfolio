@@ -332,10 +332,10 @@ export default function BoomingPage() {
       <Section id="lessons" title="Lessons Learned">
         <LessonsList
           items={[
-            "이전 프로젝트의 한계가 다음 결정으로 살아 움직이는 게 책 한 권보다 빠릅니다. HighWay의 단순함과 HirePicker의 과한 설계가 Booming의 통합·단순화 근거로 그대로 옮겨졌습니다.",
-            "같은 Spring이라도 통신 모델이 바뀌면 인증 컨텍스트가 어디 실리는지부터 다시 봐야 합니다. HTTP의 @AuthenticationPrincipal 패턴을 WebSocket에 그대로 옮겼다 null 디버깅을 한참 한 게 이 감각의 출발이었습니다.",
-            "토큰 자체보다 어디에 저장하고 어떻게 헤더에 싣느냐가 인증의 진짜 어려움입니다. HttpOnly Cookie로 깔끔하던 웹 흐름이 Flutter에선 첫 요청부터 401로 막혔습니다.",
-            "같은 도메인 안에서도 데이터 성격이 다르면 저장소를 갈라두는 편이 깔끔합니다. 채팅 메시지를 MySQL 컬럼에 욱여넣다 첨부·이모지·시스템 메시지가 들어올 때마다 스키마가 흔들리는 걸 본 결론.",
+            "HighWay에서 단순하게 가본 한계와 HirePicker에서 과하게 설계해본 회고가 Booming의 통합·단순화 근거로 그대로 옮겨졌습니다. 이전 프로젝트의 한계가 다음 결정의 근거로 살아 움직이는 게 책 한 권보다 빠르다는 걸 세 번째 프로젝트에서 직접 봤습니다.",
+            "HTTP에서 자연스럽게 동작하던 @AuthenticationPrincipal을 WebSocket에 그대로 붙였더니 두세 메시지 만에 null이 떨어졌습니다. CONNECT와 SEND가 다른 스레드라는 게 한참 디버깅한 끝에 손에 잡혔고, 같은 Spring이라도 통신 모델이 바뀌면 인증 컨텍스트가 어디 실리는지부터 다시 봐야 한다는 감각이 그때 잡혔습니다.",
+            "HttpOnly Cookie로 깔끔하게 풀리던 웹 흐름을 Flutter에 옮기니 첫 요청부터 401이 떴습니다. 토큰 자체보다 '어디에 저장하고 어떻게 헤더에 싣느냐'가 인증의 진짜 어려움이라는 걸 그때 봤습니다.",
+            "채팅 메시지를 MySQL 컬럼에 욱여넣다 보니 첨부·이모지·시스템 메시지가 들어올 때마다 스키마가 흔들렸습니다. 그래서 사용자·모임·게시판은 MySQL, 채팅 메시지만 MongoDB로 갈라두는 폴리글랏 구조로 정리했습니다.",
           ]}
         />
       </Section>
