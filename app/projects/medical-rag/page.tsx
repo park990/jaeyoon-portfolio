@@ -22,9 +22,9 @@ const ACCENT = "#F59E0B";
 const REPO = "https://github.com/ljhljh0703-cmd/Medical-Chatbot/tree/dev";
 
 export const metadata: Metadata = {
-  title: "Medical RAG Experiment · Jaeyoon Park",
+  title: "Medical Chatbot · Jaeyoon Park",
   description:
-    "Qwen2.5-7B + ChromaDB 의료 챗봇에서 RAG가 정확도를 65.4% → 63.1%로 떨어뜨린 걸 측정하고 원인까지 분석한 실험.",
+    "팀 프로젝트 의료 도메인 챗봇. RAG 파이프라인(Qwen2.5-7B · ChromaDB) + 자동 평가 담당. ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락 측정 + distraction 원인 분석.",
 };
 
 // TL;DR Highlights — 음성 결과를 강점으로 framing (브리프 §4(2)).
@@ -177,7 +177,7 @@ export default function MedicalRagPage() {
     >
       <ProjectHeader
         project={project}
-        oneLiner="의료 챗봇에 RAG를 붙이면 정답률이 오를까. Qwen2.5-7B + ChromaDB로 ablation을 돌려 LLM 단독 65.4% → +RAG 63.1% (−2.3pt)를 측정하고, distraction 원인까지 케이스 단위로 추적."
+        oneLiner="팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% (−2.3pt) 하락을 측정해 distraction 원인을 케이스 단위로 추적."
         period="2026.04"
         team="4명 (NLP 과정 팀 프로젝트)"
         links={[{ label: "GitHub (dev)", href: REPO }]}

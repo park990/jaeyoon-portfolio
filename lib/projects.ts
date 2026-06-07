@@ -58,10 +58,10 @@ export const projects: Project[] = [
   },
   {
     slug: "medical-rag",
-    title: "Medical RAG Experiment",
-    subtitle: "RAG가 정확도를 떨어뜨리는 조건을 측정한 실험",
+    title: "Medical Chatbot",
+    subtitle: "의료 도메인 챗봇 — RAG 파이프라인 + 자동 평가 담당",
     oneLiner:
-      "Qwen2.5-7B 기반 의료 챗봇에서 LLM 단독 65.4% → +RAG 63.1%로 하락. 검색된 무관 context가 distraction이 된 원인을 케이스 단위로 분석.",
+      "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인(Qwen2.5-7B · ChromaDB)과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락이 측정돼 오답 케이스로 원인을 분석했습니다.",
     stack: ["Qwen2.5-7B (4bit)", "ChromaDB", "ko-sroberta", "Dense Retrieval", "Colab A100"],
     period: "2026.04",
     team: 4,
