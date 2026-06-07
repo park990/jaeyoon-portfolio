@@ -305,37 +305,6 @@ export default function MedicalRagPage() {
       </Section>
 
       <Section id="results" title="Results">
-        {/* 평가 결과 시각 placeholder — 추후 이미지 추가 */}
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-          <div
-            className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[var(--accent)]/40 bg-[var(--accent)]/5 p-4 text-center text-xs text-muted-foreground"
-            role="img"
-            aria-label="평가 결과표 placeholder"
-          >
-            <TrendingDown
-              className="h-7 w-7 text-[var(--accent)]/70"
-              aria-hidden="true"
-            />
-            <span>
-              [이미지 자리:
-              <br />
-              평가 결과표 (Mode A 65.4% vs Mode B 63.1%)]
-            </span>
-          </div>
-          <div
-            className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/30 p-4 text-center text-xs text-muted-foreground"
-            role="img"
-            aria-label="예시 케이스 placeholder"
-          >
-            <Search className="h-7 w-7 text-muted-foreground/60" aria-hidden="true" />
-            <span>
-              [이미지 자리:
-              <br />
-              예시 케이스 (대상포진 치료제 → 수두 백신 chunk distraction)]
-            </span>
-          </div>
-        </div>
-
         <ResultsGrid
           items={[
             "LLM 단독 65.4% → +RAG 63.1% (−2.3pt) — 2-stage ablation 측정 (LoRA 제외)",
