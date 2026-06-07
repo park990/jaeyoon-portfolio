@@ -325,7 +325,6 @@ export default function Text2GraphPage() {
           items={[
             "처음엔 모델이 잘못된 줄 알고 가중치부터 만지려 했는데, dev F1이 56.64%에서 계속 정체했습니다. evaluate_on_dev를 따라가 보니 학습된 adaptive threshold가 평가에서 무시되고 고정 0.5로 잘리고 있었습니다. 한 줄짜리 버그가 학습 결함보다 더 큰 점수 손실을 내는 걸 본 뒤로, F1이 안 오르면 모델보다 평가·추론 코드부터 의심합니다.",
             "ATLOP Loss를 'BCE + threshold class concat' 약식으로 두니까 학습 곡선이 일찍 정체했습니다. 원 논문 ranking loss 수식 그대로 다시 옮기고 나서야 곡선이 살아났고, 그래서 논문 구현은 수식 단위까지 맞춰 옮기는 식으로 정리했습니다.",
-            "weight만 올렸다가 같은 출력이 재현되지 않아 한참 헤맸습니다. README·config·tokenizer를 같이 안 올린 게 원인이라, 그 한 셋을 묶어 다시 올렸더니 풀렸습니다.",
           ]}
         />
       </Section>
