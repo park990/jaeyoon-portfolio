@@ -121,7 +121,7 @@ const DEBUGGING_REASONING = [
     verification:
       "dev 998 문서 → 10,494 triple 추출 후 관계 종류별 정밀도를 쟀습니다. 생년월일/사망일 같은 표면 패턴 관계는 80~90%인 반면, 민족/하위분류처럼 상식 추론이 필요한 관계는 0~12.5%로 격차가 컸습니다.",
     fix:
-      "결론은 BERT-base가 표면 패턴은 잡지만 상식 추론은 약하다는 것이었습니다. 단순 모델 교체보다 commonsense KG 외부 지식 주입이 다음 라운드 방향이라고 봤습니다. F1 수치 위에서 한 단계 더 들어가는 분석 습관이 그때 자리 잡았습니다.",
+      "결론은 BERT-base가 표면 패턴은 잡지만 상식 추론은 약하다는 것이었습니다. 단순 모델 교체보다 commonsense KG 외부 지식 주입을 다음 라운드 방향으로 잡았고, F1 평균만 보지 않고 관계별 분포까지 같이 봅니다.",
   },
 ];
 
@@ -324,8 +324,8 @@ export default function Text2GraphPage() {
         <LessonsList
           items={[
             "처음엔 모델이 잘못된 줄 알고 가중치부터 만지려 했는데, dev F1이 56.64%에서 계속 정체했습니다. evaluate_on_dev를 따라가 보니 학습된 adaptive threshold가 평가에서 무시되고 고정 0.5로 잘리고 있었습니다. 한 줄짜리 버그가 학습 결함보다 더 큰 점수 손실을 내는 걸 본 뒤로, F1이 안 오르면 모델보다 평가·추론 코드부터 의심합니다.",
-            "ATLOP Loss를 'BCE + threshold class concat' 약식으로 두니까 학습 곡선이 일찍 정체했습니다. 원 논문 ranking loss 수식 그대로 다시 옮기고 나서야 곡선이 의도대로 흐르기 시작했고, 그 전후 차이를 직접 본 뒤로 논문 구현은 수식 단위까지 맞춰서 옮깁니다.",
-            "weight만 올렸다가 같은 출력이 재현이 안 돼서 한참 헤맨 적이 있습니다. 그 뒤로 HuggingFace 배포는 코드 push가 아니라 README·config·tokenizer까지 한 셋으로 정리하는 작업으로 봅니다.",
+            "ATLOP Loss를 'BCE + threshold class concat' 약식으로 두니까 학습 곡선이 일찍 정체했습니다. 원 논문 ranking loss 수식 그대로 다시 옮기고 나서야 곡선이 살아났고, 그래서 논문 구현은 수식 단위까지 맞춰 옮기는 식으로 정리했습니다.",
+            "weight만 올렸다가 같은 출력이 재현되지 않아 한참 헤맸습니다. README·config·tokenizer를 같이 안 올린 게 원인이라, 그 한 셋을 묶어 다시 올렸더니 풀렸습니다.",
           ]}
         />
       </Section>

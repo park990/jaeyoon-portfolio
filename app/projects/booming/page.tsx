@@ -102,7 +102,7 @@ const troubles: Trouble[] = [
     solve:
       "JwtChannelInterceptor에서 CONNECT 시 검증한 CustomUserDetails를 accessor.getSessionAttributes()에 저장하고, SEND/SUBSCRIBE에서 같은 세션 속성에서 복원하는 패턴으로 해결했습니다. 컨트롤러는 @Header(\"simpSessionAttributes\")로 직접 접근하도록 했습니다.",
     lesson:
-      "처음엔 HTTP에서 @AuthenticationPrincipal이 너무 자연스럽게 동작하니까 WebSocket에서도 당연히 될 거라 생각하고 그대로 갖다 붙였는데, 메시지 두세 개 주고받자마자 null로 떨어졌습니다. 한참 디버깅한 끝에야 CONNECT 스레드와 SEND 스레드가 다르다는 점, 그리고 SecurityContextHolder가 그 스레드를 따라간다는 사실이 손에 잡혔습니다. 같은 Spring이라도 통신 모델이 바뀌면 인증 컨텍스트가 어디에 실리는지부터 다시 봐야 한다는 걸, 이 디버깅으로 처음 체감했습니다.",
+      "처음엔 HTTP에서 @AuthenticationPrincipal이 너무 자연스럽게 동작하니까 WebSocket에서도 당연히 될 거라 생각하고 그대로 갖다 붙였는데, 메시지 두세 개 주고받자마자 null로 떨어졌습니다. 한참 디버깅한 끝에 CONNECT 스레드와 SEND 스레드가 다르고 SecurityContextHolder가 그 스레드를 따라간다는 사실을 확인했고, JwtChannelInterceptor에서 검증한 사용자를 세션 속성에 저장하고 SEND/SUBSCRIBE에서 복원하는 패턴으로 다시 짰습니다.",
   },
   {
     title: "웹의 HttpOnly Cookie 패턴이 모바일에서 작동 X",
@@ -111,7 +111,7 @@ const troubles: Trouble[] = [
     solve:
       "flutter_secure_storage로 Access/Refresh Token을 OS 보안 영역에 저장하고, 모든 API 요청에 Bearer 헤더를 명시했습니다. 같은 JWT라도 플랫폼에 따라 저장 전략이 완전히 달라진다는 점을 반영했습니다.",
     lesson:
-      "웹에서 HttpOnly Cookie로 깔끔하게 돌던 흐름을 Flutter에 옮겼더니, 같은 JWT인데도 쿠키가 자동으로 실리지 않아 첫 요청부터 401을 받았습니다. 그제서야 토큰 자체보다 ‘어디 저장하고 어떻게 헤더에 싣느냐’가 인증의 진짜 어려움이라는 걸 알게 됐고, secure_storage + Bearer 헤더 명시로 다시 설계하면서 플랫폼이 바뀌면 인증 저장소 전략도 같이 바뀌어야 한다는 감각이 생겼습니다.",
+      "웹에서 HttpOnly Cookie로 깔끔하게 돌던 흐름을 Flutter에 그대로 옮겼더니, 같은 JWT인데도 쿠키가 자동으로 실리지 않아 첫 요청부터 401을 받았습니다. Flutter HTTP 클라이언트는 브라우저처럼 쿠키를 알아서 첨부하지 않아서, flutter_secure_storage(iOS Keychain / Android Keystore)에 토큰을 박고 모든 요청에 Bearer 헤더를 명시하는 식으로 다시 설계했습니다.",
   },
   {
     title: "모바일 게시판 — 다른 사용자의 좋아요 +1이 즉시 보이지 않음",
@@ -120,7 +120,7 @@ const troubles: Trouble[] = [
     solve:
       "Riverpod로 게시글 상태를 좋아요 액션 직후 낙관적으로 갱신하고, 게시판 진입·pull-to-refresh·화면 재포커스 시점에 서버 카운트로 재조회하는 패턴으로 정리했습니다. 같은 다대다 모델이지만 ‘언제 다시 가져올지’를 클라이언트가 명시적으로 결정해야 한다는 점을 반영했습니다.",
     lesson:
-      "내 좋아요는 잘 반영되는데 다른 사람 좋아요가 한참 뒤에 보이는 걸 사용자 입장에서 겪고 나서야, 모델은 익숙해진 다대다인데 모바일에선 ‘언제 다시 가져올지’를 내가 결정해줘야 한다는 점이 새로 들어왔습니다. DB 설계가 같다고 클라이언트 상태 관리도 같지 않다는 걸, 갱신 시점이라는 한 층을 직접 끼우면서 처음 깨달았습니다.",
+      "내 좋아요는 잘 반영되는데 다른 사람 좋아요는 한참 뒤에야 보이는 화면을 사용자 입장에서 직접 겪었습니다. 같은 다대다 모델인데도 모바일에선 ‘언제 다시 가져올지’를 클라이언트가 정해줘야 했고, Riverpod로 게시판 진입·pull-to-refresh·화면 재포커스 시점에 서버 카운트를 다시 가져오는 패턴으로 정리했습니다.",
   },
 ];
 
@@ -332,8 +332,8 @@ export default function BoomingPage() {
       <Section id="lessons" title="Lessons Learned">
         <LessonsList
           items={[
-            "HighWay에서 단순하게 가본 한계와 HirePicker에서 과하게 설계해본 회고가 Booming의 통합·단순화 근거로 그대로 옮겨졌습니다. 이전 프로젝트의 한계가 다음 결정의 근거로 살아 움직이는 게 책 한 권보다 빠르다는 걸 세 번째 프로젝트에서 직접 봤습니다.",
-            "HTTP에서 자연스럽게 동작하던 @AuthenticationPrincipal을 WebSocket에 그대로 붙였더니 두세 메시지 만에 null이 떨어졌습니다. CONNECT와 SEND가 다른 스레드라는 게 한참 디버깅한 끝에 손에 잡혔고, 같은 Spring이라도 통신 모델이 바뀌면 인증 컨텍스트가 어디 실리는지부터 다시 봐야 한다는 감각이 그때 잡혔습니다.",
+            "HighWay에서 단순하게 가본 한계와 HirePicker에서 과하게 설계해본 회고가 Booming의 통합·단순화 근거로 그대로 옮겨왔습니다. 세 프로젝트를 이어 만들면서 이전 한계가 다음 결정의 근거로 옮겨가는 사이클을 직접 굴려봤고, 다음 프로젝트도 이 사이클로 가져갈 생각입니다.",
+            "HTTP에서 자연스럽게 동작하던 @AuthenticationPrincipal을 WebSocket에 그대로 붙였더니 두세 메시지 만에 null이 떨어졌습니다. CONNECT와 SEND가 서로 다른 스레드라는 게 디버깅하면서 드러났고, JwtChannelInterceptor에서 검증한 사용자를 세션 속성에 저장하고 SEND/SUBSCRIBE에서 복원하는 패턴으로 다시 짰습니다.",
             "웹에선 브라우저가 HttpOnly Cookie를 알아서 첨부해줘서 깔끔했는데, Flutter에선 같은 흐름이 안 통했습니다. 쿠키가 자동으로 안 실리니까 첫 요청부터 401이 떴고, flutter_secure_storage에 토큰을 박고 모든 요청에 Bearer 헤더를 명시하는 식으로 다시 설계했습니다.",
             "채팅 메시지를 MySQL 컬럼에 욱여넣다 보니 첨부·이모지·시스템 메시지가 들어올 때마다 스키마가 흔들렸습니다. 그래서 사용자·모임·게시판은 MySQL, 채팅 메시지만 MongoDB로 갈라두는 폴리글랏 구조로 정리했습니다.",
           ]}
