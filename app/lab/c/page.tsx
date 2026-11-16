@@ -114,7 +114,7 @@ export default function LabC() {
                 {PROFILE.nameKo} — AI · NLP 엔지니어 포트폴리오
               </h1>
               <ol
-                className={`${styles.serif} mt-6 space-y-5 text-[21px] leading-[1.95] tracking-[-0.01em] sm:text-[27px] lg:text-[31px]`}
+                className={`${styles.serif} mt-6 space-y-4 text-[21px] leading-[1.9] tracking-[-0.01em] sm:text-[26px] lg:text-[28px]`}
               >
                 {INTRO.map((sent, i) => (
                   <li key={i} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-2 sm:grid-cols-[2.5rem_minmax(0,1fr)]">

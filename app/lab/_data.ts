@@ -100,21 +100,16 @@ export type Evidence = {
 
 const SV = "https://github.com/2026-StructVerify-Lab/structverify";
 
+// 주의: 48cf55b의 "BATCH_SIZE = 100 묶음 임베딩"은 OpenAI text-embedding-3-small 시절 코드다.
+// 4b6dbab에서 HCX 임베딩 v2(배치 미지원)로 바꾸며 건별 호출 + Semaphore(3)가 됐으므로
+// "HCX 임베딩 100건 배치" 근거로는 쓰지 않는다.
 export const EVIDENCE: Record<string, Evidence> = {
-  batch: {
-    id: "batch",
-    label: "48cf55b",
-    href: `${SV}/commit/48cf55b79995b2135bdcc2175b0e8da83e80888a`,
-    grade: "code",
-    shows: "BATCH_SIZE = 100 — 통계표 메타 100건씩 묶어 임베딩",
-    where: "structverify · adaptation/kosis_crawler.py",
-  },
   semaphore: {
     id: "semaphore",
     label: "4b6dbab",
     href: `${SV}/commit/4b6dbab5717e00e120c6f61658b7800500cd6403`,
     grade: "code",
-    shows: "asyncio.Semaphore(3) + 재시도 — 임베딩 동시 호출 3개 제한",
+    shows: "HCX 임베딩 v2 건별 호출에 asyncio.Semaphore(3) + 429 지수 백오프 재시도(최대 5회)",
     where: "structverify · adaptation/kosis_crawler.py",
   },
   parallel: {

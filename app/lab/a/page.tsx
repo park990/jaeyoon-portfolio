@@ -30,7 +30,6 @@ export const metadata: Metadata = {
 
 // 근거 색인 순서 = 각주 번호
 const ORDER = [
-  "batch",
   "semaphore",
   "parallel",
   "parallelEstimate",
@@ -117,14 +116,14 @@ const KEY_FIGURES: {
   refs: EvKey[];
 }[] = [
   {
-    what: "claim 검증 병렬화 (StructVerify-Lab)",
-    value: "직렬 ~7분 → ~1/3",
-    refs: ["parallel", "parallelEstimate"],
-  },
-  {
     what: "관계 추출 Dev F1 (Text2Graph)",
     value: "56.64 → 59.25",
     refs: ["t2gF1"],
+  },
+  {
+    what: "claim 검증 병렬화 (StructVerify-Lab)",
+    value: "직렬 ~7분 → ~1/3",
+    refs: ["parallel", "parallelEstimate"],
   },
   {
     what: "NLP 과정 최종 프로젝트",
@@ -138,15 +137,8 @@ const CLAIMS: { text: React.ReactNode; refs: EvKey[] }[] = [
   {
     text: (
       <>
-        KOSIS 통계표 메타를 <b className="font-semibold">100건</b>씩 묶어 임베딩
-      </>
-    ),
-    refs: ["batch"],
-  },
-  {
-    text: (
-      <>
-        임베딩 동시 호출을 <b className="font-semibold">3개</b>로 제한하고 재시도
+        HCX 임베딩 동시 호출 <b className="font-semibold">3개</b> 제한 + 429 지수
+        백오프 재시도
       </>
     ),
     refs: ["semaphore"],
@@ -364,9 +356,7 @@ export default function LabA() {
                   <dt className="text-[#7a7c82]">기간</dt>
                   <dd>{SV_PROJECT.period}</dd>
                   <dt className="text-[#7a7c82]">근거</dt>
-                  <dd>
-                    {cardRefs.length}/{cardRefs.length} 연결
-                  </dd>
+                  <dd>링크 {cardRefs.length}개</dd>
                 </dl>
               </header>
 

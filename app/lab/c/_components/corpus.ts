@@ -39,13 +39,31 @@ export type Sentence = Seg[];
 
 const e = (t: EntType, s: string) => ({ t, s });
 
-// doc_01 · 소개 — 브리프 「사실」과 기존 사이트 문구에서만 구성
+// doc_01 · 소개 — 브리프 「사실」과 기존 사이트 문구에서만 구성. 최신 경력부터.
 export const INTRO: Sentence[] = [
   [
     e("PER", PROFILE.nameKo),
-    "은 텍스트에서 수치와 개체를 뽑아내고, 뽑은 값이 맞는지까지 확인하는 ",
+    "은 텍스트에서 수치 주장과 관계를 뽑아내고, 뽑은 값이 맞는지까지 확인하는 ",
     e("ROLE", "AI · NLP 엔지니어"),
     "입니다.",
+  ],
+  [
+    "지금은 ",
+    e("PROJECT", CURRENT_WORK.name),
+    "를 혼자 만들고 있고, ",
+    e("DATE", "2026.10"),
+    " 창업 오디션에서 ",
+    e("METRIC", CURRENT_WORK.auditionRatio),
+    " 경쟁률로 ",
+    e("AWARD", "선발"),
+    "됐습니다.",
+  ],
+  [
+    "그 전에는 ",
+    e("ORG", "샤이닝라이언"),
+    "에서 ",
+    e("ROLE", "AI 엔지니어 인턴"),
+    "으로 부동산 공공데이터 수집·전처리 파이프라인과 모델 학습을 맡았습니다.",
   ],
   [
     e("ORG", "멋쟁이사자처럼"),
@@ -58,23 +76,6 @@ export const INTRO: Sentence[] = [
     "을 팀으로 만들어 ",
     e("AWARD", "최우수상"),
     "을 받았습니다.",
-  ],
-  [
-    e("ORG", "샤이닝라이언"),
-    "에서는 ",
-    e("ROLE", "AI 엔지니어 인턴"),
-    "으로 부동산 공공데이터 수집·전처리 파이프라인과 모델 학습을 맡았습니다.",
-  ],
-  [
-    "지금은 ",
-    e("PROJECT", CURRENT_WORK.name),
-    "를 혼자 만들고 있고, ",
-    e("DATE", "2026.10"),
-    " 창업 오디션에서 ",
-    e("METRIC", CURRENT_WORK.auditionRatio),
-    " 경쟁률로 ",
-    e("AWARD", "선발"),
-    "됐습니다.",
   ],
 ];
 
