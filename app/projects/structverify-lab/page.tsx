@@ -32,8 +32,7 @@ const SV_MAIN = "fb4f5deb35469ec36c9b5a83cb796b1ce078748f";
 
 export const metadata: Metadata = {
   title: project.title,
-  description:
-    "v2.0 LLM 사실검증 플랫폼. 인프라·데이터 적재·KOSIS 메타/검색·LLM 429 backoff·runtime 병렬화·검증 판단까지 8개 모듈 담당.",
+  description: project.description,
 };
 
 const techStack = [
@@ -463,8 +462,8 @@ export default function StructVerifyPage() {
           steps={project.flow!}
           caption={
             <>
-              claim끼리는 독립적이라 3~5단계를 claim별로 asyncio.gather +
-              Semaphore(3)로 병렬 처리합니다(병렬화도 담당).
+              claim끼리 독립적이라는 점을 이용해, claim별 ReAct 루프(검색 → 검증 →
+              설명)를 asyncio.gather + Semaphore(3)로 병렬화했습니다(병렬화도 담당).
               <Ev ids={["parallel"]} />
             </>
           }
@@ -505,7 +504,7 @@ export default function StructVerifyPage() {
               code={composeCode}
               lang="yaml"
               filename="docker-compose.yml"
-              source={{ label: "docker-compose.yml @fb4f5de", href: `${SV}/blob/${SV_MAIN}/docker-compose.yml` }}
+              source={{ label: "docker-compose.yml @fb4f5de", href: `${SV}/blob/${SV_MAIN}/docker-compose.yml`, kind: "관련 파일" }}
             />
           </div>
           <div>

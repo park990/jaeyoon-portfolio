@@ -23,8 +23,7 @@ const project = getProjectBySlug(SLUG)!;
 
 export const metadata: Metadata = {
   title: project.title,
-  description:
-    "HighWay Guide의 HttpSession·Action 강결합 한계와 다대다 매핑 학습을 JWT·REST 분리·즐겨찾기 재사용으로 이어간 두 번째 풀스택 프로젝트.",
+  description: project.description,
 };
 
 const techStack = [

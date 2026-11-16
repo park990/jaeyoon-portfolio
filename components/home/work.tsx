@@ -74,21 +74,26 @@ function CurrentWorkBand() {
   return (
     <li className="py-10">
       <div className="max-w-[680px]">
-        <Meta items={[w.name, w.role, `팀 ${w.team}`, w.period, w.status]} />
+        <Meta items={[w.name, w.role, w.period, w.status]} />
         <h3 className="mt-2 text-[22px] font-semibold leading-[1.42] tracking-[-0.01em] text-foreground sm:text-[24px]">
           {w.headline}
         </h3>
         <ul className="mt-4 space-y-1.5 text-[17px] leading-[1.7] text-foreground">
-          {w.results.map((r) => (
-            <li key={r.text} className="relative pl-4">
-              <span
-                aria-hidden="true"
-                className="absolute left-0 top-[0.75em] h-[5px] w-[5px] rounded-full bg-muted-foreground"
-              />
-              <NumText text={r.text} />
-              {r.grade && <GradeLabel grade={r.grade} className="ml-1" />}
-            </li>
-          ))}
+          <li className="relative pl-4">
+            <span
+              aria-hidden="true"
+              className="absolute left-0 top-[0.75em] h-[5px] w-[5px] rounded-full bg-muted-foreground"
+            />
+            <NumText text={`${w.audition} (경쟁률 ${w.ratio})`} />
+            <GradeLabel grade={w.ratioGrade} className="ml-1" />
+          </li>
+          <li className="relative pl-4">
+            <span
+              aria-hidden="true"
+              className="absolute left-0 top-[0.75em] h-[5px] w-[5px] rounded-full bg-muted-foreground"
+            />
+            {w.mentor}
+          </li>
         </ul>
       </div>
     </li>

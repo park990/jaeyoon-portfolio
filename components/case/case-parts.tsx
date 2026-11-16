@@ -16,7 +16,8 @@ export type CaseSectionMeta = {
 
 /** 맨 위: 라벨 줄 → 문장형 제목 → 결과 수치 → 요약 → 리포 링크 */
 export function CaseHeader({ project: p }: { project: Project }) {
-  const labels = [p.kind, `팀 ${p.team}`, `역할 ${p.role}`, p.period, p.status];
+  // 기간 표기에 상태가 이미 들어 있으면(예: "2025.11 ~ 진행 중") 상태를 반복하지 않는다
+  const labels = [p.kind, `팀 ${p.team}`, `역할 ${p.role}`, p.period, ...(p.period.includes(p.status) ? [] : [p.status])];
   return (
     <header className="pb-10">
       <p className="text-[14px] leading-[1.7] text-muted-foreground">
@@ -55,7 +56,10 @@ export function CaseHeader({ project: p }: { project: Project }) {
         </dl>
       )}
 
-      <p className="mt-7 text-[17px] leading-[1.75] text-foreground">{p.summary}</p>
+      <p className="mt-7 text-[17px] leading-[1.75] text-foreground">
+        {p.summary}
+        {p.summaryEv && <Ev ids={p.summaryEv} />}
+      </p>
 
       {(p.repo || p.links?.length) && (
         <ul className="mt-5 space-y-1 text-[15px]">

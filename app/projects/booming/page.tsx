@@ -24,8 +24,7 @@ const project = getProjectBySlug(SLUG)!;
 
 export const metadata: Metadata = {
   title: project.title,
-  description:
-    "HighWay Guide·HirePicker의 학습이 종착하는 세 번째 풀스택 — 토큰 Redis 통합 + secure_storage + WebSocket SimpleBroker 단순화.",
+  description: project.description,
 };
 
 const techStack = [

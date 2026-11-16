@@ -1,8 +1,39 @@
-import { TIMELINE } from "@/lib/profile";
+import { TIMELINE, type InlineGrade } from "@/lib/profile";
 import { GradeLabel } from "@/components/case/evidence";
 import { NumText } from "@/components/num-text";
 
 // 경력·교육 — 기간 | 직함(굵게)·소속 | 한 줄. 최신순 표 하나.
+
+// 등급 표시는 그 수치 바로 뒤에 붙인다. 수치가 제목에만 있으면(TOEIC) 한 줄 칸에 등급만 둔다.
+function LineWithGrades({
+  line,
+  title,
+  grades,
+}: {
+  line?: string;
+  title: string;
+  grades?: InlineGrade[];
+}) {
+  if (!line) {
+    return (
+      <>
+        {grades
+          ?.filter((g) => title.includes(g.value))
+          .map((g) => <GradeLabel key={g.value} grade={g.grade} />)}
+      </>
+    );
+  }
+  let parts: (string | React.ReactElement)[] = [line];
+  for (const g of grades ?? []) {
+    parts = parts.flatMap((p): (string | React.ReactElement)[] => {
+      if (typeof p !== "string" || !p.includes(g.value)) return [p];
+      const i = p.indexOf(g.value) + g.value.length;
+      return [p.slice(0, i), <GradeLabel key={g.value} grade={g.grade} className="ml-1" />, p.slice(i)];
+    });
+  }
+  return <>{parts.map((p, i) => (typeof p === "string" ? <NumText key={i} text={p} /> : p))}</>;
+}
+
 export function Career() {
   return (
     <section id="career" aria-labelledby="career-title" className="border-t border-border-strong">
@@ -31,18 +62,7 @@ export function Career() {
                   {r.org && <span className="block text-[15px] text-muted-foreground">{r.org}</span>}
                 </td>
                 <td className="align-top text-[16px] leading-[1.7] text-foreground sm:py-3.5">
-                  {r.line && <NumText text={r.line} />}
-                  {r.grades?.map((g) =>
-                    r.line?.includes(g.value) || r.title.includes(g.value) ? (
-                      <GradeLabel key={g.value} grade={g.grade} className="ml-1" />
-                    ) : (
-                      <span key={g.value}>
-                        {r.line ? " · " : ""}
-                        <NumText text={g.value} />
-                        <GradeLabel grade={g.grade} className="ml-1" />
-                      </span>
-                    ),
-                  )}
+                  <LineWithGrades line={r.line} title={r.title} grades={r.grades} />
                 </td>
               </tr>
             ))}

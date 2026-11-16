@@ -35,10 +35,10 @@ export function Hero() {
                 href={`/projects/${slug}`}
                 className="group grid grid-cols-1 gap-x-6 gap-y-0.5 py-3 transition-colors duration-150 hover:bg-secondary sm:grid-cols-[10rem_minmax(0,1fr)_auto] sm:items-baseline sm:px-2"
               >
-                <span className="text-[16px] font-semibold text-foreground group-hover:underline group-hover:underline-offset-4">
+                <span className="text-[17px] font-semibold text-foreground group-hover:underline group-hover:underline-offset-4">
                   {p.title}
                 </span>
-                <span className="text-[16px] leading-[1.6] text-foreground">
+                <span className="text-[17px] leading-[1.6] text-foreground">
                   <NumText text={proof.text} />
                 </span>
                 <span className="whitespace-nowrap text-[13px] font-medium text-primary">

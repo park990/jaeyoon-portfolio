@@ -23,8 +23,7 @@ const project = getProjectBySlug(SLUG)!;
 
 export const metadata: Metadata = {
   title: project.title,
-  description:
-    "Document-level Relation Extraction. ATLOP Loss + Adaptive Threshold 두 구현 오류를 수정해 v1 56.64% → v2 59.25% (+2.61pt)",
+  description: project.description,
 };
 
 const techStack = [
@@ -247,7 +246,7 @@ export default function Text2GraphPage() {
           </p>
         </Prose>
         <MetricsTable />
-        <p className="max-w-[680px] text-[15px] leading-[1.75] text-muted-foreground">
+        <p className="max-w-[680px] text-[17px] leading-[1.75] text-foreground">
           벤치마크 대비: 논문 ATLOP-BERT 64.19%는 distant pre-training 데이터 30배
           사용. 본 프로젝트는 annotated만 사용한 조건에서 v2 59.25%로, 데이터 격차를
           감안하면 정상 범위.

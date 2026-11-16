@@ -27,8 +27,7 @@ const MED_DEV = "f2bc415fce1afb7be58bc51c898422d6c557f17d";
 
 export const metadata: Metadata = {
   title: project.title,
-  description:
-    "팀 프로젝트 의료 도메인 챗봇. RAG 파이프라인(Qwen2.5-7B · ChromaDB) + 자동 평가 담당. ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락 측정 + distraction 원인 분석.",
+  description: project.description,
 };
 
 // 기존 Highlights 중 숫자가 아닌 두 장 — 각 칸 첫머리로 옮김
@@ -284,6 +283,7 @@ export default function MedicalRagPage() {
             source={{
               label: "colab_generation_eval.ipynb @f2bc415",
               href: `${MED}/blob/${MED_DEV}/notebooks/colab_generation_eval.ipynb`,
+              kind: "관련 파일",
             }}
           />
         </div>

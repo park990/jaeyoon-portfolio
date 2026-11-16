@@ -2,7 +2,8 @@ import { codeToHtml } from "shiki";
 
 // Server Component — shiki로 빌드 타임에 HTML 생성.
 // 밝은 모드 github-light / 어두운 모드 github-dark (globals.css의 .dark 규칙이 전환).
-// source가 있으면 캡션에 커밋 고정 원본 링크를 단다.
+// source가 있으면 캡션에 커밋 고정 링크를 단다.
+// kind "원본" = 예시가 그 파일에서 그대로 발췌됨 / "관련 파일" = 요약·예전 버전이라 파일과 글자가 다름
 export async function CodeBlock({
   code,
   lang,
@@ -12,7 +13,7 @@ export async function CodeBlock({
   code: string;
   lang: string;
   filename?: string;
-  source?: { label: string; href: string };
+  source?: { label: string; href: string; kind?: "원본" | "관련 파일" };
 }) {
   const html = await codeToHtml(code, {
     lang,
@@ -32,7 +33,7 @@ export async function CodeBlock({
               rel="noopener noreferrer"
               className="font-num text-[12.5px] text-primary underline underline-offset-[3px] hover:no-underline"
             >
-              원본 {source.label} ↗
+              {source.kind ?? "원본"} {source.label} ↗
             </a>
           )}
         </figcaption>

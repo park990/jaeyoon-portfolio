@@ -15,6 +15,24 @@ export const PROFILE = {
   location: "서울특별시 마포구",
 } as const;
 
+// 재개발 서비스: 「사실」의 공개 문장까지만. 상세 페이지·그림 없음.
+// 경력 표와 홈 작업 띠가 모두 이 값을 읽는다(기간·14:1을 한 곳에만 둔다).
+export const CURRENT_WORK = {
+  name: "서울 재개발 분석 서비스",
+  headline:
+    "흩어진 공공 자료를 모으고, 틀린 값이 섞이지 않도록 검사 규칙으로 자동 점검하는 서비스를 혼자 만들고 있습니다",
+  role: "1인 개발",
+  period: "2026.07 ~ 현재",
+  status: "진행 중",
+  summary:
+    "여러 곳에 흩어진 공공 자료를 모으고, 틀린 값이 섞이지 않도록 검사 규칙으로 자동 점검합니다.",
+  audition: "2026.10 창업 오디션 선발",
+  ratio: "14:1",
+  ratioGrade: "문서" as Grade,
+  ratioNote: "2026.10 창업 오디션 선발 기록 (리포 밖)",
+  mentor: "멘토기관 서울시립대학교",
+};
+
 /** 수치 하나에 붙는 근거 (홈 표 안에서 쓰는 간이형) */
 export type InlineGrade = { value: string; grade: Grade; note: string };
 
@@ -29,11 +47,11 @@ export type TimelineRow = {
 // 최신순 (시작 시점 기준)
 export const TIMELINE: TimelineRow[] = [
   {
-    period: "2026.07 ~ 현재",
-    title: "서울 재개발 분석 서비스",
-    org: "1인 개발 · 진행 중",
-    line: "여러 곳에 흩어진 공공 자료를 모으고, 틀린 값이 섞이지 않도록 검사 규칙으로 자동 점검합니다. 2026.10 창업 오디션 선발 · 멘토기관 서울시립대학교.",
-    grades: [{ value: "경쟁률 14:1", grade: "문서", note: "2026.10 창업 오디션 선발 기록 (리포 밖)" }],
+    period: CURRENT_WORK.period,
+    title: CURRENT_WORK.name,
+    org: `${CURRENT_WORK.role} · ${CURRENT_WORK.status}`,
+    line: `${CURRENT_WORK.summary} ${CURRENT_WORK.audition}(경쟁률 ${CURRENT_WORK.ratio}) · ${CURRENT_WORK.mentor}`,
+    grades: [{ value: CURRENT_WORK.ratio, grade: CURRENT_WORK.ratioGrade, note: CURRENT_WORK.ratioNote }],
   },
   {
     period: "2026.06 ~ 07",
@@ -45,7 +63,7 @@ export const TIMELINE: TimelineRow[] = [
     period: "2026.03 ~ 05",
     title: "자연어처리(NLP) AI 엔지니어 집중 과정",
     org: "멋쟁이사자처럼",
-    line: "최우수상 — 최종 프로젝트 StructVerify-Lab",
+    line: "6팀 중 최우수상 — 최종 프로젝트 StructVerify-Lab",
     grades: [{ value: "6팀 중 최우수상", grade: "문서", note: "멋쟁이사자처럼 NLP 과정 최종 프로젝트 상장" }],
   },
   {
@@ -80,23 +98,3 @@ export const TIMELINE: TimelineRow[] = [
   },
 ];
 
-// 재개발 서비스: 「사실」의 공개 문장까지만. 상세 페이지·그림 없음.
-export const CURRENT_WORK = {
-  name: "서울 재개발 분석 서비스",
-  headline:
-    "흩어진 공공 자료를 모으고, 틀린 값이 섞이지 않도록 검사 규칙으로 자동 점검하는 서비스를 혼자 만들고 있습니다",
-  role: "1인 개발",
-  team: "1명",
-  period: "2026.07 ~ 현재",
-  status: "진행 중",
-  summary:
-    "여러 곳에 흩어진 공공 자료를 모으고, 틀린 값이 섞이지 않도록 검사 규칙으로 자동 점검합니다.",
-  results: [
-    {
-      text: "2026.10 창업 오디션 선발 (경쟁률 14:1)",
-      grade: "문서" as Grade,
-      note: "2026.10 창업 오디션 선발 기록 (리포 밖)",
-    },
-    { text: "멘토기관 서울시립대학교", grade: null, note: "" },
-  ],
-} as const;

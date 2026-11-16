@@ -15,10 +15,10 @@ export function OtherWork() {
         <p className="mt-2 max-w-[680px] text-[15px] leading-[1.7] text-muted-foreground">
           한 프로젝트의 한계가 다음 결정이 된 풀스택 사이클 (HighWay → HirePicker → Booming)
         </p>
-        <ul className="mt-6 max-w-[960px] divide-y divide-border border-y border-border">
+        <ul className="mt-6 max-w-[680px] divide-y divide-border border-y border-border">
           {items.map((p) => (
             <li key={p.slug} className="py-3.5">
-              <p className="text-[16px] leading-[1.7]">
+              <p className="text-[17px] leading-[1.7]">
                 <Link
                   href={`/projects/${p.slug}`}
                   className="font-semibold text-primary underline underline-offset-4 hover:no-underline"
@@ -30,7 +30,7 @@ export function OtherWork() {
                   · {p.subtitle} · {p.period}
                 </span>
               </p>
-              <p className="text-[16px] leading-[1.7] text-foreground">
+              <p className="text-[17px] leading-[1.75] text-foreground">
                 {p.slug === "highway-guide" ? `${HIGHWAY_SERVICE_LINE}. ${p.oneLiner}` : p.oneLiner}
               </p>
             </li>

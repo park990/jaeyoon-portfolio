@@ -220,8 +220,7 @@ function RoleGridCard({
 
 export const metadata: Metadata = {
   title: project.title,
-  description:
-    "첫 풀스택 — BCrypt + HttpSession 인증, 다대다 관계 첫 설계, Action 강결합의 한계를 직접 체감.",
+  description: project.description,
 };
 
 const techStack = [

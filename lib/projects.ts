@@ -66,6 +66,10 @@ export type Project = {
   oneLinerEv?: string[];
   /** 사례 페이지 머리 요약 (기존 상세 페이지 머리 oneLiner) */
   summary: string;
+  /** summary 속 수치의 근거 id */
+  summaryEv?: string[];
+  /** 검색·공유용 설명 (기존 각 페이지 metadata.description) */
+  description: string;
   period: string;
   team: string;
   role: string;
@@ -115,6 +119,9 @@ export const projects: Project[] = [
     oneLinerEv: ["catalog"],
     summary:
       "기사 속 수치 주장을 KOSIS 공식 통계와 비교해 진위 판정하는 LLM 플랫폼. 초기 baseline 파이프라인부터 KOSIS 262,783건 적재 · 표 매칭 필터 4종 · runtime 병렬화 ~7분→~1/3 · LLM 429 backoff까지 담당.",
+    description:
+      "v2.0 LLM 사실검증 플랫폼. 인프라·데이터 적재·KOSIS 메타/검색·LLM 429 backoff·runtime 병렬화·검증 판단까지 8개 모듈 담당.",
+    summaryEv: ["catalog", "filterIntl", "filterForecast", "filterRegion", "parallelEst", "parallel"],
     period: "2026.04 ~ 09",
     team: "4명 (멋쟁이사자처럼 NLP 과정)",
     role: "데이터 레이어 · runtime 검증 병렬화 · LLM 클라이언트 안정화 · 검증 판단",
@@ -317,6 +324,9 @@ export const projects: Project[] = [
     oneLinerEv: ["f1"],
     summary:
       "DocRED Document-level Relation Extraction 파이프라인의 Stage 2 (ATLOP + DREEAM) 단독 담당. 두 구현 오류(ATLOP Ranking Loss · Adaptive Threshold 평가)를 디버깅으로 잡아 v1 56.64% → v2 59.25% (+2.61pt) 도달.",
+    description:
+      "Document-level Relation Extraction. ATLOP Loss + Adaptive Threshold 두 구현 오류를 수정해 v1 56.64% → v2 59.25% (+2.61pt)",
+    summaryEv: ["f1"],
     period: "2026.04 ~ 06",
     team: "4명",
     role: "Stage 2 (ATLOP + DREEAM) 단독 담당",
@@ -410,6 +420,9 @@ export const projects: Project[] = [
     oneLinerEv: ["ablation"],
     summary:
       "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% (−2.3pt) 하락을 측정해 distraction 원인을 케이스 단위로 추적.",
+    description:
+      "팀 프로젝트 의료 도메인 챗봇. RAG 파이프라인(Qwen2.5-7B · ChromaDB) + 자동 평가 담당. ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락 측정 + distraction 원인 분석.",
+    summaryEv: ["ablation"],
     period: "2026.04",
     team: "4명 (NLP 과정 팀 프로젝트)",
     role: "RAG 파이프라인 + 자동 평가",
@@ -496,6 +509,8 @@ export const projects: Project[] = [
       "토큰 전부 Redis 통합 + SimpleBroker 단순화 + 채팅 메시지 MongoDB 분리 — 환경에 맞춰 저장소 결정",
     summary:
       "풀스택 학습 사이클의 종착점 — HirePicker의 ‘Refresh DB·Redis Pub/Sub’ 반쪽/과한 설계를 받아 토큰 전부 Redis 통합 + SimpleBroker 단순화로 정리. 동시에 모바일이라는 새 환경 조건이 추가됨.",
+    description:
+      "HighWay Guide·HirePicker의 학습이 종착하는 세 번째 풀스택 — 토큰 Redis 통합 + secure_storage + WebSocket SimpleBroker 단순화.",
     period: "2025.11 ~ 진행 중",
     team: "2명",
     role: "Spring Boot 백엔드(모임 도메인 제외) + Flutter 기획·디자인·구현",
@@ -525,6 +540,8 @@ export const projects: Project[] = [
       "HttpSession 한계를 JWT로 도입, 휴게소 좋아요의 다대다를 공고 즐겨찾기로 재설계",
     summary:
       "HighWay Guide의 HttpSession·Action 강결합 한계와 다대다 매핑 학습을 JWT·REST 분리·즐겨찾기 재사용으로 이어간 두 번째 풀스택 프로젝트. 동시에 Redis Pub/Sub 같은 ‘과한 설계’ 한 번을 거쳐 Booming의 단순화 결정의 근거가 됨.",
+    description:
+      "HighWay Guide의 HttpSession·Action 강결합 한계와 다대다 매핑 학습을 JWT·REST 분리·즐겨찾기 재사용으로 이어간 두 번째 풀스택 프로젝트.",
     period: "2025.10 ~ 2025.11",
     team: "5명",
     role: "JWT 인증 · 공고 즐겨찾기 · WebSocket 채팅 · Selenium 수집 · Docker Compose",
@@ -549,6 +566,8 @@ export const projects: Project[] = [
       "첫 풀스택 — BCrypt + HttpSession 인증, 휴게소 좋아요 다대다 첫 설계, Action 강결합의 한계 체감",
     summary:
       "가장 단순한 형태(BCrypt + HttpSession + Action Forward)로 출발해, 그 한계를 다음 프로젝트의 결정 근거로 들고 갈 수 있게 만든 출발점.",
+    description:
+      "첫 풀스택 — BCrypt + HttpSession 인증, 다대다 관계 첫 설계, Action 강결합의 한계를 직접 체감.",
     period: "2025.07 ~ 2025.08",
     team: "5명",
     role: "MVC Front Controller · 인증 · 휴게소 즐겨찾기(다대다)",
