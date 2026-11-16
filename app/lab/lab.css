@@ -1,0 +1,38 @@
+/* /lab 전용 스타일.
+ * Next.js는 레이아웃에서 import한 전역 CSS를 라우트 이동 후에도 제거하지 않는다.
+ * 그래서 모든 규칙을 body:has([data-lab-root]) 로 묶어, lab 화면이 실제로
+ * 떠 있을 때만 적용되게 했다. 본 사이트(/, /projects/*)에는 영향이 없다. */
+
+/* 시안 화면에서는 본 사이트의 전역 헤더·푸터를 숨긴다 (각 시안이 자체 내비를 가짐). */
+body:has([data-lab-root]) > header,
+body:has([data-lab-root]) > footer {
+  display: none;
+}
+
+/* 오버스크롤 영역까지 각 시안의 바탕색으로 */
+body:has([data-lab-root="index"]) {
+  background: #f4f3ef;
+  color-scheme: light;
+}
+body:has([data-lab-root="a"]) {
+  background: #fbfaf7;
+  color-scheme: light;
+}
+body:has([data-lab-root="b"]) {
+  background: #ecebe5;
+  color-scheme: light;
+}
+body:has([data-lab-root="c"]) {
+  background: #12110f;
+  color-scheme: dark;
+}
+
+html:has([data-lab-root]) {
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:has([data-lab-root]) {
+    scroll-behavior: auto;
+  }
+}
