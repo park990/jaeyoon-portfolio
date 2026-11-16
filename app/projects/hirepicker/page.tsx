@@ -1,27 +1,28 @@
 import type { Metadata } from "next";
-import { KeyRound, Lightbulb, type LucideIcon } from "lucide-react";
-import { Section, Prose } from "@/components/project-detail/section";
+import { Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
-import {
-  ProjectHeader,
-  ProjectFooter,
-} from "@/components/project-detail/layout";
 import {
   TechStackGrid,
   MyRoleCards,
   TroubleCards,
   LessonsList,
+  PlainList,
   type Role,
   type Trouble,
 } from "@/components/project-detail/blocks";
+import { CaseLayout } from "@/components/case/case-layout";
+import {
+  CaseSection,
+  SubHead,
+  type CaseSectionMeta,
+} from "@/components/case/case-parts";
 import { getProjectBySlug } from "@/lib/projects";
 
 const SLUG = "hirepicker";
-const ACCENT = "#F97316";
-const REPO = "https://github.com/wlsksekf/hire-picker/tree/jaeyoon";
+const project = getProjectBySlug(SLUG)!;
 
 export const metadata: Metadata = {
-  title: "HirePicker · Jaeyoon Park",
+  title: project.title,
   description:
     "HighWay Guide의 HttpSession·Action 강결합 한계와 다대다 매핑 학습을 JWT·REST 분리·즐겨찾기 재사용으로 이어간 두 번째 풀스택 프로젝트.",
 };
@@ -121,7 +122,6 @@ const troubles: Trouble[] = [
 
 // TL;DR — 보조 카드라 2개로 최소. HighWay → HirePicker → Booming narrative의 중간 지점.
 type Highlight = {
-  icon: LucideIcon;
   label: string;
   value: string;
   note: string;
@@ -130,14 +130,12 @@ type Highlight = {
 
 const HIGHLIGHTS: Highlight[] = [
   {
-    icon: KeyRound,
     label: "JWT 인증 도입",
     value: "Stateful → Stateless",
     note: "HighWay Guide의 HttpSession 한계를 받아 JWT Access/Refresh 이중 토큰 구조로 전환",
     accent: true,
   },
   {
-    icon: Lightbulb,
     label: "두 번의 '과한 설계' 회고",
     value: "Refresh=DB · Redis Pub/Sub",
     note: "단일 서버에 외부 broker · 디스크 I/O가 다음 프로젝트 Booming의 단순화 결정 근거가 됨",
@@ -168,72 +166,52 @@ public class TokenService {
 }
 `;
 
-export default function HirePickerPage() {
-  const project = getProjectBySlug(SLUG)!;
+const SECTIONS: CaseSectionMeta[] = [
+  {
+    id: "problem",
+    label: "문제",
+    title: "HighWay Guide에서 남은 네 가지 한계에 각각 결정을 내려야 했습니다",
+  },
+  {
+    id: "role",
+    label: "내가 맡은 것",
+    title: "인증·즐겨찾기·채팅·수집·실행 환경까지 직접 구현했습니다",
+  },
+  {
+    id: "decisions",
+    label: "결정과 이유",
+    title: "JWT로 무상태 전환, 즐겨찾기 다대다 재사용, 그리고 과했던 Redis Pub/Sub",
+  },
+  {
+    id: "failed",
+    label: "안 된 것",
+    title: "Refresh의 DB 저장, 단일 서버의 Pub/Sub, 정제 없는 수집이 어긋났습니다",
+  },
+  {
+    id: "next",
+    label: "다음에 고칠 것",
+    title: "토큰은 TTL 저장소로, 인프라는 운영 조건에 맞춰, 환경은 처음부터 통합합니다",
+  },
+];
+const S = Object.fromEntries(SECTIONS.map((s) => [s.id, s])) as Record<string, CaseSectionMeta>;
 
+function HighlightLine({ h }: { h: Highlight }) {
   return (
-    <article
-      className="mx-auto max-w-3xl px-6 pb-24 pt-12 sm:pt-16"
-      style={{ "--accent": ACCENT } as React.CSSProperties}
-    >
-      <ProjectHeader
-        project={project}
-        oneLiner="HighWay Guide의 HttpSession·Action 강결합 한계와 다대다 매핑 학습을 JWT·REST 분리·즐겨찾기 재사용으로 이어간 두 번째 풀스택 프로젝트. 동시에 Redis Pub/Sub 같은 ‘과한 설계’ 한 번을 거쳐 Booming의 단순화 결정의 근거가 됨."
-        period="2025.10 ~ 2025.11"
-        team="5명"
-        links={[{ label: "GitHub", href: REPO }]}
-      />
+    <p className="max-w-[680px] border-l-2 border-border-strong pl-4 text-[17px] leading-[1.75] text-foreground">
+      <span className="text-muted-foreground">{h.label}</span>{" "}
+      <span className="font-semibold">{h.value}</span> — {h.note}
+    </p>
+  );
+}
 
-      {/* TL;DR — 보조 카드라 2개만. narrative의 중간 지점이라는 의미만 압축. */}
-      <section
-        aria-label="Highlights"
-        className="-mt-2 mb-12 grid grid-cols-1 gap-3 sm:grid-cols-2"
-      >
-        {HIGHLIGHTS.map((h) => {
-          const Icon = h.icon;
-          return (
-            <div
-              key={h.label}
-              className={
-                "rounded-xl border p-4 sm:p-5 " +
-                (h.accent
-                  ? "border-[var(--accent)]/50 bg-[var(--accent)]/5"
-                  : "border-border bg-card")
-              }
-            >
-              <div className="flex items-center gap-2">
-                <Icon
-                  className={
-                    "h-4 w-4 " +
-                    (h.accent ? "text-[var(--accent)]" : "text-muted-foreground")
-                  }
-                  aria-hidden="true"
-                />
-                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  {h.label}
-                </p>
-              </div>
-              <p
-                className={
-                  "mt-2 text-base font-semibold tracking-tight sm:text-lg " +
-                  (h.accent ? "text-[var(--accent)]" : "text-foreground")
-                }
-              >
-                {h.value}
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                {h.note}
-              </p>
-            </div>
-          );
-        })}
-      </section>
-
-      <Section id="overview" title="Overview">
+export default function HirePickerPage() {
+  return (
+    <CaseLayout project={project} sections={SECTIONS}>
+      <CaseSection meta={S.problem}>
         <Prose>
           <p>
             Spring Boot + Next.js 기반의 두 번째 풀스택 프로젝트입니다.{" "}
-            <span className="font-medium text-foreground">
+            <span className="font-medium">
               이전 프로젝트의 발전 포인트 4가지(HttpSession, Action 강결합,
               다대다 매핑, 단일 책임)
             </span>
@@ -242,71 +220,43 @@ export default function HirePickerPage() {
             되었습니다.
           </p>
         </Prose>
-      </Section>
+      </CaseSection>
 
-      <Section id="stack" title="Tech Stack">
-        <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
-          ※ <span className="text-foreground">직접 다룬 영역</span>의 기술 세트.
-        </p>
-        <TechStackGrid groups={techStack} />
-      </Section>
-
-      <Section id="role" title="My Role">
-        {/* Part 1 — What I built (보조 정보, 톤다운) */}
-        <div className="mb-12">
-          <h3 className="text-lg font-semibold tracking-tight text-foreground/70">
-            What I built
-          </h3>
-          <p className="mt-1 text-xs text-muted-foreground/80">
-            이 프로젝트에서 직접 구현한 영역
-          </p>
-          <ul className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-[13px] leading-[1.6] text-foreground/65 sm:grid-cols-2">
-            {builtItems.map((b) => (
-              <li key={b} className="relative pl-4">
-                <span
-                  className="absolute left-0 top-[0.7em] h-1 w-1 rounded-full bg-muted-foreground/60"
-                  aria-hidden="true"
-                />
-                {b}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* 두 섹션 시각 구분 */}
-        <div className="my-12 border-t border-border/40 sm:my-16" />
-
-        {/* Part 2 — What carried forward (핵심 정보, 강조) */}
+      <CaseSection meta={S.role}>
         <div>
-          <div className="border-l-[3px] border-[var(--accent)] pl-4 sm:pl-5">
-            <h3 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-              What carried forward
-            </h3>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              다음 프로젝트의 결정 근거가 된 학습 사이클
-            </p>
-          </div>
-          <div className="mt-6">
-            <MyRoleCards roles={roles} accent={ACCENT} />
-          </div>
+          <SubHead note="이 프로젝트에서 직접 구현한 영역">What I built</SubHead>
+          <PlainList items={builtItems} />
         </div>
-      </Section>
+        <div>
+          <SubHead note="※ 직접 다룬 영역의 기술 세트.">사용 기술</SubHead>
+          <TechStackGrid groups={techStack} />
+        </div>
+      </CaseSection>
 
-      <Section id="code" title="Code Highlight">
+      <CaseSection meta={S.decisions}>
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
+          {HIGHLIGHTS.map((h) => (
+            <HighlightLine key={h.label} h={h} />
+          ))}
+        </div>
+        <div>
+          <SubHead note="다음 프로젝트의 결정 근거가 된 학습 사이클">What carried forward</SubHead>
+          <MyRoleCards roles={roles} />
+        </div>
+        <div>
+          <p className="mb-3 text-[15px] leading-[1.7] text-muted-foreground">
             Refresh Token을 DB에 저장한 ‘반쪽 변경’ — 그 한계가 다음 프로젝트
             Booming에서 토큰 전부 Redis 통합의 근거가 되었습니다.
           </p>
           <CodeBlock code={tokenCode} lang="java" filename="TokenService.java (HirePicker)" />
         </div>
-      </Section>
+      </CaseSection>
 
-      <Section id="trouble" title="Trouble-shooting">
-        <TroubleCards troubles={troubles} accent={ACCENT} />
-      </Section>
+      <CaseSection meta={S.failed}>
+        <TroubleCards troubles={troubles} />
+      </CaseSection>
 
-      <Section id="lessons" title="Lessons Learned">
+      <CaseSection meta={S.next}>
         <LessonsList
           items={[
             "처음엔 Refresh Token을 'DB에 회수 가능하게 두자' 싶어 RefreshToken 테이블에 박았는데, 매 인증 요청마다 디스크를 읽는 구조가 어색했습니다. 다음 프로젝트(Booming)에선 Access랑 Refresh 둘 다 Redis로 옮기고 TTL 만료로 회수 로직 자체를 없앴습니다.",
@@ -314,9 +264,7 @@ export default function HirePickerPage() {
             "팀원마다 Redis 포트·Java 버전이 달라 한참 같이 디버깅하던 시기가 있었습니다. Spring Boot + Redis를 단일 Docker Compose 네트워크로 묶어두니 새 사람이 합류해도 `docker compose up` 한 줄로 끝났고, 그 뒤 프로젝트들은 환경 통합을 처음부터 잡고 시작합니다.",
           ]}
         />
-      </Section>
-
-      <ProjectFooter currentSlug={SLUG} />
-    </article>
+      </CaseSection>
+    </CaseLayout>
   );
 }

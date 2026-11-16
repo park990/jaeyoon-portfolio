@@ -1,11 +1,20 @@
+// 정적 빌드라 이 값은 빌드 시점에 고정된다 = 최종 갱신일(빌드 날짜, KST)
+const BUILD_DATE = new Intl.DateTimeFormat("sv-SE", {
+  timeZone: "Asia/Seoul",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+}).format(new Date());
+
 export function Footer() {
-  // social 링크는 Contact 섹션으로 이동. footer는 정말 카피라이트 한 줄만.
   return (
-    <footer className="border-t border-border/60">
-      <div className="mx-auto max-w-3xl px-6 py-6">
-        <p className="text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Jaeyoon Park · Built with Next.js +
-          Tailwind + Claude Code
+    <footer className="border-t border-border">
+      <div className="mx-auto flex max-w-[1120px] flex-col gap-1 px-4 py-6 text-[13px] text-muted-foreground sm:flex-row sm:justify-between sm:px-6">
+        <p>
+          최종 갱신 <time className="font-num" dateTime={BUILD_DATE}>{BUILD_DATE}</time> (빌드 날짜)
+        </p>
+        <p>
+          © {BUILD_DATE.slice(0, 4)} Jaeyoon Park · Built with Next.js + Tailwind + Claude Code
         </p>
       </div>
     </footer>

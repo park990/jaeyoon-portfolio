@@ -1,73 +1,12 @@
-// 4-Stage Incremental Stacking 다이어그램.
-// Stage 2가 박재윤 담당 ⭐.
+import { FlowFigure } from "@/components/case/case-parts";
+import { Ev } from "@/components/case/evidence";
+import { NumText } from "@/components/num-text";
+import { T2G_SCORES, getProjectBySlug } from "@/lib/projects";
 
-const stages = [
-  {
-    n: "1",
-    name: "Baseline",
-    detail: "BERT + Mean Pooling",
-  },
-  {
-    n: "2",
-    name: "ATLOP + DREEAM",
-    detail: "LogSumExp + Adaptive Threshold + Evidence Head",
-    mine: true,
-  },
-  {
-    n: "3",
-    name: "GAIN",
-    detail: "+ GCN 그래프 추론",
-  },
-  {
-    n: "4",
-    name: "U-Net",
-    detail: "+ Graph U-Net 그래프 추론",
-  },
-];
-
-export function StagesDiagram() {
-  return (
-    <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
-      <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-        4-Stage Incremental Stacking
-      </p>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {stages.map((s) => (
-          <div
-            key={s.n}
-            className={
-              "rounded-lg border bg-background/40 p-4 " +
-              (s.mine
-                ? "border-[var(--accent)]/50 ring-1 ring-[var(--accent)]/20"
-                : "border-border")
-            }
-          >
-            <div className="mb-2 flex items-center gap-2">
-              <span
-                className={
-                  "inline-flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold " +
-                  (s.mine
-                    ? "border-[var(--accent)]/40 bg-[var(--accent)]/10 text-[var(--accent)]"
-                    : "border-border bg-secondary text-muted-foreground")
-                }
-              >
-                {s.n}
-              </span>
-              {s.mine && (
-                <span className="text-xs font-medium text-[var(--accent)]">
-                  담당 ⭐
-                </span>
-              )}
-            </div>
-            <p className="text-sm font-semibold text-foreground">{s.name}</p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              {s.detail}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+// 4-Stage Incremental Stacking — Stage 2가 박재윤 담당. 단계 데이터는 lib/projects.ts(flow).
+export function StagesDiagram({ dense = false }: { dense?: boolean }) {
+  const p = getProjectBySlug("text2graph")!;
+  return <FlowFigure dense={dense} steps={p.flow!} caption={p.flowCaption} />;
 }
 
 // Stage 1 → Stage 2 핵심 변경 5축. ATLOP (Zhou 2021) + DREEAM (Ma 2023) 적용 영역.
@@ -82,91 +21,57 @@ const changeRows: ChangeRow[] = [
 
 export function Stage2ChangesTable() {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
-      <p className="border-b border-border bg-background/40 px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+    <table className="w-full border-collapse text-left text-[15px]">
+      <caption className="pb-2 text-left text-[13px] font-medium text-muted-foreground">
         Stage 1 baseline에서 5개 축을 강화 — ATLOP + DREEAM 논문 적용
-      </p>
-      <table className="w-full text-sm">
-        <thead className="border-b border-border bg-background/40">
-          <tr>
-            <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              구성 요소
-            </th>
-            <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Stage 1
-            </th>
-            <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-[var(--accent)]">
-              Stage 2 (담당)
-            </th>
+      </caption>
+      <thead className="border-b border-border-strong">
+        <tr>
+          <th scope="col" className="py-2 pr-3 font-medium text-muted-foreground">구성 요소</th>
+          <th scope="col" className="py-2 pr-3 font-medium text-muted-foreground">Stage 1</th>
+          <th scope="col" className="py-2 font-medium text-foreground">Stage 2 (담당)</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-border">
+        {changeRows.map((r) => (
+          <tr key={r.axis}>
+            <th scope="row" className="py-2 pr-3 font-medium text-foreground">{r.axis}</th>
+            <td className="py-2 pr-3 text-muted-foreground">
+              <NumText text={r.stage1} />
+              {r.axis === "Threshold" && <Ev ids={["th05"]} />}
+            </td>
+            <td className="py-2 font-medium text-foreground">{r.stage2}</td>
           </tr>
-        </thead>
-        <tbody>
-          {changeRows.map((r, i) => (
-            <tr
-              key={r.axis}
-              className={i < changeRows.length - 1 ? "border-b border-border/60" : ""}
-            >
-              <td className="px-4 py-2.5 font-medium text-foreground">{r.axis}</td>
-              <td className="px-4 py-2.5 text-foreground/70">{r.stage1}</td>
-              <td className="bg-[var(--accent)]/5 px-4 py-2.5 font-medium text-foreground">
-                {r.stage2}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
-// V1/V2 Results 비교 표
-type Row = { metric: string; v1: string; v2: string };
-const rows: Row[] = [
-  { metric: "Micro F1", v1: "56.64%", v2: "59.25%" },
-  { metric: "Precision", v1: "60.74%", v2: "63.11%" },
-  { metric: "Recall", v1: "53.06%", v2: "55.83%" },
-];
-
+// V1/V2 Results 비교 표 — 수치는 lib/projects.ts(T2G_SCORES)에서 읽는다
 export function MetricsTable() {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
-      <table className="w-full text-sm">
-        <thead className="border-b border-border bg-background/40">
-          <tr>
-            <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Metric
-            </th>
-            <th className="px-4 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              V1
-              <span className="ml-1 font-normal normal-case text-muted-foreground/70">
-                (best_model_f1_56_64)
-              </span>
-            </th>
-            <th className="px-4 py-2.5 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              V2
-              <span className="ml-1 font-normal normal-case text-muted-foreground/70">
-                (best_model_V2)
-              </span>
-            </th>
+    <table className="w-full border-collapse text-left text-[15px]">
+      <caption className="pb-2 text-left text-[13px] font-medium text-muted-foreground">
+        DocRED dev · V1 (best_model_f1_56_64) vs V2 (best_model_V2)
+        <Ev ids={["f1"]} />
+      </caption>
+      <thead className="border-b border-border-strong">
+        <tr>
+          <th scope="col" className="py-2 pr-3 font-medium text-muted-foreground">Metric</th>
+          <th scope="col" className="py-2 pr-3 text-right font-medium text-muted-foreground">V1</th>
+          <th scope="col" className="py-2 text-right font-medium text-foreground">V2</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-border">
+        {T2G_SCORES.map((r) => (
+          <tr key={r.metric}>
+            <th scope="row" className="py-2 pr-3 font-medium text-foreground">{r.metric}</th>
+            <td className="py-2 pr-3 text-right font-num text-muted-foreground">{r.v1}</td>
+            <td className="py-2 text-right font-num text-foreground">{r.v2}</td>
           </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <tr
-              key={r.metric}
-              className={i < rows.length - 1 ? "border-b border-border/60" : ""}
-            >
-              <td className="px-4 py-2.5 font-medium text-foreground">{r.metric}</td>
-              <td className="px-4 py-2.5 text-right font-mono text-foreground/85">
-                {r.v1}
-              </td>
-              <td className="px-4 py-2.5 text-right font-mono text-foreground/85">
-                {r.v2}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </table>
   );
 }

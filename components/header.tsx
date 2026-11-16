@@ -1,48 +1,50 @@
 import Link from "next/link";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { PROFILE } from "@/lib/profile";
 
-// 홈 페이지의 섹션 앵커들. 추가/변경 편하도록 배열 분리.
-// 모든 섹션이 "/" 페이지 안에 있으므로 href는 "/#xxx" 또는 "#xxx" 둘 다 동작.
-// 절대 경로("/")를 prefix로 두면 상세 페이지(/projects/[slug])에서 클릭 시
-// 홈으로 이동하면서 해당 섹션으로 스크롤됨.
+// 얇게 고정되는 헤더: 이름 / 작업·경력·연락 / GitHub·메일
+// 홈 섹션 앵커는 "/#..."로 두어 사례 페이지에서도 홈의 해당 구역으로 이동한다.
+// (주의: /lab 시안은 body > header 를 숨기므로 이 요소는 body 직계 <header>여야 한다)
 const nav = [
-  { href: "/#projects", label: "Projects" },
-  { href: "/#skills", label: "Skills" },
-  { href: "/#about", label: "About" },
-  { href: "/#background", label: "Background" },
-  { href: "/#contact", label: "Contact" },
+  { href: "/#work", label: "작업" },
+  { href: "/#career", label: "경력" },
+  { href: "/#contact", label: "연락" },
 ];
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/70 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
-        <Link
-          href="/"
-          className="font-semibold tracking-tight text-foreground transition-colors hover:text-primary"
-        >
-          Jaeyoon-Portfolio
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-sm">
+      <div className="mx-auto flex h-12 max-w-[1120px] items-center justify-between gap-4 px-4 text-[14px] sm:px-6">
+        <Link href="/" className="shrink-0 font-semibold text-foreground hover:underline hover:underline-offset-4">
+          {PROFILE.nameKo}
         </Link>
 
-        {/* 데스크탑(md+)에서만 풀 nav 노출. 모바일은 일단 숨김 — 햄버거는 다음 단계. */}
-        <nav className="hidden items-center gap-0.5 md:flex">
+        <nav aria-label="홈 구역" className="flex items-center gap-4 sm:gap-6">
           {nav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              className="text-foreground hover:underline hover:underline-offset-4"
             >
               {item.label}
             </Link>
           ))}
-          <div className="ml-2">
-            <ThemeToggle />
-          </div>
         </nav>
 
-        {/* 모바일에선 테마 토글만 노출 */}
-        <div className="md:hidden">
-          <ThemeToggle />
+        <div className="flex shrink-0 items-center gap-4 text-muted-foreground">
+          <a
+            href={PROFILE.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground hover:underline hover:underline-offset-4"
+          >
+            GitHub
+          </a>
+          <a
+            href={`mailto:${PROFILE.email}`}
+            className="hover:text-foreground hover:underline hover:underline-offset-4"
+          >
+            메일
+          </a>
         </div>
       </div>
     </header>

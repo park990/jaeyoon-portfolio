@@ -4,7 +4,7 @@ import { projects } from "@/lib/projects";
 const SITE_URL = "https://jaeyoon-portfolio.vercel.app";
 
 // Next.js App Router 컨벤션 — 빌드 시 정적 sitemap.xml 생성.
-// 홈 + 각 프로젝트 상세 페이지(hasDetailPage)를 항목으로 포함.
+// 홈 + 각 사례 페이지. /lab 시안은 넣지 않는다.
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
@@ -15,14 +15,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 1.0,
   };
 
-  const detailPages: MetadataRoute.Sitemap = projects
-    .filter((p) => p.hasDetailPage)
-    .map((p) => ({
-      url: `${SITE_URL}/projects/${p.slug}`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: p.display === "featured" ? 0.9 : 0.7,
-    }));
+  const detailPages: MetadataRoute.Sitemap = projects.map((p) => ({
+    url: `${SITE_URL}/projects/${p.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: p.display === "work" ? 0.9 : 0.7,
+  }));
 
   return [home, ...detailPages];
 }

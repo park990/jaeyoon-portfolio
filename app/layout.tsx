@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { IBM_Plex_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import "./globals.css";
 
-// 영문: Inter variable
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-// 한글: Pretendard variable (단일 woff2가 wght 100~900 전부 커버)
+// 본문·제목: Pretendard variable (단일 woff2가 wght 100~900 전부 커버)
 const pretendard = localFont({
   src: "./fonts/PretendardVariable.woff2",
   variable: "--font-pretendard",
@@ -21,16 +14,24 @@ const pretendard = localFont({
   weight: "45 920",
 });
 
+// 숫자·SHA·근거 등급 표시 전용
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
+});
+
 const SITE_URL = "https://jaeyoon-portfolio.vercel.app";
-const SITE_TITLE = "Jaeyoon Park · AI · NLP Engineer";
+const SITE_TITLE = "박재윤 — AI · NLP 엔지니어 (수치 검증 · 데이터 파이프라인)";
 const SITE_DESCRIPTION =
-  "기사 속 수치 주장을 검증하는 LLM 파이프라인을 설계·구현하고, 모델을 감싸는 백엔드/인프라까지 다룹니다. StructVerify-Lab · Medical RAG Experiment · Text2Graph (DocRED) · Booming · HirePicker.";
+  "숫자를 말할 때는 출처를 같이 붙입니다. 기사 속 수치 주장을 공식 통계와 대조하는 LLM 파이프라인을 만들었고, 지금은 흩어진 공공 자료를 모아 검사 규칙으로 자동 점검하는 서비스를 혼자 만들고 있습니다.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_TITLE,
-    template: "%s · Jaeyoon Park",
+    template: "%s · 박재윤",
   },
   description: SITE_DESCRIPTION,
   keywords: [
@@ -53,7 +54,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ko_KR",
     url: SITE_URL,
-    siteName: "Jaeyoon Park · Portfolio",
+    siteName: "박재윤 · Portfolio",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
   },
@@ -78,12 +79,12 @@ export default function RootLayout({
     <html
       lang="ko"
       suppressHydrationWarning
-      className={`${pretendard.variable} ${inter.variable} h-full`}
+      className={`${pretendard.variable} ${plexMono.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col antialiased">
+      <body className="flex min-h-full flex-col antialiased">
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >

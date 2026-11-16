@@ -1,26 +1,29 @@
 import type { Metadata } from "next";
-import { KeyRound, Radio, type LucideIcon } from "lucide-react";
-import { Section, Prose } from "@/components/project-detail/section";
+import { Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
-import {
-  ProjectHeader,
-  ProjectFooter,
-} from "@/components/project-detail/layout";
 import {
   TechStackGrid,
   MyRoleCards,
   TroubleCards,
   LessonsList,
+  PlainList,
   type Role,
   type Trouble,
 } from "@/components/project-detail/blocks";
+import { CaseLayout } from "@/components/case/case-layout";
+import {
+  CaseSection,
+  FlowFigure,
+  SubHead,
+  type CaseSectionMeta,
+} from "@/components/case/case-parts";
 import { getProjectBySlug } from "@/lib/projects";
 
 const SLUG = "booming";
-const ACCENT = "#10B981";
+const project = getProjectBySlug(SLUG)!;
 
 export const metadata: Metadata = {
-  title: "Booming · Jaeyoon Park",
+  title: project.title,
   description:
     "HighWay Guide·HirePicker의 학습이 종착하는 세 번째 풀스택 — 토큰 Redis 통합 + secure_storage + WebSocket SimpleBroker 단순화.",
 };
@@ -103,6 +106,7 @@ const troubles: Trouble[] = [
       "JwtChannelInterceptor에서 CONNECT 시 검증한 CustomUserDetails를 accessor.getSessionAttributes()에 저장하고, SEND/SUBSCRIBE에서 같은 세션 속성에서 복원하는 패턴으로 해결했습니다. 컨트롤러는 @Header(\"simpSessionAttributes\")로 직접 접근하도록 했습니다.",
     lesson:
       "처음엔 HTTP에서 @AuthenticationPrincipal이 너무 자연스럽게 동작하니까 WebSocket에서도 당연히 될 거라 생각하고 그대로 갖다 붙였는데, 메시지 두세 개 주고받자마자 null로 떨어졌습니다. 한참 디버깅한 끝에 CONNECT 스레드와 SEND 스레드가 다르고 SecurityContextHolder가 그 스레드를 따라간다는 사실을 확인했고, JwtChannelInterceptor에서 검증한 사용자를 세션 속성에 저장하고 SEND/SUBSCRIBE에서 복원하는 패턴으로 다시 짰습니다.",
+    ev: { lesson: ["fewMsgs"] },
   },
   {
     title: "웹의 HttpOnly Cookie 패턴이 모바일에서 작동 X",
@@ -126,7 +130,6 @@ const troubles: Trouble[] = [
 
 // TL;DR — 보조 카드라 2개로 최소. HirePicker 학습의 종착점이라는 narrative만.
 type Highlight = {
-  icon: LucideIcon;
   label: string;
   value: string;
   note: string;
@@ -135,14 +138,12 @@ type Highlight = {
 
 const HIGHLIGHTS: Highlight[] = [
   {
-    icon: KeyRound,
     label: "토큰 통합",
     value: "Access + Refresh → Redis",
     note: "HirePicker '반쪽 변경'을 받아 TTL 자동 만료로 회수 로직 자체 제거",
     accent: true,
   },
   {
-    icon: Radio,
     label: "WebSocket 단순화",
     value: "SimpleBroker + JwtChannelInterceptor",
     note: "HirePicker Redis Pub/Sub '과한 설계' 회고 → 단일 인스턴스 환경에 맞춤",
@@ -188,159 +189,125 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
 }
 `;
 
-export default function BoomingPage() {
-  const project = getProjectBySlug(SLUG)!;
+// JwtChannelInterceptor 코드와 Trouble 본문에 적힌 순서를 그대로 그린 흐름
+const WS_AUTH_FLOW = [
+  { name: "CONNECT", detail: "Authorization 헤더의 Bearer 토큰을 jwtTokenProvider로 검증", mine: true },
+  { name: "세션 속성에 저장", detail: "검증한 CustomUserDetails를 accessor.getSessionAttributes()에 저장 (스레드 무관)", mine: true },
+  { name: "SEND / SUBSCRIBE", detail: "다른 스레드 → 같은 세션 속성에서 userDetails 복원", mine: true },
+  { name: "컨트롤러", detail: "@Header(\"simpSessionAttributes\")로 직접 접근", mine: true },
+];
 
+const SECTIONS: CaseSectionMeta[] = [
+  {
+    id: "problem",
+    label: "문제",
+    title: "HirePicker에서 미완으로 남긴 두 결정을 모바일이라는 새 조건에서 정리해야 했습니다",
+  },
+  {
+    id: "role",
+    label: "내가 맡은 것",
+    title: "모임 도메인을 뺀 백엔드 전반과 Flutter 앱 기획·디자인·구현을 맡았습니다",
+  },
+  {
+    id: "flow",
+    label: "흐름",
+    title: "WebSocket 인증은 CONNECT에서 검증하고 세션 속성으로 넘깁니다",
+  },
+  {
+    id: "decisions",
+    label: "결정과 이유",
+    title: "토큰은 전부 Redis로, 브로커는 SimpleBroker로, 채팅 메시지는 MongoDB로",
+  },
+  {
+    id: "failed",
+    label: "안 된 것",
+    title: "HTTP·웹에서 되던 방식이 WebSocket과 모바일에서는 그대로 통하지 않았습니다",
+  },
+  {
+    id: "next",
+    label: "다음에 고칠 것",
+    title: "이전 한계를 다음 결정의 근거로 옮기는 사이클을 다음 프로젝트에도 가져갑니다",
+  },
+];
+const S = Object.fromEntries(SECTIONS.map((s) => [s.id, s])) as Record<string, CaseSectionMeta>;
+
+function HighlightLine({ h }: { h: Highlight }) {
   return (
-    <article
-      className="mx-auto max-w-3xl px-6 pb-24 pt-12 sm:pt-16"
-      style={{ "--accent": ACCENT } as React.CSSProperties}
-    >
-      <ProjectHeader
-        project={project}
-        oneLiner="풀스택 학습 사이클의 종착점 — HirePicker의 ‘Refresh DB·Redis Pub/Sub’ 반쪽/과한 설계를 받아 토큰 전부 Redis 통합 + SimpleBroker 단순화로 정리. 동시에 모바일이라는 새 환경 조건이 추가됨."
-        period="2025.11 ~ 진행 중"
-        team="2명"
-      />
+    <p className="max-w-[680px] border-l-2 border-border-strong pl-4 text-[17px] leading-[1.75] text-foreground">
+      <span className="text-muted-foreground">{h.label}</span>{" "}
+      <span className="font-semibold">{h.value}</span> — {h.note}
+    </p>
+  );
+}
 
-      {/* TL;DR — 보조 카드라 2개만. 큰 그림은 'What carried forward' 섹션이 담음. */}
-      <section
-        aria-label="Highlights"
-        className="-mt-2 mb-12 grid grid-cols-1 gap-3 sm:grid-cols-2"
-      >
-        {HIGHLIGHTS.map((h) => {
-          const Icon = h.icon;
-          return (
-            <div
-              key={h.label}
-              className={
-                "rounded-xl border p-4 sm:p-5 " +
-                (h.accent
-                  ? "border-[var(--accent)]/50 bg-[var(--accent)]/5"
-                  : "border-border bg-card")
-              }
-            >
-              <div className="flex items-center gap-2">
-                <Icon
-                  className={
-                    "h-4 w-4 " +
-                    (h.accent ? "text-[var(--accent)]" : "text-muted-foreground")
-                  }
-                  aria-hidden="true"
-                />
-                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  {h.label}
-                </p>
-              </div>
-              <p
-                className={
-                  "mt-2 text-base font-semibold tracking-tight sm:text-lg " +
-                  (h.accent ? "text-[var(--accent)]" : "text-foreground")
-                }
-              >
-                {h.value}
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                {h.note}
-              </p>
-            </div>
-          );
-        })}
-      </section>
-
-      <Section id="overview" title="Overview">
+export default function BoomingPage() {
+  return (
+    <CaseLayout project={project} sections={SECTIONS}>
+      <CaseSection meta={S.problem}>
         <Prose>
           <p>
             세 번째 풀스택 프로젝트이자 학습 사이클의 종착점입니다.{" "}
-            <span className="font-medium text-foreground">
-              HirePicker에서 미완으로 남긴 두 결정
-            </span>
+            <span className="font-medium">HirePicker에서 미완으로 남긴 두 결정</span>
             을 받아 정리했습니다 — (1) Refresh Token DB 저장 → Redis 통합, (2)
             WebSocket Redis Pub/Sub → SimpleBroker 단순화. 동시에 모바일이라는
             새 환경 조건이 더해져, 같은 JWT라도 저장소 전략을 다시 짜야 한다는
             교훈을 직접 적용했습니다.
           </p>
         </Prose>
-      </Section>
+      </CaseSection>
 
-      <Section id="stack" title="Tech Stack">
-        <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
-          ※ <span className="text-foreground">직접 다룬 영역</span>의 기술 세트.
-        </p>
-        <TechStackGrid groups={techStack} />
-      </Section>
-
-      <Section id="role" title="My Role">
-        {/* Part 1 — What I built (보조 정보, 톤다운) */}
-        <div className="mb-12">
-          <h3 className="text-lg font-semibold tracking-tight text-foreground/70">
-            What I built
-          </h3>
-          <p className="mt-1 text-xs text-muted-foreground/80">
-            이 프로젝트에서 직접 구현한 영역
-          </p>
-          <ul className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 text-[13px] leading-[1.6] text-foreground/65 sm:grid-cols-2">
-            {builtItems.map((b) => (
-              <li key={b} className="relative pl-4">
-                <span
-                  className="absolute left-0 top-[0.7em] h-1 w-1 rounded-full bg-muted-foreground/60"
-                  aria-hidden="true"
-                />
-                {b}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* 두 섹션 시각 구분 */}
-        <div className="my-12 border-t border-border/40 sm:my-16" />
-
-        {/* Part 2 — What carried forward (핵심 정보, 강조) */}
+      <CaseSection meta={S.role}>
+        <MyRoleCards roles={[roles[3]]} />
         <div>
-          <div className="border-l-[3px] border-[var(--accent)] pl-4 sm:pl-5">
-            <h3 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-              What carried forward
-            </h3>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              다음 프로젝트의 결정 근거가 된 학습 사이클
-            </p>
-          </div>
-          <div className="mt-6">
-            <MyRoleCards roles={roles} accent={ACCENT} />
-          </div>
+          <SubHead note="이 프로젝트에서 직접 구현한 영역">What I built</SubHead>
+          <PlainList items={builtItems} />
         </div>
-      </Section>
+        <div>
+          <SubHead note="※ 직접 다룬 영역의 기술 세트.">사용 기술</SubHead>
+          <TechStackGrid groups={techStack} />
+        </div>
+      </CaseSection>
 
-      <Section id="code" title="Code Highlight">
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
+      <CaseSection meta={S.flow}>
+        <FlowFigure steps={WS_AUTH_FLOW} caption="JwtChannelInterceptor — WebSocket의 ThreadLocal 한계를 세션 속성으로 우회" />
+        <div>
+          <p className="mb-3 text-[15px] leading-[1.7] text-muted-foreground">
             WebSocket의 ThreadLocal 한계를 세션 속성으로 우회한 JWT 인증
             인터셉터 — 이 프로젝트에서 가장 정교한 트러블슈팅이었습니다.
           </p>
-          <CodeBlock
-            code={interceptorCode}
-            lang="java"
-            filename="JwtChannelInterceptor.java"
-          />
+          <CodeBlock code={interceptorCode} lang="java" filename="JwtChannelInterceptor.java" />
         </div>
-      </Section>
+      </CaseSection>
 
-      <Section id="trouble" title="Trouble-shooting">
-        <TroubleCards troubles={troubles} accent={ACCENT} />
-      </Section>
+      <CaseSection meta={S.decisions}>
+        <div className="space-y-3">
+          {HIGHLIGHTS.map((h) => (
+            <HighlightLine key={h.label} h={h} />
+          ))}
+        </div>
+        <div>
+          <SubHead note="다음 프로젝트의 결정 근거가 된 학습 사이클">What carried forward</SubHead>
+          <MyRoleCards roles={roles.slice(0, 3)} />
+        </div>
+      </CaseSection>
 
-      <Section id="lessons" title="Lessons Learned">
+      <CaseSection meta={S.failed}>
+        <TroubleCards troubles={troubles} />
+      </CaseSection>
+
+      <CaseSection meta={S.next}>
         <LessonsList
           items={[
             "HighWay에서 단순하게 가본 한계와 HirePicker에서 과하게 설계해본 회고가 Booming의 통합·단순화 근거로 그대로 옮겨왔습니다. 세 프로젝트를 이어 만들면서 이전 한계가 다음 결정의 근거로 옮겨가는 사이클을 직접 굴려봤고, 다음 프로젝트도 이 사이클로 가져갈 생각입니다.",
-            "HTTP에서 자연스럽게 동작하던 @AuthenticationPrincipal을 WebSocket에 그대로 붙였더니 두세 메시지 만에 null이 떨어졌습니다. CONNECT와 SEND가 서로 다른 스레드라는 게 디버깅하면서 드러났고, JwtChannelInterceptor에서 검증한 사용자를 세션 속성에 저장하고 SEND/SUBSCRIBE에서 복원하는 패턴으로 다시 짰습니다.",
+            {
+              text: "HTTP에서 자연스럽게 동작하던 @AuthenticationPrincipal을 WebSocket에 그대로 붙였더니 두세 메시지 만에 null이 떨어졌습니다. CONNECT와 SEND가 서로 다른 스레드라는 게 디버깅하면서 드러났고, JwtChannelInterceptor에서 검증한 사용자를 세션 속성에 저장하고 SEND/SUBSCRIBE에서 복원하는 패턴으로 다시 짰습니다.",
+              ev: ["fewMsgs"],
+            },
             "웹에선 브라우저가 HttpOnly Cookie를 알아서 첨부해줘서 깔끔했는데, Flutter에선 같은 흐름이 안 통했습니다. 쿠키가 자동으로 안 실리니까 첫 요청부터 401이 떴고, flutter_secure_storage에 토큰을 박고 모든 요청에 Bearer 헤더를 명시하는 식으로 다시 설계했습니다.",
             "채팅 메시지를 MySQL 컬럼에 욱여넣다 보니 첨부·이모지·시스템 메시지가 들어올 때마다 스키마가 흔들렸습니다. 그래서 사용자·모임·게시판은 MySQL, 채팅 메시지만 MongoDB로 갈라두는 폴리글랏 구조로 정리했습니다.",
           ]}
         />
-      </Section>
-
-      <ProjectFooter currentSlug={SLUG} />
-    </article>
+      </CaseSection>
+    </CaseLayout>
   );
 }

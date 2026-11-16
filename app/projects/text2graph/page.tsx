@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
-import { TrendingUp, Network, BarChart3, type LucideIcon } from "lucide-react";
-import { Section, Prose } from "@/components/project-detail/section";
+import { Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
-import {
-  ProjectHeader,
-  ProjectFooter,
-} from "@/components/project-detail/layout";
 import {
   TechStackGrid,
   MyRoleCards,
@@ -13,6 +8,9 @@ import {
   LessonsList,
   type Role,
 } from "@/components/project-detail/blocks";
+import { CaseLayout } from "@/components/case/case-layout";
+import { CaseSection, SubHead, type CaseSectionMeta } from "@/components/case/case-parts";
+import { Ev } from "@/components/case/evidence";
 import {
   StagesDiagram,
   MetricsTable,
@@ -21,10 +19,10 @@ import {
 import { getProjectBySlug } from "@/lib/projects";
 
 const SLUG = "text2graph";
-const ACCENT = "#A78BFA";
+const project = getProjectBySlug(SLUG)!;
 
 export const metadata: Metadata = {
-  title: "Text2Graph · Jaeyoon Park",
+  title: project.title,
   description:
     "Document-level Relation Extraction. ATLOP Loss + Adaptive Threshold 두 구현 오류를 수정해 v1 56.64% → v2 59.25% (+2.61pt)",
 };
@@ -46,7 +44,7 @@ const roles: Role[] = [
   },
   {
     title: "meta/rel2id.json 직접 생성 (97개 관계 매핑)",
-    bullets: ["P17(country) ~ P175 등 위키데이터 속성 97종을 0-96 라벨로 매핑"],
+    bullets: [{ text: "P17(country) ~ P175 등 위키데이터 속성 97종을 0-96 라벨로 매핑", ev: ["rel97"] }],
   },
   {
     title: "V1/V2 ablation 비교 및 Stage 3/4 팀원에게 baseline 제공",
@@ -58,38 +56,7 @@ const roles: Role[] = [
   },
   {
     title: "NetworkX 기반 Knowledge Graph 시각화",
-    bullets: ["dev 998 문서 → 10,494 triple 추출 후 그래프 시각화"],
-  },
-];
-
-// TL;DR — 이 프로젝트의 강점은 기술 선택이 아니라 진단 능력.
-type Highlight = {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-  note: string;
-  accent?: boolean;
-};
-
-const HIGHLIGHTS: Highlight[] = [
-  {
-    icon: TrendingUp,
-    label: "Dev F1",
-    value: "+2.61pt",
-    note: "56.64% → 59.25% (두 디버깅 수정의 합산 효과)",
-    accent: true,
-  },
-  {
-    icon: Network,
-    label: "Triple 추출",
-    value: "10,494",
-    note: "dev 998 문서 → NetworkX 기반 KG 시각화",
-  },
-  {
-    icon: BarChart3,
-    label: "관계별 정성분석",
-    value: "80~90% vs 0~12.5%",
-    note: "표면 패턴 관계 vs 상식 추론 관계의 성능 격차",
+    bullets: [{ text: "dev 998 문서 → 10,494 triple 추출 후 그래프 시각화", ev: ["dev998", "triples"] }],
   },
 ];
 
@@ -104,6 +71,7 @@ const DEBUGGING_REASONING = [
       "scripts/train.py의 evaluate_on_dev를 따라가 보니 고정 threshold(0.5)로 relation 채택 여부를 판단하고 있었습니다. 학습된 threshold_logits 값이 평가 단계에서 무시되고 있음을 확인했습니다.",
     fix:
       "evaluate_on_dev를 ATLOP 정상 평가 방식으로 정정했습니다. 모델이 출력하는 threshold_logits와 각 relation logit을 비교해 채택 판단. 이 한 수정만으로도 F1이 즉시 반영됐습니다.",
+    ev: { hypothesis: ["f1"], verification: ["th05"] },
   },
   {
     title: "ATLOP ranking loss 오구현 — 원 논문 수식과 직접 대조",
@@ -113,6 +81,7 @@ const DEBUGGING_REASONING = [
       "src/losses.py의 ATLOPLoss가 'BCE with threshold class concat' 약식 형태로, 단순 이진 분류처럼 작성돼 있었습니다. 원 논문의 Positive/Negative 분리 + threshold 비교 의도가 살아나지 않음을 확인했습니다.",
     fix:
       "원 논문 ranking loss 수식 그대로 재구현했습니다: loss = log(1+Σexp(neg−TH)) + log(1+Σexp(TH−pos)). 위 평가 수정과 함께 적용해 v1 56.64% → v2 59.25% (+2.61pt) 도달.",
+    ev: { fix: ["f1"] },
   },
   {
     title: "관계별 성능 격차 해석 — 전체 F1만 보지 않기",
@@ -122,8 +91,42 @@ const DEBUGGING_REASONING = [
       "dev 998 문서 → 10,494 triple 추출 후 관계 종류별 정밀도를 쟀습니다. 생년월일/사망일 같은 표면 패턴 관계는 80~90%인 반면, 민족/하위분류처럼 상식 추론이 필요한 관계는 0~12.5%로 격차가 컸습니다.",
     fix:
       "결론은 BERT-base가 표면 패턴은 잡지만 상식 추론은 약하다는 것이었습니다. 단순 모델 교체보다 commonsense KG 외부 지식 주입을 다음 라운드 방향으로 잡았고, F1 평균만 보지 않고 관계별 분포까지 같이 봅니다.",
+    ev: { verification: ["dev998", "triples", "relgap"] },
   },
 ];
+
+type Debug = (typeof DEBUGGING_REASONING)[number];
+
+function DebugItem({ d, n }: { d: Debug; n: number }) {
+  const ev = d.ev as { hypothesis?: string[]; verification?: string[]; fix?: string[] };
+  return (
+    <li>
+      <h3 className="flex gap-3 text-[18px] font-semibold leading-snug tracking-tight text-foreground">
+        <span className="font-num text-[14px] font-normal leading-[1.9] text-muted-foreground">
+          {String(n).padStart(2, "0")}
+        </span>
+        <span>{d.title}</span>
+      </h3>
+      <dl className="mt-3 space-y-3 pl-9 text-[17px] leading-[1.75]">
+        {(
+          [
+            ["가설", d.hypothesis, ev.hypothesis],
+            ["검증", d.verification, ev.verification],
+            ["수정", d.fix, ev.fix],
+          ] as const
+        ).map(([k, v, e]) => (
+          <div key={k}>
+            <dt className="text-[14px] font-medium text-muted-foreground">{k}</dt>
+            <dd className="text-foreground">
+              {v}
+              {e && <Ev ids={[...e]} />}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </li>
+  );
+}
 
 const rel2idCode = `{
   "Na": 0,
@@ -149,187 +152,145 @@ const lossCode = `def compute_loss(logits, labels, threshold_class=0):
     return loss.mean()
 `;
 
+const SECTIONS: CaseSectionMeta[] = [
+  {
+    id: "problem",
+    label: "문제",
+    title: "위키피디아 문서 속 Entity 간 관계 97종을 자동으로 추출해야 했습니다",
+  },
+  {
+    id: "role",
+    label: "내가 맡은 것",
+    title: "4-Stage 중 Stage 2(ATLOP + DREEAM)의 학습·평가를 혼자 맡았습니다",
+  },
+  {
+    id: "flow",
+    label: "흐름",
+    title: "Baseline 위에 Stage를 하나씩 쌓는 구조에서 두 번째 단계였습니다",
+  },
+  {
+    id: "decisions",
+    label: "결정과 이유",
+    title: "Stage 1 baseline에서 다섯 개 축을 ATLOP·DREEAM 방식으로 바꿨습니다",
+  },
+  {
+    id: "eval",
+    label: "평가",
+    title: "DocRED dev에서 Micro F1 56.64% → 59.25%, 관계별로는 격차가 컸습니다",
+  },
+  {
+    id: "failed",
+    label: "안 된 것",
+    title: "v1은 평가 코드와 손실 함수, 두 곳의 구현 오류로 56.64%에 멈췄습니다",
+  },
+  {
+    id: "next",
+    label: "다음에 고칠 것",
+    title: "F1이 안 오르면 평가 코드부터, 논문 구현은 수식 단위까지 맞춥니다",
+  },
+];
+const S = Object.fromEntries(SECTIONS.map((s) => [s.id, s])) as Record<string, CaseSectionMeta>;
+
 export default function Text2GraphPage() {
-  const project = getProjectBySlug(SLUG)!;
-
   return (
-    <article
-      className="mx-auto max-w-3xl px-6 pb-24 pt-12 sm:pt-16"
-      style={{ "--accent": ACCENT } as React.CSSProperties}
-    >
-      <ProjectHeader
-        project={project}
-        oneLiner="DocRED Document-level Relation Extraction 파이프라인의 Stage 2 (ATLOP + DREEAM) 단독 담당. 두 구현 오류(ATLOP Ranking Loss · Adaptive Threshold 평가)를 디버깅으로 잡아 v1 56.64% → v2 59.25% (+2.61pt) 도달."
-        period="2026.03"
-        team="4명"
-        links={project.links}
-      />
-
-      {/* TL;DR Highlights — 진단 능력에 초점 */}
-      <section
-        aria-label="Highlights"
-        className="-mt-2 mb-12 grid grid-cols-1 gap-3 sm:grid-cols-3"
-      >
-        {HIGHLIGHTS.map((h) => {
-          const Icon = h.icon;
-          return (
-            <div
-              key={h.label}
-              className={
-                "rounded-xl border p-4 sm:p-5 " +
-                (h.accent
-                  ? "border-[var(--accent)]/50 bg-[var(--accent)]/5"
-                  : "border-border bg-card")
-              }
-            >
-              <div className="flex items-center gap-2">
-                <Icon
-                  className={
-                    "h-4 w-4 " +
-                    (h.accent ? "text-[var(--accent)]" : "text-muted-foreground")
-                  }
-                  aria-hidden="true"
-                />
-                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  {h.label}
-                </p>
-              </div>
-              <p
-                className={
-                  "mt-2 text-xl font-semibold tracking-tight sm:text-2xl " +
-                  (h.accent ? "text-[var(--accent)]" : "text-foreground")
-                }
-              >
-                {h.value}
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                {h.note}
-              </p>
-            </div>
-          );
-        })}
-      </section>
-
-      <Section id="overview" title="Overview">
+    <CaseLayout project={project} sections={SECTIONS}>
+      <CaseSection meta={S.problem}>
         <Prose>
           <p>
             DocRED 데이터셋 기반으로 위키피디아 문서 내 Entity 간 관계(97종)를
             자동 추출하는 모델 학습 파이프라인. 팀의 4-Stage Incremental Stacking
             구조에서 Stage 2 (ATLOP + DREEAM)를 단독 담당했습니다.
+            <Ev ids={["rel97"]} />
           </p>
+        </Prose>
+      </CaseSection>
+
+      <CaseSection meta={S.role}>
+        <Prose>
           <p>
             추출된 triple은 NetworkX로 Knowledge Graph 시각화까지 연결했고,
             학습된 모델은 HuggingFace에 park990/hihi_model로 배포했습니다.
           </p>
         </Prose>
-      </Section>
-
-      <Section id="stack" title="Tech Stack">
-        <TechStackGrid groups={techStack} />
-      </Section>
-
-      <Section id="debugging" title="디버깅 추론 — 가설 · 검증 · 수정">
-        <div className="space-y-3">
-          {DEBUGGING_REASONING.map((d, i) => (
-            <div
-              key={d.title}
-              className="rounded-xl border border-border bg-card p-5 sm:p-6"
-            >
-              <div className="mb-3 flex items-start gap-3">
-                <span
-                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 text-xs font-semibold"
-                  style={{ color: ACCENT }}
-                >
-                  {i + 1}
-                </span>
-                <h3 className="text-base font-semibold leading-snug tracking-tight text-foreground sm:text-lg">
-                  {d.title}
-                </h3>
-              </div>
-              <dl className="ml-10 space-y-2.5 text-sm leading-[1.7] text-foreground/85">
-                <div className="grid grid-cols-[64px_1fr] gap-x-3 gap-y-1">
-                  <dt className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                    가설
-                  </dt>
-                  <dd>{d.hypothesis}</dd>
-                </div>
-                <div className="grid grid-cols-[64px_1fr] gap-x-3 gap-y-1">
-                  <dt className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                    검증
-                  </dt>
-                  <dd>{d.verification}</dd>
-                </div>
-                <div className="grid grid-cols-[64px_1fr] gap-x-3 gap-y-1">
-                  <dt className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                    수정
-                  </dt>
-                  <dd>{d.fix}</dd>
-                </div>
-              </dl>
-            </div>
-          ))}
+        <div>
+          <SubHead>맡은 일</SubHead>
+          <MyRoleCards roles={roles} />
         </div>
-      </Section>
-
-      <Section id="role" title="My Role">
-        <MyRoleCards roles={roles} accent={ACCENT} />
-      </Section>
-
-      <Section id="architecture" title="Architecture">
-        <div className="space-y-5">
-          <StagesDiagram />
-          <Stage2ChangesTable />
-        </div>
-      </Section>
-
-      <Section id="code" title="Code Highlights">
-        <div className="space-y-5">
-          <div>
-            <p className="mb-3 text-sm text-muted-foreground">
-              직접 생성한 97개 관계 매핑. P17(country)부터 P175까지 위키데이터
-              속성을 0–96 라벨로.
-            </p>
-            <CodeBlock code={rel2idCode} lang="json" filename="meta/rel2id.json" />
-          </div>
-          <div>
-            <p className="mb-3 text-sm text-muted-foreground">
-              ATLOP Ranking Loss 재구현. 논문 원본 수식 그대로 옮긴 버전.
-            </p>
-            <CodeBlock code={lossCode} lang="python" filename="loss.py" />
-          </div>
-        </div>
-      </Section>
-
-      <Section id="results" title="Results">
-        <div className="space-y-5">
-          <MetricsTable />
-          <p className="text-sm leading-[1.8] text-muted-foreground">
-            벤치마크 대비: 논문 ATLOP-BERT 64.19%는 distant pre-training 데이터 30배
-            사용. 본 프로젝트는 annotated만 사용한 조건에서 v2 59.25%로, 데이터 격차를
-            감안하면 정상 범위.
+        <div>
+          <SubHead>직접 생성한 관계 매핑</SubHead>
+          <p className="mb-3 text-[15px] leading-[1.7] text-muted-foreground">
+            직접 생성한 97개 관계 매핑. P17(country)부터 P175까지 위키데이터
+            속성을 0–96 라벨로.
+            <Ev ids={["rel97"]} />
           </p>
-          <ResultsGrid
-            items={[
-              "v1 F1 56.64% (구현 오류 포함된 baseline)",
-              "v2 F1 59.25% — ATLOP Ranking Loss + Adaptive Threshold 평가 동시 정정 (+2.61pt)",
-              "HuggingFace 모델 배포: park990/hihi_model (v1 best_model_f1_56_64 + v2 best_model_V2)",
-              "dev set 998 문서 → 10,494 triple 추출 후 NetworkX KG 시각화",
-              "관계별 정밀도: 생년월일/사망일 80–90%, 민족/하위분류 0–12.5% (long-tail 격차 확인)",
-            ]}
-          />
+          <CodeBlock code={rel2idCode} lang="json" filename="meta/rel2id.json" />
         </div>
-      </Section>
+        <div>
+          <SubHead>사용 기술</SubHead>
+          <TechStackGrid groups={techStack} />
+        </div>
+      </CaseSection>
 
-      <Section id="lessons" title="Lessons Learned">
+      <CaseSection meta={S.flow}>
+        <StagesDiagram />
+      </CaseSection>
+
+      <CaseSection meta={S.decisions}>
+        <Stage2ChangesTable />
+      </CaseSection>
+
+      <CaseSection meta={S.eval}>
+        <Prose>
+          <p>
+            평가셋은 DocRED dev set(998 문서), 지표는 Micro F1 · Precision · Recall입니다.
+            <Ev ids={["dev998"]} />
+          </p>
+        </Prose>
+        <MetricsTable />
+        <p className="max-w-[680px] text-[15px] leading-[1.75] text-muted-foreground">
+          벤치마크 대비: 논문 ATLOP-BERT 64.19%는 distant pre-training 데이터 30배
+          사용. 본 프로젝트는 annotated만 사용한 조건에서 v2 59.25%로, 데이터 격차를
+          감안하면 정상 범위.
+          <Ev ids={["bench", "f1"]} />
+        </p>
+        <ResultsGrid
+          items={[
+            { text: "v1 F1 56.64% (구현 오류 포함된 baseline)", ev: ["f1"] },
+            { text: "v2 F1 59.25% — ATLOP Ranking Loss + Adaptive Threshold 평가 동시 정정 (+2.61pt)", ev: ["f1"] },
+            "HuggingFace 모델 배포: park990/hihi_model (v1 best_model_f1_56_64 + v2 best_model_V2)",
+            { text: "dev set 998 문서 → 10,494 triple 추출 후 NetworkX KG 시각화", ev: ["dev998", "triples"] },
+            { text: "관계별 정밀도: 생년월일/사망일 80–90%, 민족/하위분류 0–12.5% (long-tail 격차 확인)", ev: ["relgap"] },
+          ]}
+        />
+        <ol>
+          <DebugItem d={DEBUGGING_REASONING[2]} n={3} />
+        </ol>
+      </CaseSection>
+
+      <CaseSection meta={S.failed}>
+        <ol className="space-y-10">
+          <DebugItem d={DEBUGGING_REASONING[0]} n={1} />
+          <DebugItem d={DEBUGGING_REASONING[1]} n={2} />
+        </ol>
+        <div>
+          <p className="mb-3 text-[15px] leading-[1.7] text-muted-foreground">
+            ATLOP Ranking Loss 재구현. 논문 원본 수식 그대로 옮긴 버전.
+          </p>
+          <CodeBlock code={lossCode} lang="python" filename="loss.py" />
+        </div>
+      </CaseSection>
+
+      <CaseSection meta={S.next}>
         <LessonsList
           items={[
-            "처음엔 모델이 잘못된 줄 알고 가중치부터 만지려 했는데, dev F1이 56.64%에서 계속 정체했습니다. evaluate_on_dev를 따라가 보니 학습된 adaptive threshold가 평가에서 무시되고 고정 0.5로 잘리고 있었습니다. 한 줄짜리 버그가 학습 결함보다 더 큰 점수 손실을 내는 걸 본 뒤로, F1이 안 오르면 모델보다 평가·추론 코드부터 의심합니다.",
+            {
+              text: "처음엔 모델이 잘못된 줄 알고 가중치부터 만지려 했는데, dev F1이 56.64%에서 계속 정체했습니다. evaluate_on_dev를 따라가 보니 학습된 adaptive threshold가 평가에서 무시되고 고정 0.5로 잘리고 있었습니다. 한 줄짜리 버그가 학습 결함보다 더 큰 점수 손실을 내는 걸 본 뒤로, F1이 안 오르면 모델보다 평가·추론 코드부터 의심합니다.",
+              ev: ["f1", "th05"],
+            },
             "ATLOP Loss를 'BCE + threshold class concat' 약식으로 두니까 학습 곡선이 일찍 정체했습니다. 원 논문 ranking loss 수식 그대로 다시 옮기고 나서야 곡선이 살아났고, 그래서 논문 구현은 수식 단위까지 맞춰 옮기는 식으로 정리했습니다.",
           ]}
         />
-      </Section>
-
-      <ProjectFooter currentSlug={SLUG} />
-    </article>
+      </CaseSection>
+    </CaseLayout>
   );
 }
