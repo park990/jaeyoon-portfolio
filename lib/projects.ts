@@ -62,6 +62,8 @@ export type Project = {
   headline: string;
   /** 홈 카드·띠용 한 줄 (기존 lib/projects.ts oneLiner) */
   oneLiner: string;
+  /** oneLiner 속 수치의 근거 id */
+  oneLinerEv?: string[];
   /** 사례 페이지 머리 요약 (기존 상세 페이지 머리 oneLiner) */
   summary: string;
   period: string;
@@ -110,6 +112,7 @@ export const projects: Project[] = [
       "기사 속 수치 주장을 KOSIS 통계와 대조하는 플랫폼에서 데이터 레이어와 검증 흐름을 맡았습니다",
     oneLiner:
       "기사 속 수치 주장을 KOSIS 공식 통계와 비교해 진위 판정. 초기 baseline 파이프라인부터 KOSIS 262,783건 적재·runtime 병렬화까지.",
+    oneLinerEv: ["catalog"],
     summary:
       "기사 속 수치 주장을 KOSIS 공식 통계와 비교해 진위 판정하는 LLM 플랫폼. 초기 baseline 파이프라인부터 KOSIS 262,783건 적재 · 표 매칭 필터 4종 · runtime 병렬화 ~7분→~1/3 · LLM 429 backoff까지 담당.",
     period: "2026.04 ~ 09",
@@ -311,6 +314,7 @@ export const projects: Project[] = [
     headline: "구현 오류 두 곳을 고쳐 Dev F1을 56.64%에서 59.25%로 올렸습니다",
     oneLiner:
       "Adaptive Threshold 버그 + ATLOP Loss 구현 오류 수정으로 F1 +2.61pt (56.64 → 59.25)",
+    oneLinerEv: ["f1"],
     summary:
       "DocRED Document-level Relation Extraction 파이프라인의 Stage 2 (ATLOP + DREEAM) 단독 담당. 두 구현 오류(ATLOP Ranking Loss · Adaptive Threshold 평가)를 디버깅으로 잡아 v1 56.64% → v2 59.25% (+2.61pt) 도달.",
     period: "2026.04 ~ 06",
@@ -403,6 +407,7 @@ export const projects: Project[] = [
     headline: "RAG를 붙이자 정답률이 65.4%에서 63.1%로 내려간 원인을 오답 케이스로 추적했습니다",
     oneLiner:
       "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인(Qwen2.5-7B · ChromaDB)과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락이 측정돼 오답 케이스로 원인을 분석했습니다.",
+    oneLinerEv: ["ablation"],
     summary:
       "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% (−2.3pt) 하락을 측정해 distraction 원인을 케이스 단위로 추적.",
     period: "2026.04",

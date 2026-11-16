@@ -27,10 +27,14 @@ function ProjectBand({ p }: { p: Project }) {
     <EvidenceProvider evidence={p.evidence} linkBase={`/projects/${p.slug}`}>
       <li className="grid grid-cols-1 gap-8 py-10 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-14">
         <div className="min-w-0 max-w-[680px]">
-          <Meta items={[p.title, p.role, `팀 ${p.team}`, p.period, p.status]} />
+          <Meta items={[p.title, p.subtitle, p.role, `팀 ${p.team}`, p.period, p.status]} />
           <h3 className="mt-2 text-[22px] font-semibold leading-[1.42] tracking-[-0.01em] text-foreground sm:text-[24px]">
             {p.headline}
           </h3>
+          <p className="mt-2 text-[15px] leading-[1.7] text-muted-foreground">
+            <NumText text={p.oneLiner} />
+            {p.oneLinerEv && <Ev ids={p.oneLinerEv} />}
+          </p>
           <ul className="mt-4 space-y-1.5 text-[17px] leading-[1.7] text-foreground">
             {p.results?.map((r) => (
               <li key={r.text} className="relative pl-4">
@@ -43,7 +47,10 @@ function ProjectBand({ p }: { p: Project }) {
               </li>
             ))}
           </ul>
-          <p className="mt-5 text-[15px]">
+          <p className="mt-4 text-[14px] leading-[1.6] text-muted-foreground">
+            <span className="text-foreground">스택</span> {p.stack.join(" · ")}
+          </p>
+          <p className="mt-4 text-[15px]">
             <Link
               href={`/projects/${p.slug}`}
               className="font-medium text-primary underline underline-offset-4 hover:no-underline"

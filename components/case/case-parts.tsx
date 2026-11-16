@@ -21,6 +21,7 @@ export function CaseHeader({ project: p }: { project: Project }) {
     <header className="pb-10">
       <p className="text-[14px] leading-[1.7] text-muted-foreground">
         <span className="font-semibold text-foreground">{p.title}</span>
+        <span> — {p.subtitle}</span>
         {labels.map((l) => (
           <span key={l}>
             <span aria-hidden="true"> · </span>
