@@ -41,6 +41,12 @@ export function Contact() {
       </div>
 
       <dl className="mt-6 grid max-w-[560px] grid-cols-[7rem_minmax(0,1fr)] items-baseline gap-y-1 text-[16px] leading-[1.6]">
+        <dt className="text-note">이력서</dt>
+        <dd>
+          <a href={PROFILE.resume} target="_blank" rel="noopener noreferrer" className="hit">
+            PDF 열기
+          </a>
+        </dd>
         <dt className="text-note">GitHub</dt>
         <dd>
           <a href={PROFILE.github} target="_blank" rel="noopener noreferrer" className="hit">

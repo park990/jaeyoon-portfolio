@@ -8,6 +8,7 @@ export const PROFILE = {
   email: "rhkgkrwk2008@gmail.com",
   github: "https://github.com/park990",
   huggingface: "https://huggingface.co/park990",
+  resume: "/jaeyoon-park-resume.pdf",
   location: "서울특별시 마포구",
 } as const;
 
