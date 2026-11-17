@@ -6,16 +6,16 @@ const BUILD_DATE = new Intl.DateTimeFormat("sv-SE", {
   day: "2-digit",
 }).format(new Date());
 
+// 내용은 1단계 그대로. 항목 사이 " · "는 간격으로 나눴다.
 export function Footer() {
   return (
-    <footer className="border-t border-border">
-      <div className="mx-auto flex max-w-[1120px] flex-col gap-1 px-4 py-6 text-[13px] text-muted-foreground sm:flex-row sm:justify-between sm:px-6">
+    <footer className="site-wrap w-full">
+      <div className="flex flex-wrap gap-x-6 gap-y-1 border-t border-rule py-6 text-[13px] leading-[1.6] text-note">
         <p>
-          최종 갱신 <time className="font-num" dateTime={BUILD_DATE}>{BUILD_DATE}</time> (빌드 날짜)
+          최종 갱신 <time dateTime={BUILD_DATE}>{BUILD_DATE}</time> (빌드 날짜)
         </p>
-        <p>
-          © {BUILD_DATE.slice(0, 4)} Jaeyoon Park · Built with Next.js + Tailwind + Claude Code
-        </p>
+        <p>© {BUILD_DATE.slice(0, 4)} Jaeyoon Park</p>
+        <p>Built with Next.js + Tailwind + Claude Code</p>
       </div>
     </footer>
   );

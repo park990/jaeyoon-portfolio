@@ -1,19 +1,19 @@
 "use client";
 
-import { createContext, useContext, useId, useState } from "react";
-import type { Evidence, Grade } from "@/lib/projects";
-import { NumText } from "@/components/num-text";
+import { createContext, useContext } from "react";
+import type { Evidence } from "@/lib/projects";
+import { InlineText, extProps, isCommit, looksLikePath, marksFor } from "@/components/case/inline";
 
-// 사례 페이지 근거 표시.
-// - 문장 끝 표시: [코드 3] — 등급은 색이 아니라 글자로 구분한다.
-// - 1200px 미만: 표시를 누르면 문장 아래에 근거가 펼쳐진다.
-// - 1200px 이상: 표시는 오른쪽 여백의 근거 주석(#ev-n)으로 이동하는 링크.
-// 펼침 영역은 <p>·<li> 안에 들어가도 되도록 전부 <span>으로 만든다.
+// 근거 표시 (2단계)
+// - 등급 글자([코드] 등)는 화면에 쓰지 않는다. 숫자의 모양(형광·점선·일반)으로만 드러낸다.
+// - 문장 끝 꼬리표는 작은 링크 "근거 2, 8"(13px) → 사례 페이지 근거 표의 그 줄(#ev-n)
+// - 여백 주석(SideNotes): 커밋은 7자리 번호 + 날짜와 한 줄, 문서·파일은 이름 링크
+// - 등급 이름은 근거 표의 '종류' 칸에만 글자로 쓴다.
 
 type Ctx = { evidence: Evidence[]; linkBase?: string };
 const EvidenceContext = createContext<Ctx | null>(null);
 
-/** linkBase가 있으면(홈) 근거 표시는 펼침 대신 그 사례 페이지의 근거 색인으로 가는 링크가 된다 */
+/** linkBase가 있으면(홈) "근거 n"은 그 사례 페이지의 근거 표 줄로 가는 링크가 된다 */
 export function EvidenceProvider({
   evidence,
   linkBase,
@@ -28,173 +28,127 @@ export function EvidenceProvider({
   );
 }
 
-function useEvidence(ids: string[]) {
+function useEvidence(ids: readonly string[]) {
   const ctx = useContext(EvidenceContext);
   if (!ctx) return [];
+  const seen = new Set<string>();
   return ids
+    .filter((id) => (seen.has(id) ? false : (seen.add(id), true)))
     .map((id) => {
       const n = ctx.evidence.findIndex((e) => e.id === id);
       return n < 0 ? null : { e: ctx.evidence[n], n: n + 1 };
     })
-    .filter((x): x is { e: Evidence; n: number } => x !== null);
+    .filter((x): x is { e: Evidence; n: number } => x !== null)
+    .sort((a, b) => a.n - b.n);
 }
 
-/** 등급별로 묶기: [{grade, items}] */
-function groupByGrade(items: { e: Evidence; n: number }[]) {
-  const out: { grade: Grade; items: { e: Evidence; n: number }[] }[] = [];
-  for (const it of items) {
-    const g = out.find((x) => x.grade === it.e.grade);
-    if (g) g.items.push(it);
-    else out.push({ grade: it.e.grade, items: [it] });
-  }
-  return out;
-}
-
-export function GradeLabel({ grade, className = "" }: { grade: Grade; className?: string }) {
-  return (
-    <span className={`text-[12.5px] font-medium text-primary ${className}`}>[{grade}]</span>
-  );
-}
-
-export function EvidenceLink({ e }: { e: Evidence }) {
-  if (!e.href) return null;
-  const external = e.href.startsWith("http");
-  return (
-    <a
-      href={e.href}
-      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="font-num text-[12.5px] text-primary underline underline-offset-[3px] hover:no-underline"
-    >
-      {e.hrefLabel ?? e.href}
-      {external ? " ↗" : ""}
-    </a>
-  );
-}
-
-/** 문장 끝 근거 표시. ids는 Evidence.id 목록 */
-export function Ev({ ids }: { ids: string[] }) {
+/** 문장 끝 근거 번호: "근거 2, 8" */
+export function Ev({ ids }: { ids: readonly string[] }) {
   const items = useEvidence(ids);
-  const linkBase = useContext(EvidenceContext)?.linkBase;
-  const [open, setOpen] = useState(false);
-  const panelId = useId();
+  const linkBase = useContext(EvidenceContext)?.linkBase ?? "";
   if (items.length === 0) return null;
-  const groups = groupByGrade(items);
-  const label = groups.map((g) => `${g.grade} ${g.items.map((i) => i.n).join("·")}`);
-
-  if (linkBase) {
-    // 홈: 등급 글자만 보이고, 누르면 사례 페이지 근거 색인으로 이동
-    return (
-      <span className="whitespace-normal">
-        {groups.map((g, i) => (
-          <a
-            key={i}
-            href={`${linkBase}#evidence`}
-            className="ml-1 whitespace-nowrap text-[12.5px] font-medium text-primary underline decoration-dotted underline-offset-[3px] hover:decoration-solid"
-            aria-label={`${g.grade} 근거 ${g.items.map((x) => x.n).join(", ")}번 — 사례 페이지 근거 색인`}
-          >
-            [<NumText text={label[i]} />]
-          </a>
-        ))}
-      </span>
-    );
-  }
-
   return (
-    <span className="whitespace-normal">
-      {/* 좁은 화면: 펼침 버튼 */}
-      {label.map((l, i) => (
-        <button
-          key={`b${i}`}
-          type="button"
-          aria-expanded={open}
-          aria-controls={panelId}
-          onClick={() => setOpen((v) => !v)}
-          className="ml-1 whitespace-nowrap rounded-sm px-0.5 text-[12.5px] font-medium text-primary underline decoration-dotted underline-offset-[3px] transition-colors duration-150 hover:bg-secondary min-[1200px]:hidden"
-        >
-          [<NumText text={l} />]
-          <span className="sr-only">{open ? " 근거 접기" : " 근거 펼치기"}</span>
-        </button>
-      ))}
-      {/* 넓은 화면: 오른쪽 근거 주석으로 */}
-      {groups.map((g, i) => (
-        <a
-          key={`a${i}`}
-          href={`#ev-${g.items[0].n}`}
-          className="ml-1 hidden whitespace-nowrap text-[12.5px] font-medium text-primary underline decoration-dotted underline-offset-[3px] hover:decoration-solid min-[1200px]:inline"
-          aria-label={`근거 ${g.items.map((x) => x.n).join(", ")}번 (${g.grade})`}
-        >
-          [<NumText text={label[i]} />]
-        </a>
-      ))}
-      {open && (
-        <span
-          id={panelId}
-          role="note"
-          className="my-2 block border-l-2 border-border-strong py-1 pl-3 text-[14px] leading-[1.6] text-foreground min-[1200px]:hidden"
-        >
-          {items.map(({ e, n }) => (
-            <span key={e.id} className="block py-1">
-              <span className="font-num text-[12px] text-muted-foreground">{n}</span>{" "}
-              <GradeLabel grade={e.grade} /> {e.claim}
-              <span className="block text-[13px] text-muted-foreground">
-                {e.source} {e.href && <EvidenceLink e={e} />}
-              </span>
-            </span>
-          ))}
+    <span className="ev-ref">
+      근거{" "}
+      {items.map(({ n }, i) => (
+        <span key={n}>
+          {i > 0 && ", "}
+          <a href={`${linkBase}#ev-${n}`} aria-label={`근거 표 ${n}번 줄`}>
+            {n}
+          </a>
         </span>
-      )}
+      ))}
     </span>
   );
 }
 
-/** 근거 목록 (본문 끝 근거 색인 · 오른쪽 여백 근거 주석 공용) */
-export function EvidenceList({
-  compact = false,
-  idPrefix,
-}: {
-  compact?: boolean;
-  /** 앵커 id 접두. 오른쪽 여백만 #ev-n을 갖는다 */
-  idPrefix?: string;
-}) {
+/** 근거가 붙는 문장: 숫자 표시 + 끝에 "근거 n" (refs=false면 숫자 표시만) */
+export function Graded({ text, ev, refs = true }: { text: string; ev?: readonly string[]; refs?: boolean }) {
   const ctx = useContext(EvidenceContext);
-  if (!ctx || ctx.evidence.length === 0) return null;
   return (
-    <ol className={compact ? "space-y-3" : "divide-y divide-border border-y border-border"}>
-      {ctx.evidence.map((e, i) => (
-        <li
-          key={e.id}
-          id={idPrefix ? `${idPrefix}${i + 1}` : undefined}
-          className={
-            compact
-              ? "scroll-mt-20 text-[13px] leading-[1.55] target:bg-secondary"
-              : "grid grid-cols-[2rem_minmax(0,1fr)] gap-x-2 py-3 text-[15px] leading-[1.6]"
-          }
-        >
-          {compact ? (
-            <>
-              <span className="font-num text-[12px] text-muted-foreground">{i + 1}</span>{" "}
-              <GradeLabel grade={e.grade} />
-              <span className="block text-foreground">{e.claim}</span>
-              <span className="block text-muted-foreground">{e.source}</span>
-              {e.href && (
-                <span className="block">
-                  <EvidenceLink e={e} />
-                </span>
-              )}
-            </>
-          ) : (
-            <>
-              <span className="pt-[2px] font-num text-[13px] text-muted-foreground">{i + 1}</span>
-              <span>
-                <GradeLabel grade={e.grade} /> {e.claim}
-                <span className="block text-[14px] text-muted-foreground">
-                  {e.source} {e.href && <EvidenceLink e={e} />}
-                </span>
-              </span>
-            </>
+    <>
+      <InlineText text={text} marks={marksFor(ctx?.evidence ?? [], ev)} />
+      {refs && ev && ev.length > 0 && <Ev ids={ev} />}
+    </>
+  );
+}
+
+/** 근거 하나의 열 수 있는 출처 링크 (커밋 = .sha, 파일 = 고정폭 이름, 그 밖 = 고딕) */
+export function SourceLink({ e, className = "" }: { e: Evidence; className?: string }) {
+  if (!e.href) return null;
+  const label = e.hrefLabel ?? e.href;
+  const cls = isCommit(e) ? "sha" : looksLikePath(label) ? "font-mono text-[13px] [overflow-wrap:anywhere]" : "";
+  return (
+    <a href={e.href} {...extProps(e.href)} className={`${cls} ${className}`}>
+      {label}
+    </a>
+  );
+}
+
+/** 여백 주석: 그 문단이 기대는 근거 */
+export function SideNotes({ ids }: { ids: readonly string[] }) {
+  const items = useEvidence(ids);
+  if (items.length === 0) return null;
+  return (
+    <ol className="space-y-3">
+      {items.map(({ e, n }) => (
+        <li key={e.id}>
+          <span className="text-[13px]">근거 {n}</span>
+          {e.href && (
+            <span className="block">
+              <SourceLink e={e} />
+              {e.date && <span className="ml-2 text-[13px]">{e.date}</span>}
+            </span>
           )}
+          <span className="block">{e.claim}</span>
+          {!e.href && <span className="block">{e.source}</span>}
         </li>
       ))}
     </ol>
+  );
+}
+
+/** 근거 목록 표: 번호 | 내용 | 출처 | 종류. 각 줄은 #ev-n */
+export function EvidenceTable() {
+  const ctx = useContext(EvidenceContext);
+  if (!ctx || ctx.evidence.length === 0) return null;
+  return (
+    <table className="tbl w-full border-collapse text-left text-[15px] leading-[1.6]">
+      <thead className="hidden md:table-header-group">
+        <tr>
+          <th scope="col" className="w-[3.5rem] py-2 pr-3">번호</th>
+          <th scope="col" className="py-2 pr-6">내용</th>
+          <th scope="col" className="py-2 pr-6">출처</th>
+          <th scope="col" className="w-[6rem] py-2">종류</th>
+        </tr>
+      </thead>
+      <tbody>
+        {ctx.evidence.map((e, i) => (
+          <tr
+            key={e.id}
+            id={`ev-${i + 1}`}
+            className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-3 border-b border-rule py-3 md:table-row md:py-0 [&:target>td]:border-b-ink"
+          >
+            <td className="row-span-3 border-0 align-top text-note md:border-b md:py-3 md:pr-3 [tr:target_&]:font-semibold [tr:target_&]:text-ink">
+              {i + 1}
+            </td>
+            <td className="border-0 align-top text-ink md:border-b md:py-3 md:pr-6">{e.claim}</td>
+            <td className="border-0 align-top text-note md:border-b md:py-3 md:pr-6">
+              {e.source}
+              {e.href && (
+                <>
+                  {" "}
+                  <SourceLink e={e} />
+                </>
+              )}
+            </td>
+            <td className="border-0 align-top text-ink md:border-b md:py-3">
+              <span className="text-[13px] text-note md:hidden">종류 </span>
+              {e.grade}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }

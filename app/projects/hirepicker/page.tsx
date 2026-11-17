@@ -3,9 +3,9 @@ import { Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
 import {
   TechStackGrid,
-  MyRoleCards,
-  TroubleCards,
-  LessonsList,
+  roleItems,
+  troubleItems,
+  lessonItems,
   PlainList,
   type Role,
   type Trouble,
@@ -53,7 +53,7 @@ const builtItems = [
 // Part 2 — "What carried forward": 다음 프로젝트로 이어진 학습 사이클 (존댓말)
 const roles: Role[] = [
   {
-    title: "JWT 인증 도입 — HttpSession의 한계를 무상태로 전환",
+    title: "JWT 인증 도입, HttpSession의 한계를 무상태로 전환",
     bullets: [
       "Spring Security + JWT Access/Refresh 이중 토큰 구조를 직접 설계했습니다.",
       "이때는 Refresh를 DB에, Access를 Redis에 분리 저장했고, ‘영속 데이터 vs 세션’ 구분이 아직 명확하지 않았습니다.",
@@ -61,7 +61,7 @@ const roles: Role[] = [
     ],
   },
   {
-    title: "공고-사용자 즐겨찾기 — HighWay의 다대다 매핑 학습 재사용",
+    title: "공고-사용자 즐겨찾기, HighWay의 다대다 매핑 학습 재사용",
     bullets: [
       "HighWay Guide에서 처음 시도한 다대다 관계 테이블 매핑·DB 설계가 막막했던 경험 덕분에, HirePicker의 공고-사용자 즐겨찾기 다대다는 손쉽게 적용할 수 있었습니다.",
       "JPA 연관관계로 다대다를 명시 매핑하고 인덱스를 추가했으며, 사용자별 즐겨찾기 카드 grid에 그대로 렌더했습니다.",
@@ -69,7 +69,7 @@ const roles: Role[] = [
     ],
   },
   {
-    title: "WebSocket (STOMP) + Redis Pub/Sub 직접 구현 — 그리고 회고",
+    title: "WebSocket (STOMP) + Redis Pub/Sub 직접 구현, 그리고 회고",
     bullets: [
       "다중 인스턴스 확장을 가정해 Redis Pub/Sub 외부 broker relay를 직접 구성했습니다.",
       "실 운영은 단일 서버라 매 메시지마다 외부 네트워크 I/O가 발생했고, 회고하면 같은 조건에서는 Spring 내장 SimpleBroker가 더 효율적이었을 거라고 판단했습니다.",
@@ -136,8 +136,8 @@ const HIGHLIGHTS: Highlight[] = [
   },
   {
     label: "두 번의 '과한 설계' 회고",
-    value: "Refresh=DB · Redis Pub/Sub",
-    note: "단일 서버에 외부 broker · 디스크 I/O가 다음 프로젝트 Booming의 단순화 결정 근거가 됨",
+    value: "Refresh=DB, Redis Pub/Sub",
+    note: "단일 서버에 외부 broker, 디스크 I/O가 다음 프로젝트 Booming의 단순화 결정 근거가 됨",
   },
 ];
 
@@ -196,9 +196,9 @@ const S = Object.fromEntries(SECTIONS.map((s) => [s.id, s])) as Record<string, C
 
 function HighlightLine({ h }: { h: Highlight }) {
   return (
-    <p className="max-w-[680px] border-l-2 border-border-strong pl-4 text-[17px] leading-[1.75] text-foreground">
-      <span className="text-muted-foreground">{h.label}</span>{" "}
-      <span className="font-semibold">{h.value}</span> — {h.note}
+    <p className="max-w-[690px] border-l-2 border-ink pl-4 text-ink">
+      <span className="text-note">{h.label}</span>{" "}
+      <span className="font-semibold">{h.value}</span>, {h.note}
     </p>
   );
 }
@@ -210,7 +210,7 @@ export default function HirePickerPage() {
         <Prose>
           <p>
             Spring Boot + Next.js 기반의 두 번째 풀스택 프로젝트입니다.{" "}
-            <span className="font-medium">
+            <span className="font-semibold">
               이전 프로젝트의 발전 포인트 4가지(HttpSession, Action 강결합,
               다대다 매핑, 단일 책임)
             </span>
@@ -224,11 +224,15 @@ export default function HirePickerPage() {
       <CaseSection meta={S.role}>
         <div>
           <SubHead note="이 프로젝트에서 직접 구현한 영역">What I built</SubHead>
-          <PlainList items={builtItems} />
+          <div className="mt-4">
+            <PlainList items={builtItems} />
+          </div>
         </div>
         <div>
           <SubHead note="※ 직접 다룬 영역의 기술 세트.">사용 기술</SubHead>
-          <TechStackGrid groups={techStack} />
+          <div className="mt-4">
+            <TechStackGrid groups={techStack} />
+          </div>
         </div>
       </CaseSection>
 
@@ -238,31 +242,25 @@ export default function HirePickerPage() {
             <HighlightLine key={h.label} h={h} />
           ))}
         </div>
+        <SubHead note="다음 프로젝트의 결정 근거가 된 학습 사이클">What carried forward</SubHead>
+        {roleItems(roles)}
         <div>
-          <SubHead note="다음 프로젝트의 결정 근거가 된 학습 사이클">What carried forward</SubHead>
-          <MyRoleCards roles={roles} />
-        </div>
-        <div>
-          <p className="mb-3 text-[15px] leading-[1.7] text-muted-foreground">
-            Refresh Token을 DB에 저장한 ‘반쪽 변경’ — 그 한계가 다음 프로젝트
+          <p className="mb-3 text-[15px] leading-[1.7] text-note">
+            Refresh Token을 DB에 저장한 ‘반쪽 변경’, 그 한계가 다음 프로젝트
             Booming에서 토큰 전부 Redis 통합의 근거가 되었습니다.
           </p>
           <CodeBlock code={tokenCode} lang="java" filename="TokenService.java (HirePicker)" />
         </div>
       </CaseSection>
 
-      <CaseSection meta={S.failed}>
-        <TroubleCards troubles={troubles} />
-      </CaseSection>
+      <CaseSection meta={S.failed}>{troubleItems(troubles)}</CaseSection>
 
       <CaseSection meta={S.next}>
-        <LessonsList
-          items={[
-            "처음엔 Refresh Token을 'DB에 회수 가능하게 두자' 싶어 RefreshToken 테이블에 박았는데, 매 인증 요청마다 디스크를 읽는 구조가 어색했습니다. 다음 프로젝트(Booming)에선 Access랑 Refresh 둘 다 Redis로 옮기고 TTL 만료로 회수 로직 자체를 없앴습니다.",
-            "단일 서버에 Redis Pub/Sub을 깔아본 한 번이 가장 비싼 수업이었습니다. 인스턴스가 하나뿐인데 매 메시지마다 외부 네트워크 I/O만 추가되는 구조였고, 그 뒤로는 인프라를 '유명한 기술이라서'가 아니라 '내 운영 조건에 맞아서'로 고릅니다.",
-            "팀원마다 Redis 포트·Java 버전이 달라 한참 같이 디버깅하던 시기가 있었습니다. Spring Boot + Redis를 단일 Docker Compose 네트워크로 묶어두니 새 사람이 합류해도 `docker compose up` 한 줄로 끝났고, 그 뒤 프로젝트들은 환경 통합을 처음부터 잡고 시작합니다.",
-          ]}
-        />
+        {lessonItems([
+          "처음엔 Refresh Token을 'DB에 회수 가능하게 두자' 싶어 RefreshToken 테이블에 박았는데, 매 인증 요청마다 디스크를 읽는 구조가 어색했습니다. 다음 프로젝트(Booming)에선 Access랑 Refresh 둘 다 Redis로 옮기고 TTL 만료로 회수 로직 자체를 없앴습니다.",
+          "단일 서버에 Redis Pub/Sub을 깔아본 한 번이 가장 비싼 수업이었습니다. 인스턴스가 하나뿐인데 매 메시지마다 외부 네트워크 I/O만 추가되는 구조였고, 그 뒤로는 인프라를 '유명한 기술이라서'가 아니라 '내 운영 조건에 맞아서'로 고릅니다.",
+          "팀원마다 Redis 포트·Java 버전이 달라 한참 같이 디버깅하던 시기가 있었습니다. Spring Boot + Redis를 단일 Docker Compose 네트워크로 묶어두니 새 사람이 합류해도 `docker compose up` 한 줄로 끝났고, 그 뒤 프로젝트들은 환경 통합을 처음부터 잡고 시작합니다.",
+        ])}
       </CaseSection>
     </CaseLayout>
   );

@@ -1,6 +1,7 @@
 // 프로젝트 데이터의 단일 출처.
-// 홈(첫 화면 증거 줄 · 작업 띠 · 그 밖의 작업)과 /projects/<slug> 사례 페이지가
+// 홈(작업 띠 · 그 밖의 작업)과 /projects/<slug> 사례 페이지가
 // 기간 · 팀 · 역할 · 상태 · 한 줄 소개 · 결과 수치 · 근거를 모두 여기서 읽는다.
+// 화면 문자열은 2단계 부호 규칙을 따른다: 문장 속 나열은 쉼표, " — " 꼬리말은 쉼표나 별도 항목.
 
 // ─── 근거 등급 ───────────────────────────────────────────────────────
 // 코드      = 커밋·파일 줄로 확인됨 (커밋 고정 URL)
@@ -23,6 +24,13 @@ export type Evidence = {
   href?: string;
   /** 링크에 보일 짧은 표기 — SHA, 파일·줄 등 */
   hrefLabel?: string;
+  /**
+   * 이 근거가 뒷받침하는 숫자 표기. 화면에서 이 글자에 형광(코드·평가표·문서)이나
+   * 점선 밑줄(추정)을 단다. 확인 필요는 표시하지 않는다. "{…}"가 있으면 그 부분만 표시.
+   */
+  marks?: string[];
+  /** 커밋 근거의 커밋 날짜 (클론에서 git show -s --date=short) */
+  date?: string;
 };
 
 export type Metric = {
@@ -38,8 +46,11 @@ export type ProjectLink = { label: string; href: string };
 
 /** 흐름 그림 한 단계 — 본문(또는 리포)에 적힌 단계 그대로 */
 export type FlowStep = {
+  /** 단계 앞 꼬리표 (예: Stage 1) — 이름과 간격으로 나눠 보인다 */
+  tag?: string;
   name: string;
-  detail?: string;
+  /** 배열이면 항목을 줄로 나눈다 */
+  detail?: string | string[];
   /** 내가 맡은 단계 */
   mine?: boolean;
   /** 이 단계 문구 속 수치의 근거 id */
@@ -79,8 +90,6 @@ export type Project = {
   metrics: Metric[];
   /** 근거 색인 — 본문 수치의 근거까지 포함 */
   evidence: Evidence[];
-  /** 홈 첫 화면 증거 줄 — 결과 한 문장 (이 파일의 수치로만) */
-  proof?: GradedLine;
   /** 홈 작업 띠의 결과 2~3줄 */
   results?: GradedLine[];
   /** 흐름 그림 (홈 띠 · 사례 페이지 공용) */
@@ -118,20 +127,20 @@ export const projects: Project[] = [
       "기사 속 수치 주장을 KOSIS 공식 통계와 비교해 진위 판정. 초기 baseline 파이프라인부터 KOSIS 262,783건 적재·runtime 병렬화까지.",
     oneLinerEv: ["catalog"],
     summary:
-      "기사 속 수치 주장을 KOSIS 공식 통계와 비교해 진위 판정하는 LLM 플랫폼. 초기 baseline 파이프라인부터 KOSIS 262,783건 적재 · 표 매칭 필터 4종 · runtime 병렬화 ~7분→~1/3 · LLM 429 backoff까지 담당.",
+      "기사 속 수치 주장을 KOSIS 공식 통계와 비교해 진위 판정하는 LLM 플랫폼. 초기 baseline 파이프라인부터 KOSIS 262,783건 적재, 표 매칭 필터 4종, runtime 병렬화 ~7분→~1/3, LLM 429 backoff까지 담당.",
     description:
       "v2.0 LLM 사실검증 플랫폼. 인프라·데이터 적재·KOSIS 메타/검색·LLM 429 backoff·runtime 병렬화·검증 판단까지 8개 모듈 담당.",
     summaryEv: ["catalog", "filterIntl", "filterForecast", "filterRegion", "parallelEst", "parallel"],
     period: "2026.04 ~ 09",
     team: "4명 (멋쟁이사자처럼 NLP 과정)",
-    role: "데이터 레이어 · runtime 검증 병렬화 · LLM 클라이언트 안정화 · 검증 판단",
+    role: "데이터 레이어, runtime 검증 병렬화, LLM 클라이언트 안정화, 검증 판단",
     status: "종료",
     stack: ["NCP HCX", "Pydantic", "PostgreSQL+pgvector", "KOSIS API", "FastAPI", "AWS EC2"],
     metrics: [
       { label: "수상", value: "6팀 중 최우수상", note: "멋쟁이사자처럼 NLP 집중과정", ev: ["award"] },
       { label: "데이터 적재", value: "262,783건", note: "KOSIS 통계 카탈로그 + HCX 임베딩 v2 (1024차원)", ev: ["catalog", "dim"] },
       { label: "Runtime 병렬화", value: "~7분 → ~1/3", note: "claim 8건 직렬 vs asyncio.gather + Semaphore(3)", ev: ["parallelEst", "parallel"] },
-      { label: "표 매칭 필터", value: "4종", note: "국제기구 · 장래추계 · 해외 지역 · 세부 대상", ev: ["filterIntl", "filterForecast", "filterRegion"] },
+      { label: "표 매칭 필터", value: "4종", note: "국제기구, 장래추계, 해외 지역, 세부 대상", ev: ["filterIntl", "filterForecast", "filterRegion"] },
     ],
     evidence: [
       {
@@ -141,12 +150,14 @@ export const projects: Project[] = [
         source: "상장 이미지",
         href: "/projects/structverify-lab/award.jpg",
         hrefLabel: "상장",
+        marks: ["6팀 중 최우수상", "6개 팀 중 최우수"],
       },
       {
         id: "catalog",
         grade: "문서",
         claim: "KOSIS 통계 카탈로그(kosis_stat_catalog) 262,783건 적재",
-        source: "kosis_stat_catalog 행 수 · 2026.05 EC2 이관 기록 (리포 밖)",
+        source: "kosis_stat_catalog 행 수, 2026.05 EC2 이관 기록 (리포 밖)",
+        marks: ["262,783건"],
       },
       {
         id: "parallel",
@@ -155,14 +166,17 @@ export const projects: Project[] = [
         source: "runtime_agent.py Step 7~9 병렬화 커밋",
         href: `${SV}/commit/bb04054419fded016f71b1568f88a04e8e4815b6`,
         hrefLabel: "bb04054",
+        date: "2026-05-12",
+        marks: ["Semaphore(3)", "{3}개 동시"],
       },
       {
         id: "parallelEst",
         grade: "추정",
-        claim: "claim 1건당 14~40초 · 8건 직렬 ~7분 → 병렬 3이면 ~1/3",
+        claim: "claim 1건당 14~40초, 8건 직렬 ~7분 → 병렬 3이면 ~1/3",
         source: "runtime_agent.py 주석의 추정치, 측정 로그 없음 (주석은 팀원 머지 커밋 b2e52e8에서 처음 등장)",
         href: `${SV}/blob/${SV_MAIN}/structverify/agent/runtime_agent.py#L339-L341`,
         hrefLabel: "runtime_agent.py L339–341",
+        marks: ["~7분 → 병렬 ~1/3", "~7분 → ~1/3", "~7분→~1/3", "14~40초", "~7분", "~1/3"],
       },
       {
         id: "embedOpenAI",
@@ -171,6 +185,8 @@ export const projects: Project[] = [
         source: "kosis_crawler.py save_to_db (2026-04-27)",
         href: `${SV}/commit/48cf55b79995b2135bdcc2175b0e8da83e80888a`,
         hrefLabel: "48cf55b",
+        date: "2026-04-27",
+        marks: ["100건 단위", "1/100"],
       },
       {
         id: "embedHcx",
@@ -179,14 +195,17 @@ export const projects: Project[] = [
         source: "kosis_crawler.py get_embedding_safe (2026-04-29)",
         href: `${SV}/commit/4b6dbab5717e00e120c6f61658b7800500cd6403`,
         hrefLabel: "4b6dbab",
+        date: "2026-04-29",
+        marks: ["Semaphore(3)", "최대 5회"],
       },
       {
         id: "embedNow",
         grade: "코드",
-        claim: "현재 코드: 100건 단위로 나눠 embed_batch → _embed_batch_hcx가 Semaphore(3) · 재시도 5회로 건별 호출",
+        claim: "현재 코드: 100건 단위로 나눠 embed_batch → _embed_batch_hcx가 Semaphore(3), 재시도 5회로 건별 호출",
         source: "embedding_client.py (_BATCH_CONCURRENCY = 3, _BATCH_MAX_RETRY = 5)",
         href: `${SV}/blob/${SV_MAIN}/structverify/utils/embedding_client.py#L210-L235`,
         hrefLabel: "embedding_client.py L210–235",
+        marks: ["100건 단위", "Semaphore(3)", "최대 5회"],
       },
       {
         id: "dim",
@@ -195,6 +214,8 @@ export const projects: Project[] = [
         source: "init_db.py embedding vector(1536) → vector(1024) (main: embedding_client.py L19 EMBEDDING_DIM = 1024)",
         href: `${SV}/commit/9fa3c26b676258f74e77bb5bdee8556ad6d4c79f`,
         hrefLabel: "9fa3c26",
+        date: "2026-04-28",
+        marks: ["1024차원"],
       },
       {
         id: "tables",
@@ -203,6 +224,7 @@ export const projects: Project[] = [
         source: "init_db.py CREATE TABLE 5개",
         href: `${SV}/blob/${SV_MAIN}/structverify/storage/init_db.py#L34-L99`,
         hrefLabel: "init_db.py L34–99",
+        marks: ["핵심 5 테이블", "5 테이블"],
       },
       {
         id: "tablesAlembic",
@@ -211,14 +233,17 @@ export const projects: Project[] = [
         source: "0001_initial.py op.create_table 4개 (팀원 yeseul 커밋). memory/schema.sql의 2개 테이블은 별도",
         href: `${SV}/blob/${SV_MAIN}/sv_platform/alembic/versions/0001_initial.py#L20-L94`,
         hrefLabel: "0001_initial.py L20–94",
+        marks: ["4 테이블", "총 9 테이블", "총 9", "= {9}"],
       },
       {
         id: "categories",
-        grade: "확인 필요",
-        claim: "주제별 통계(MT_ZTITLE) 31개 카테고리",
-        source: "리포 KOSIS_TOP_CATEGORIES는 30개(A~V) — 본문 값 31과 다름",
+        // [2단계] 31 → 30 정정 (KOSIS_TOP_CATEGORIES 30줄, 주석 처리된 MT_OTITLE 1줄 제외)
+        grade: "코드",
+        claim: "주제별 통계(MT_ZTITLE) 30개 카테고리",
+        source: "kosis_crawler.py KOSIS_TOP_CATEGORIES 30개 항목 (A~V)",
         href: `${SV}/blob/${SV_MAIN}/structverify/adaptation/kosis_crawler.py#L91-L124`,
         hrefLabel: "kosis_crawler.py L91–124",
+        marks: ["30개 카테고리", "30 카테고리", "30개"],
       },
       {
         id: "cos085",
@@ -233,6 +258,8 @@ export const projects: Project[] = [
         source: "llm_client.py _call_hcx_v1/_call_hcx_v3 (2026-05-14)",
         href: `${SV}/commit/24ac3a97b4c58d599b5a9bae7c5c418572dfed28`,
         hrefLabel: "24ac3a9",
+        date: "2026-05-14",
+        marks: ["최대 3회 시도", "1초 → 2초", "1→2s"],
       },
       {
         id: "backoffStructured",
@@ -241,6 +268,8 @@ export const projects: Project[] = [
         source: "llm_client.py _call_hcx_structured (2026-05-18)",
         href: `${SV}/commit/6cfc82ed121ee954e24cfbba09d098b3dbc7f7fa`,
         hrefLabel: "6cfc82e",
+        date: "2026-05-18",
+        marks: ["최대 3회 시도", "1초 → 2초", "1→2s"],
       },
       {
         id: "filterIntl",
@@ -249,6 +278,8 @@ export const projects: Project[] = [
         source: "kosis_connector.py _is_table_relevant",
         href: `${SV}/commit/da34cba63de418be93cedcb97ca94ea66a7edbd7`,
         hrefLabel: "da34cba",
+        date: "2026-05-19",
+        marks: ["4종"],
       },
       {
         id: "filterForecast",
@@ -257,6 +288,8 @@ export const projects: Project[] = [
         source: "kosis_connector.py _is_table_relevant",
         href: `${SV}/commit/1d4a90a7fb3e0c5166a0b74eda892de501d81e2b`,
         hrefLabel: "1d4a90a",
+        date: "2026-05-15",
+        marks: ["4종"],
       },
       {
         id: "filterRegion",
@@ -265,6 +298,8 @@ export const projects: Project[] = [
         source: "kosis_connector.py _is_table_relevant",
         href: `${SV}/commit/38b1041d66f7b5851c37fa1cbad992da7ae8079c`,
         hrefLabel: "38b1041",
+        date: "2026-05-15",
+        marks: ["4종"],
       },
       {
         id: "year",
@@ -273,6 +308,8 @@ export const projects: Project[] = [
         source: "verifier.py abs(claim_year - kv_year) > 2 → > 0",
         href: `${SV}/commit/8d46a4b02d196fabf6bde036d91c5848980907a7`,
         hrefLabel: "8d46a4b",
+        date: "2026-05-15",
+        marks: ["±2"],
       },
       {
         id: "over90",
@@ -281,10 +318,10 @@ export const projects: Project[] = [
         source: "verification/config.yaml mismatch_max_error: 0.90 (90% 임계는 팀원 김예슬 2026-05-06 추가)",
         href: `${SV}/blob/${SV_MAIN}/structverify/verification/config.yaml#L20`,
         hrefLabel: "config.yaml L20",
+        marks: ["90% 초과", "90%+", "90%"],
       },
     ],
     repo: { label: "2026-StructVerify-Lab/structverify @fb4f5de", href: `${SV}/tree/${SV_MAIN}` },
-    proof: { text: "KOSIS 통계 카탈로그 262,783건을 적재하고, 6팀 중 최우수상을 받았습니다", ev: ["catalog", "award"] },
     results: [
       { text: "멋쟁이사자처럼 NLP 집중과정 6팀 중 최우수상", ev: ["award"] },
       { text: "KOSIS 통계 카탈로그 262,783건 적재 + 1024차원 임베딩", ev: ["catalog", "dim"] },
@@ -300,14 +337,14 @@ export const projects: Project[] = [
       },
       {
         name: "통계표 필터",
-        detail: "_is_table_relevant() — 국제기구 · 장래추계 · 해외 지역 · 세부 대상 4종 마커로 차단",
+        detail: ["_is_table_relevant()", "국제기구, 장래추계, 해외 지역, 세부 대상 4종 마커로 차단"],
         mine: true,
         ev: ["filterIntl", "filterForecast", "filterRegion"],
       },
       { name: "수치 판정 (verifier)", detail: "단위·연도·오차율 같은 수치 판정은 verifier가 결정론적 코드로만", mine: true },
       { name: "설명 (explainer)", detail: "자연어 설명은 explainer에서 LLM이 맡음" },
     ],
-    flowCaption: "본문에 적힌 검증 단계. 담당 표시가 붙은 단계를 맡았습니다.",
+    flowCaption: "본문에 적힌 검증 단계. 굵은 글씨 단계를 맡았습니다.",
     display: "work",
   },
 
@@ -323,7 +360,7 @@ export const projects: Project[] = [
       "Adaptive Threshold 버그 + ATLOP Loss 구현 오류 수정으로 F1 +2.61pt (56.64 → 59.25)",
     oneLinerEv: ["f1"],
     summary:
-      "DocRED Document-level Relation Extraction 파이프라인의 Stage 2 (ATLOP + DREEAM) 단독 담당. 두 구현 오류(ATLOP Ranking Loss · Adaptive Threshold 평가)를 디버깅으로 잡아 v1 56.64% → v2 59.25% (+2.61pt) 도달.",
+      "DocRED Document-level Relation Extraction 파이프라인의 Stage 2 (ATLOP + DREEAM) 단독 담당. 두 구현 오류(ATLOP Ranking Loss, Adaptive Threshold 평가)를 디버깅으로 잡아 v1 56.64% → v2 59.25% (+2.61pt) 도달.",
     description:
       "Document-level Relation Extraction. ATLOP Loss + Adaptive Threshold 두 구현 오류를 수정해 v1 56.64% → v2 59.25% (+2.61pt)",
     summaryEv: ["f1"],
@@ -341,26 +378,30 @@ export const projects: Project[] = [
       {
         id: "f1",
         grade: "평가표",
-        claim: "v1 F1 56.64% (P 60.74 · R 53.06) → v2 F1 59.25% (P 63.11 · R 55.83), +2.61pt",
+        claim: "v1 F1 56.64% (P 60.74, R 53.06) → v2 F1 59.25% (P 63.11, R 55.83), +2.61pt",
         source: "README 버전별 성능 표 (본인 커밋 0a6285e가 처음 추가, 학습 로그는 리포에 없음)",
         href: `${T2G}/blob/${T2G_MAIN}/README.md#L446-L447`,
         hrefLabel: "README L446–447",
+        marks: ["v1 56.64% → v2 59.25%", "56.64% → 59.25%", "56.64 → 59.25", "+2.61pt", "56.64%", "59.25%", "60.74%", "63.11%", "53.06%", "55.83%"],
       },
       {
         id: "th05",
         grade: "코드",
         claim: "평가가 고정 threshold 0.5로 relation을 채택하던 부분을 threshold_logits 비교로 수정",
-        source: "evaluate_on_dev · ATLOPLoss 수정 커밋 (본인)",
+        source: "evaluate_on_dev, ATLOPLoss 수정 커밋 (본인)",
         href: `${T2G}/commit/31e47dc9c412651bbfc1db31fd8f72d5cf47a9d1`,
         hrefLabel: "31e47dc",
+        date: "2026-04-08",
+        marks: ["0.5"],
       },
       {
         id: "rel97",
         grade: "코드",
-        claim: "관계 97종 · 라벨 0–96",
-        source: "rel2id.json 97개 항목. 파일은 팀원 yeseul 커밋(ba690a5)으로 추가 — 본문의 ‘직접 생성’과 다름. 코드 예시의 P17=1 … P175=96도 리포(P6=1 … P1198=96)와 다름",
+        claim: "관계 97종, 라벨 0–96",
+        source: "rel2id.json 97개 항목. 파일은 팀원 yeseul 커밋(ba690a5)으로 추가, 본문의 ‘직접 생성’과 다름. 코드 예시의 P17=1 … P175=96도 리포(P6=1 … P1198=96)와 다름",
         href: `${T2G}/blob/${T2G_MAIN}/pipeline/data/meta/rel2id.json`,
         hrefLabel: "rel2id.json",
+        marks: ["97종", "97개", "0–96", "0-96"],
       },
       {
         id: "dev998",
@@ -369,6 +410,7 @@ export const projects: Project[] = [
         source: "파이프라인 노트북 출력 ‘Loaded 998 documents from dev.json’",
         href: `${T2G}/blob/${T2G_MAIN}/pipeline/notebooks/run_pipeline_colab_final.ipynb?plain=1#L693-L695`,
         hrefLabel: "run_pipeline_colab_final.ipynb L693–695",
+        marks: ["998 문서"],
       },
       {
         id: "triples",
@@ -385,23 +427,22 @@ export const projects: Project[] = [
       {
         id: "bench",
         grade: "확인 필요",
-        claim: "논문 ATLOP-BERT 64.19% · distant pre-training 데이터 30배",
+        claim: "논문 ATLOP-BERT 64.19%, distant pre-training 데이터 30배",
         source: "64.19는 팀 발표자료 PDF에만 있음. ATLOP·DREEAM 원 논문 표의 ATLOP-BERT-base Dev F1은 61.09. 30배 비교의 출처 미확인",
       },
     ],
     repo: { label: "yeseul-kim01/2026-Text2Graph @504504f", href: `${T2G}/tree/${T2G_MAIN}` },
     links: [{ label: "HuggingFace 모델 park990/hihi_model", href: "https://huggingface.co/park990/hihi_model" }],
-    proof: { text: "구현 오류 두 곳을 고쳐 Dev F1을 56.64%에서 59.25%로 올렸습니다", ev: ["f1"] },
     results: [
       { text: "Dev F1 56.64% → 59.25% (+2.61pt)", ev: ["f1"] },
       { text: "dev 998 문서 → 10,494 triple 추출", ev: ["dev998", "triples"] },
       { text: "관계별 정밀도 80~90% vs 0~12.5% (표면 패턴 vs 상식 추론)", ev: ["relgap"] },
     ],
     flow: [
-      { name: "Stage 1 · Baseline", detail: "BERT + Mean Pooling" },
-      { name: "Stage 2 · ATLOP + DREEAM", detail: "LogSumExp + Adaptive Threshold + Evidence Head", mine: true },
-      { name: "Stage 3 · GAIN", detail: "+ GCN 그래프 추론" },
-      { name: "Stage 4 · U-Net", detail: "+ Graph U-Net 그래프 추론" },
+      { tag: "Stage 1", name: "Baseline", detail: "BERT + Mean Pooling" },
+      { tag: "Stage 2", name: "ATLOP + DREEAM", detail: "LogSumExp + Adaptive Threshold + Evidence Head", mine: true },
+      { tag: "Stage 3", name: "GAIN", detail: "+ GCN 그래프 추론" },
+      { tag: "Stage 4", name: "U-Net", detail: "+ Graph U-Net 그래프 추론" },
     ],
     flowCaption: "4-Stage Incremental Stacking",
     display: "work",
@@ -411,17 +452,17 @@ export const projects: Project[] = [
   {
     slug: "medical-rag",
     title: "Medical Chatbot",
-    subtitle: "의료 도메인 챗봇 — RAG 파이프라인 + 자동 평가 담당",
+    subtitle: "의료 도메인 챗봇, RAG 파이프라인 + 자동 평가 담당",
     group: "AI/NLP",
     kind: "교육 과정 팀 프로젝트",
     headline: "RAG를 붙이자 정답률이 65.4%에서 63.1%로 내려간 원인을 오답 케이스로 추적했습니다",
     oneLiner:
-      "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인(Qwen2.5-7B · ChromaDB)과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락이 측정돼 오답 케이스로 원인을 분석했습니다.",
+      "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인(Qwen2.5-7B, ChromaDB)과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락이 측정돼 오답 케이스로 원인을 분석했습니다.",
     oneLinerEv: ["ablation"],
     summary:
       "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% (−2.3pt) 하락을 측정해 distraction 원인을 케이스 단위로 추적.",
     description:
-      "팀 프로젝트 의료 도메인 챗봇. RAG 파이프라인(Qwen2.5-7B · ChromaDB) + 자동 평가 담당. ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락 측정 + distraction 원인 분석.",
+      "팀 프로젝트 의료 도메인 챗봇. RAG 파이프라인(Qwen2.5-7B, ChromaDB) + 자동 평가 담당. ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락 측정 + distraction 원인 분석.",
     summaryEv: ["ablation"],
     period: "2026.04",
     team: "4명 (NLP 과정 팀 프로젝트)",
@@ -447,20 +488,22 @@ export const projects: Project[] = [
         source: "평가 노트북 TOP_K = 5 (app_config.yaml top_k: 5도 같음)",
         href: `${MED}/blob/${MED_DEV}/notebooks/colab_generation_eval.ipynb?plain=1#L307-L308`,
         hrefLabel: "colab_generation_eval.ipynb L307–308",
+        marks: ["top-k = 5", "top-k=5", "top_k=5"],
       },
       {
         id: "chunk500",
         grade: "코드",
         claim: "500자 단위 chunking",
-        source: "커밋된 ChromaDB의 chunk 길이 최대 500자 · 중앙값 500자 (500자 분할 스크립트는 리포에 없음)",
+        source: "커밋된 ChromaDB의 chunk 길이 최대 500자, 중앙값 500자 (500자 분할 스크립트는 리포에 없음)",
         href: `${MED}/blob/${MED_DEV}/chroma_db/chroma.sqlite3`,
         hrefLabel: "chroma_db/chroma.sqlite3",
+        marks: ["500자"],
       },
       {
         id: "corpus",
         grade: "확인 필요",
         claim: "원천 의학 텍스트 3,447개 문서 → 약 27,000 chunk",
-        source: "커밋된 ChromaDB는 28,916 chunk · 고유 문서 ID 3,238 — 본문 값과 다름",
+        source: "커밋된 ChromaDB는 28,916 chunk, 고유 문서 ID 3,238, 본문 값과 다름",
       },
       {
         id: "evalLines449",
@@ -469,6 +512,7 @@ export const projects: Project[] = [
         source: "dev 기준 449줄 (git 이력상 같은 내용을 팀원 Hahyun Song 커밋이 먼저 올림)",
         href: `${MED}/blob/${MED_DEV}/notebooks/colab_generation_eval.ipynb`,
         hrefLabel: "colab_generation_eval.ipynb",
+        marks: ["449줄"],
       },
       {
         id: "evalLines216",
@@ -480,7 +524,6 @@ export const projects: Project[] = [
       },
     ],
     repo: { label: "ljhljh0703-cmd/Medical-Chatbot (dev) @f2bc415", href: `${MED}/tree/${MED_DEV}` },
-    proof: { text: "RAG를 붙이자 정답률이 65.4%에서 63.1%로 떨어진 원인을 오답 케이스로 추적했습니다", ev: ["ablation"] },
     results: [
       { text: "LLM 단독 65.4% → +RAG 63.1% (−2.3pt)", ev: ["ablation"] },
       { text: "원천 의학 텍스트 3,447개 → 500자 chunking → 약 27,000 chunk", ev: ["corpus", "chunk500"] },
@@ -488,12 +531,12 @@ export const projects: Project[] = [
     flow: [
       { name: "원천 의학 텍스트", detail: "3,447개 문서", mine: true, ev: ["corpus"] },
       { name: "chunking", detail: "500자 단위 → 약 27,000 chunk", mine: true, ev: ["chunk500", "corpus"] },
-      { name: "임베딩 · 저장", detail: "ko-sroberta 임베딩 → ChromaDB persist", mine: true },
-      { name: "검색 (Mode B)", detail: "Dense retrieval · top-k = 5", mine: true, ev: ["topk"] },
-      { name: "생성", detail: "Qwen2.5-7B-Instruct(4bit) — Mode A: LLM 단독 / Mode B: LLM + RAG" },
-      { name: "자동 채점", detail: "객관식 번호 매칭 · 단답 키워드 매칭 (VL 데이터셋 일괄)", mine: true },
+      { name: "임베딩, 저장", detail: "ko-sroberta 임베딩 → ChromaDB persist", mine: true },
+      { name: "검색 (Mode B)", detail: "Dense retrieval, top-k = 5", mine: true, ev: ["topk"] },
+      { name: "생성", detail: ["Qwen2.5-7B-Instruct(4bit)", "Mode A: LLM 단독 / Mode B: LLM + RAG"] },
+      { name: "자동 채점", detail: "객관식 번호 매칭, 단답 키워드 매칭 (VL 데이터셋 일괄)", mine: true },
     ],
-    flowCaption: "‘담당’ 표시가 붙은 단계를 직접 맡았습니다. LoRA fine-tuning과 FastAPI 서빙 레이어는 팀원 담당.",
+    flowCaption: "굵은 글씨 단계를 직접 맡았습니다. LoRA fine-tuning과 FastAPI 서빙 레이어는 팀원 담당.",
     display: "work",
   },
 
@@ -506,11 +549,11 @@ export const projects: Project[] = [
     kind: "팀 프로젝트",
     headline: "토큰을 Redis로 모으고 WebSocket 브로커를 SimpleBroker로 단순화했습니다",
     oneLiner:
-      "토큰 전부 Redis 통합 + SimpleBroker 단순화 + 채팅 메시지 MongoDB 분리 — 환경에 맞춰 저장소 결정",
+      "토큰 전부 Redis 통합 + SimpleBroker 단순화 + 채팅 메시지 MongoDB 분리, 환경에 맞춰 저장소 결정",
     summary:
-      "풀스택 학습 사이클의 종착점 — HirePicker의 ‘Refresh DB·Redis Pub/Sub’ 반쪽/과한 설계를 받아 토큰 전부 Redis 통합 + SimpleBroker 단순화로 정리. 동시에 모바일이라는 새 환경 조건이 추가됨.",
+      "풀스택 학습 사이클의 종착점, HirePicker의 ‘Refresh DB·Redis Pub/Sub’ 반쪽/과한 설계를 받아 토큰 전부 Redis 통합 + SimpleBroker 단순화로 정리. 동시에 모바일이라는 새 환경 조건이 추가됨.",
     description:
-      "HighWay Guide·HirePicker의 학습이 종착하는 세 번째 풀스택 — 토큰 Redis 통합 + secure_storage + WebSocket SimpleBroker 단순화.",
+      "HighWay Guide·HirePicker의 학습이 종착하는 세 번째 풀스택, 토큰 Redis 통합 + secure_storage + WebSocket SimpleBroker 단순화.",
     period: "2025.11 ~ 진행 중",
     team: "2명",
     role: "Spring Boot 백엔드(모임 도메인 제외) + Flutter 기획·디자인·구현",
@@ -544,7 +587,7 @@ export const projects: Project[] = [
       "HighWay Guide의 HttpSession·Action 강결합 한계와 다대다 매핑 학습을 JWT·REST 분리·즐겨찾기 재사용으로 이어간 두 번째 풀스택 프로젝트.",
     period: "2025.10 ~ 2025.11",
     team: "5명",
-    role: "JWT 인증 · 공고 즐겨찾기 · WebSocket 채팅 · Selenium 수집 · Docker Compose",
+    role: "JWT 인증, 공고 즐겨찾기, WebSocket 채팅, Selenium 수집, Docker Compose",
     status: "종료",
     stack: ["Spring Boot", "Next.js", "JWT", "Redis", "WebSocket", "Docker Compose"],
     metrics: [],
@@ -563,14 +606,14 @@ export const projects: Project[] = [
     headline:
       "BCrypt + HttpSession으로 끝까지 만들어 본 첫 풀스택에서 다음 설계의 근거를 얻었습니다",
     oneLiner:
-      "첫 풀스택 — BCrypt + HttpSession 인증, 휴게소 좋아요 다대다 첫 설계, Action 강결합의 한계 체감",
+      "첫 풀스택, BCrypt + HttpSession 인증, 휴게소 좋아요 다대다 첫 설계, Action 강결합의 한계 체감",
     summary:
       "가장 단순한 형태(BCrypt + HttpSession + Action Forward)로 출발해, 그 한계를 다음 프로젝트의 결정 근거로 들고 갈 수 있게 만든 출발점.",
     description:
-      "첫 풀스택 — BCrypt + HttpSession 인증, 다대다 관계 첫 설계, Action 강결합의 한계를 직접 체감.",
+      "첫 풀스택, BCrypt + HttpSession 인증, 다대다 관계 첫 설계, Action 강결합의 한계를 직접 체감.",
     period: "2025.07 ~ 2025.08",
     team: "5명",
-    role: "MVC Front Controller · 인증 · 휴게소 즐겨찾기(다대다)",
+    role: "MVC Front Controller, 인증, 휴게소 즐겨찾기(다대다)",
     status: "종료",
     stack: ["Java", "JSP/Servlet", "MyBatis", "BCrypt", "HttpSession", "MySQL"],
     metrics: [],
@@ -578,10 +621,11 @@ export const projects: Project[] = [
       {
         id: "threePages",
         grade: "코드",
-        claim: "공통 모달을 쓰는 페이지 세 개 (지도 · 마이페이지 · 휴게소)",
-        source: "restAreaModal.jsp를 include하는 MapInfo.jsp · mypage.jsp · restArea.jsp (모달은 본인 ‘즐겨찾기’ 커밋 ae7cbb2에서 생성, 본문의 modal.jsp는 실제 파일명과 다름)",
+        claim: "공통 모달을 쓰는 페이지 세 개 (지도, 마이페이지, 휴게소)",
+        source: "restAreaModal.jsp를 include하는 MapInfo.jsp, mypage.jsp, restArea.jsp (모달은 본인 ‘즐겨찾기’ 커밋 ae7cbb2에서 생성, 본문의 modal.jsp는 실제 파일명과 다름)",
         href: `${HW}/blob/${HW_JAEYOON}/Project_4team/src/main/webapp/restArea.jsp#L20`,
         hrefLabel: "restArea.jsp L20",
+        marks: ["세 페이지", "3페이지"],
       },
     ],
     repo: {
@@ -601,7 +645,7 @@ export const T2G_SCORES = [
 
 /** HighWay Guide 서비스 설명 — 상세 페이지 캡션(출발지·도착지 입력 → 경로상 휴게시설 카드)에서 옮김 */
 export const HIGHWAY_SERVICE_LINE =
-  "출발지·도착지를 입력하면 경로상 휴게시설(편의시설 · 주유비 · 평점 · 대표메뉴)을 카드로 보여 주는 웹 서비스";
+  "출발지·도착지를 입력하면 경로상 휴게시설(편의시설, 주유비, 평점, 대표메뉴)을 카드로 보여 주는 웹 서비스";
 
 // 사례 페이지 순서 (다음 사례 링크). 마지막 다음은 처음으로 돌아간다.
 export const CASE_ORDER = [

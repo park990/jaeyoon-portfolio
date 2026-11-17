@@ -3,10 +3,11 @@ import { Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
 import {
   TechStackGrid,
-  MyRoleCards,
-  TroubleCards,
+  ItemTitle,
+  roleItems,
+  troubleItems,
   ResultsGrid,
-  LessonsList,
+  lessonItems,
   type Role,
   type Trouble,
 } from "@/components/project-detail/blocks";
@@ -17,7 +18,7 @@ import {
   SubHead,
   type CaseSectionMeta,
 } from "@/components/case/case-parts";
-import { Ev } from "@/components/case/evidence";
+import { Ev, Graded } from "@/components/case/evidence";
 import {
   AgentFlowDiagram,
   DataLayersDiagram,
@@ -68,24 +69,24 @@ const techStack = [
 
 const roles: Role[] = [
   {
-    title: "인프라 · docker-compose + DB 초기화",
+    title: "인프라, docker-compose + DB 초기화",
     bullets: [
       "PostgreSQL 16 + pgvector를 docker-compose로 묶어 팀원이 git clone 후 `docker-compose up -d` 한 줄로 동일 환경 재현",
       {
-        text: "init_db.py — psycopg2 연결 + pgvector 확장 + 핵심 5 테이블(requests/claims/truths/results/kosis_stat_catalog) 자동 생성",
+        text: "init_db.py, psycopg2 연결 + pgvector 확장 + 핵심 5 테이블(requests/claims/truths/results/kosis_stat_catalog) 자동 생성",
         ev: ["tables"],
       },
       {
-        text: "운영 플랫폼 계층(sv_platform)은 alembic 마이그레이션으로 4 테이블(tenants/users/api_keys/jobs) 별도 관리 — 총 9 테이블",
+        text: "운영 플랫폼 계층(sv_platform)은 alembic 마이그레이션으로 4 테이블(tenants/users/api_keys/jobs) 별도 관리, 총 9 테이블",
         ev: ["tablesAlembic", "tables"],
       },
     ],
   },
   {
-    title: "데이터 적재 — PostgreSQL",
+    title: "데이터 적재, PostgreSQL",
     bullets: [
       // [1단계 A-3] 진행형 시제 정리: save_document/save_feedback은 종료 시점까지 TODO 스텁
-      "db_manager.py — psycopg2 연결, save_claims/save_results 배치 INSERT (save_document/save_feedback은 종료 시점까지 TODO 스텁으로 남음)",
+      "db_manager.py, psycopg2 연결, save_claims/save_results 배치 INSERT (save_document/save_feedback은 종료 시점까지 TODO 스텁으로 남음)",
       "core/pipeline.py에 DBManager 초기화·Claims/Results 적재 연동 + 기사 텍스트 해시로 doc_id 고정 (재실행 중복 방지)",
     ],
   },
@@ -93,38 +94,39 @@ const roles: Role[] = [
     title: "KOSIS 통계 메타 크롤러 + 카탈로그 검색",
     bullets: [
       {
-        text: "adaptation/kosis_crawler.py — 주제별 통계(MT_ZTITLE) 31개 카테고리(A~U + H1/H2 · I1/I2 · J1/J2 · K1/K2 · M1/M2 · N1/N2 등 세분화) 전체 메타 수집",
+        // [2단계] 31 → 30 정정 (A~U 표기는 리포의 A~V와 다르지만 지시 범위 밖이라 그대로 둠)
+        text: "adaptation/kosis_crawler.py, 주제별 통계(MT_ZTITLE) 30개 카테고리(A~U + H1/H2, I1/I2, J1/J2, K1/K2, M1/M2, N1/N2 등 세분화) 전체 메타 수집",
         ev: ["categories"],
       },
       // [1단계 A-4] 임베딩 서술을 시기별로 나눔 (48cf55b → 4b6dbab)
       {
-        text: "임베딩 — 처음(2026-04-27)엔 OpenAI 임베딩을 100건 단위 배치로 호출했고, NCP HCX 임베딩 v2(1024차원)로 바꾼 뒤(04-29)엔 배치를 지원하지 않아 한 건씩 호출하면서 asyncio.Semaphore(3)로 동시 3건 제한 + 429 재시도(최대 5회) → pgvector INSERT (적재는 100건 단위)",
+        text: "임베딩, 처음(2026-04-27)엔 OpenAI 임베딩을 100건 단위 배치로 호출했고, NCP HCX 임베딩 v2(1024차원)로 바꾼 뒤(04-29)엔 배치를 지원하지 않아 한 건씩 호출하면서 asyncio.Semaphore(3)로 동시 3건 제한 + 429 재시도(최대 5회) → pgvector INSERT (적재는 100건 단위)",
         ev: ["embedOpenAI", "embedHcx", "dim"],
       },
       "is_catalog_ready 체크로 builder_agent.pretrain_domain()에서 호출 시 중복 수집 방지",
-      "retrieval/catalog_search.py — kosis_stat_catalog에 대해 category_path ILIKE + embedding 코사인 유사도 하이브리드 검색",
+      "retrieval/catalog_search.py, kosis_stat_catalog에 대해 category_path ILIKE + embedding 코사인 유사도 하이브리드 검색",
     ],
   },
   {
-    title: "KOSIS 커넥터 — 표 매칭 정확도 필터링 4종",
+    title: "KOSIS 커넥터, 표 매칭 정확도 필터링 4종",
     bullets: [
-      "retrieval/kosis_connector.py _is_table_relevant() — 검색된 통계표가 claim과 실제로 맞는지 차단 로직",
+      "retrieval/kosis_connector.py _is_table_relevant(), 검색된 통계표가 claim과 실제로 맞는지 차단 로직",
       { text: "UN/IMF/OECD/세계은행 등 국제기구 데이터 차단 (_INTERNATIONAL_MARKERS)", ev: ["filterIntl"] },
-      { text: "장래·추계·전망 같은 예측 테이블 차단 (_FORECAST_TABLE_MARKERS) — '현재 값 검증'에 부적합", ev: ["filterForecast"] },
+      { text: "장래·추계·전망 같은 예측 테이블 차단 (_FORECAST_TABLE_MARKERS), '현재 값 검증'에 부적합", ev: ["filterForecast"] },
       { text: "남부동남아시아·아프리카·중동 등 해외 지역명 차단 (_REGION_MARKERS)", ev: ["filterRegion"] },
       {
-        text: "영아·신생아·모성처럼 세부 대상에 한정된 테이블 차단 — '전체 사망자' 주장에 '영아 사망률' 표가 매칭되던 문제 해결",
+        text: "영아·신생아·모성처럼 세부 대상에 한정된 테이블 차단, '전체 사망자' 주장에 '영아 사망률' 표가 매칭되던 문제 해결",
         ev: ["filterIntl"],
       },
     ],
   },
   {
-    title: "LLM 클라이언트 안정화 — 429 exponential backoff",
+    title: "LLM 클라이언트 안정화, 429 exponential backoff",
     bullets: [
       "utils/llm_client.py의 _call_hcx_v1 / _call_hcx_v3 / _call_hcx_structured 세 경로에 동일 패턴 적용",
       // [1단계 A-4] 백오프: 3회 시도에 1초·2초 대기 (24ac3a9 · 6cfc82e)
       {
-        text: "exponential backoff — 최대 3회 시도, 시도 사이 1초 → 2초 대기 후 실패 처리",
+        text: "exponential backoff, 최대 3회 시도, 시도 사이 1초 → 2초 대기 후 실패 처리",
         ev: ["backoff", "backoffStructured"],
       },
       "schema_inductor의 generate_structured 호출 시 발생한 rate limit 문제 해결",
@@ -134,12 +136,12 @@ const roles: Role[] = [
     title: "Runtime 검증 파이프라인 병렬화 + 수치 비교 로직",
     bullets: [
       {
-        text: "runtime_agent.py — claim별 검증을 asyncio.gather + Semaphore(3)로 병렬화. claim 1건당 14~40초였던 처리가 8건 직렬 ~7분 → 병렬 ~1/3로 단축",
+        text: "runtime_agent.py, claim별 검증을 asyncio.gather + Semaphore(3)로 병렬화. claim 1건당 14~40초였던 처리가 8건 직렬 ~7분 → 병렬 ~1/3로 단축",
         ev: ["parallel", "parallelEst"],
       },
       "tools/factcheck_test.py를 v3~v7까지 진화시키며 RAG 기반 팩트체크 검증 로직 정착",
       {
-        text: "verification/verifier.py 통합 — '천명개월' 같은 KOSIS 단위명 오류 대응, 연도 ±2 필터 → 정확 일치로 변경, LLM 재판정 트리거 복원, 90% 초과 오차는 테이블 매칭 오류로 판단불가 처리",
+        text: "verification/verifier.py 통합, '천명개월' 같은 KOSIS 단위명 오류 대응, 연도 ±2 필터 → 정확 일치로 변경, LLM 재판정 트리거 복원, 90% 초과 오차는 테이블 매칭 오류로 판단불가 처리",
         ev: ["year", "over90"],
       },
     ],
@@ -147,12 +149,12 @@ const roles: Role[] = [
   {
     title: "Cloud / CI/CD",
     bullets: [
-      "GitHub Actions 프론트엔드 + 백엔드 워크플로우 — push 시 빌드/배포 자동화",
+      "GitHub Actions 프론트엔드 + 백엔드 워크플로우, push 시 빌드/배포 자동화",
       "AWS EC2 배포: nginx reverse proxy + pm2 프로세스 관리",
     ],
   },
   {
-    title: "DB · 스키마 설계 시 참고한 논문 2편",
+    title: "DB, 스키마 설계 시 참고한 논문 2편",
     bullets: [
       "RAG (NeurIPS 2020) → KOSIS 외부 DB 조회의 패러다임",
       "AutoSchemaKG (arXiv 2505.23628) → 도메인 비의존적 동적 스키마 유도",
@@ -165,7 +167,7 @@ const troubles: Trouble[] = [
     title: "KOSIS API rate limit + 임베딩 호출 폭증",
     star: true,
     problem:
-      "전체 카테고리(31개)에 대해 메타를 수집하면 통계표가 수십만 건. 한 건씩 임베딩하면 NCP HCX 임베딩 API 호출 횟수 폭증 + KOSIS API rate limit 위반. 초기엔 단순 for 루프로 돌렸다가 KOSIS 차단 직전까지 감.",
+      "전체 카테고리(30개)에 대해 메타를 수집하면 통계표가 수십만 건. 한 건씩 임베딩하면 NCP HCX 임베딩 API 호출 횟수 폭증 + KOSIS API rate limit 위반. 초기엔 단순 for 루프로 돌렸다가 KOSIS 차단 직전까지 감.",
     // [1단계 A-4] 시기별로 나눠 사실대로: OpenAI 배치(48cf55b) → HCX v2 건별 + Semaphore(3)(4b6dbab)
     solve:
       "(1) 처음(OpenAI 임베딩, 2026-04-27)엔 100건 단위 배치로 묶어 호출 횟수를 1/100로 줄였고, NCP HCX 임베딩 v2로 바꾼 뒤(04-29)엔 배치를 지원하지 않아 한 건씩 호출하되 asyncio.Semaphore(3)로 임베딩 동시 호출을 3개로 제한하고 429가 나면 지수 백오프로 최대 5회 재시도했습니다. (2) 메타 수집 + 임베딩 INSERT를 한 파이프라인에 묶어 ETL 중간 산출물 관리 부담 제거.",
@@ -174,18 +176,18 @@ const troubles: Trouble[] = [
     ev: { problem: ["categories", "catalog"], solve: ["embedOpenAI", "embedHcx"] },
   },
   {
-    title: "KOSIS 통계표 매칭 오류 — '전체 사망자'에 '영아 사망률'이 잡힘",
+    title: "KOSIS 통계표 매칭 오류, '전체 사망자'에 '영아 사망률'이 잡힘",
     star: true,
     problem:
       "claim의 키워드를 KOSIS 카탈로그에서 벡터 + 키워드로 검색하면 의미상 가까운 표가 잘 잡히지만, 실제로는 검증 대상이 아닌 표가 다수 섞임. UN/IMF 같은 국제기구 데이터, '장래 추계', 해외 지역명, 영아·신생아 같은 세부 대상 테이블이 검증을 망침.",
     solve:
-      "kosis_connector._is_table_relevant()에 4종 필터 추가 — _INTERNATIONAL_MARKERS / _FORECAST_TABLE_MARKERS / _REGION_MARKERS / _SPECIFIC_SCOPE_MARKERS. 표 이름이 이 마커에 걸리면 후속 검증에서 배제. 임베딩 검색의 한계를 도메인 규칙으로 보강.",
+      "kosis_connector._is_table_relevant()에 4종 필터 추가, _INTERNATIONAL_MARKERS / _FORECAST_TABLE_MARKERS / _REGION_MARKERS / _SPECIFIC_SCOPE_MARKERS. 표 이름이 이 마커에 걸리면 후속 검증에서 배제. 임베딩 검색의 한계를 도메인 규칙으로 보강.",
     lesson:
       "코사인 0.85가 나왔는데 도메인적으로 보면 전혀 다른 지표인 표가 몇 번 잡혔습니다. 임베딩 점수만으로 ‘맞는 통계’를 고르려던 가정이 거기서 깨졌고, 임베딩으론 후보만 좁힌 뒤 단위·연도·범위는 결정론적 조건으로 따로 거르는 패턴으로 다시 짰습니다.",
     ev: { solve: ["filterIntl", "filterForecast", "filterRegion"], lesson: ["cos085"] },
   },
   {
-    title: "claim 8건 직렬 ~7분 — 사용자 체감 한계 초과",
+    title: "claim 8건 직렬 ~7분, 사용자 체감 한계 초과",
     star: true,
     problem:
       "Runtime agent가 claim별로 ReAct 루프(검색 → 검증 → 설명)를 도는 구조라 1건당 14~40초. 한 기사에 claim이 8건이면 직렬 처리 시 ~7분. 사용자 입장에선 결과가 안 나오는 것처럼 보임.",
@@ -221,7 +223,8 @@ volumes:
 `;
 
 // [1단계 A-4] 크롤러 예시를 현재 코드(main @fb4f5de)로 교체.
-// 기존 예시는 KOSIS 호출에 Semaphore를 건 요약 의사 코드였으나 실제와 달랐다.
+// 기존 예시는 요약 의사 코드라 실제 파일과 글자가 달랐다.
+// (KOSIS 호출 세마포어는 따로 있다: update_embeddings.py L138 Semaphore(5), 본인 커밋 5866f0b)
 const crawlerCode = `# structverify/adaptation/kosis_crawler.py — save_to_db (main, 발췌)
 BATCH_SIZE = 100
 for i in range(0, len(catalog), BATCH_SIZE):
@@ -335,7 +338,7 @@ const KEY_DECISIONS = [
   {
     title: "EAV + parent_path vs 도메인별 테이블",
     body:
-      "도메인마다 필요한 컬럼이 달라 테이블을 미리 정의할 수 없었습니다. 인구통계는 '사망률·평균수명'이 컬럼이지만 농업은 '재배면적·수확량'이라, 도메인별 테이블로 가면 새 도메인마다 컬럼 정의와 마이그레이션이 필요했습니다. 그래서 속성을 컬럼이 아니라 행으로 푸는 EAV(Entity-Attribute-Value) 모델을 채택했습니다 — '도메인=인구, 속성=사망률, 값=8.6'을 한 행으로 저장하면, 새 도메인이 들어와도 컬럼은 그대로 두고 행만 추가하면 됩니다. parent_path 컬럼엔 속성 간 계층(예: 인구 > 사망 > 영아사망률)을 같이 인코딩해서 트리 구조까지 한 테이블에서 표현했습니다.",
+      "도메인마다 필요한 컬럼이 달라 테이블을 미리 정의할 수 없었습니다. 인구통계는 '사망률·평균수명'이 컬럼이지만 농업은 '재배면적·수확량'이라, 도메인별 테이블로 가면 새 도메인마다 컬럼 정의와 마이그레이션이 필요했습니다. 그래서 속성을 컬럼이 아니라 행으로 푸는 EAV(Entity-Attribute-Value) 모델을 채택했습니다. '도메인=인구, 속성=사망률, 값=8.6'을 한 행으로 저장하면, 새 도메인이 들어와도 컬럼은 그대로 두고 행만 추가하면 됩니다. parent_path 컬럼엔 속성 간 계층(예: 인구 > 사망 > 영아사망률)을 같이 인코딩해서 트리 구조까지 한 테이블에서 표현했습니다.",
   },
   {
     title: "pgvector vs Snowflake",
@@ -394,8 +397,8 @@ export default function StructVerifyPage() {
             비정형 텍스트(뉴스·보고서·문서)에서 수치 기반 주장을 자동으로 추출하고,
             KOSIS Open API 등 공식 통계 데이터와 비교해 사실 여부를 검증하는 LLM
             기반 플랫폼입니다. v2.0에서 팀이{" "}
-            <span className="font-medium">2-Agent 아키텍처</span>와{" "}
-            <span className="font-medium">도메인 적응 학습 루프</span>로 구조를
+            <span className="font-semibold">2-Agent 아키텍처</span>와{" "}
+            <span className="font-semibold">도메인 적응 학습 루프</span>로 구조를
             잡았고, 뉴스는 실험 도메인일 뿐 시스템 자체는 자기 적응형 범용 검증
             플랫폼을 지향합니다.
           </p>
@@ -405,67 +408,67 @@ export default function StructVerifyPage() {
       <CaseSection meta={S.role}>
         <Prose>
           <p>
-            4명 팀에서 저는 데이터 레이어(KOSIS 카탈로그 크롤러 · 표 매칭 필터 ·
+            4명 팀에서 저는 데이터 레이어(KOSIS 카탈로그 크롤러, 표 매칭 필터,
             PostgreSQL 적재) + Agent A 측 runtime 검증 파이프라인 병렬화 + LLM
             클라이언트 안정화 + 검증 판단 로직(verifier)까지 데이터·검증 흐름을
             담당했습니다.
           </p>
         </Prose>
         <div>
-          <SubHead note={<>※ 직접 다룬 영역의 기술 세트 — 자세한 모듈 분포는 아래 Architecture · Work Scope 표 참고.</>}>
+          {/* [2단계] 가리키는 말만 지금 칸 이름으로: Architecture → 흐름, Work Scope → 담당 모듈 */}
+          <SubHead note={<>※ 직접 다룬 영역의 기술 세트, 자세한 모듈 분포는 아래 ‘흐름’ 칸과 ‘담당 모듈’ 표 참고.</>}>
             사용 기술
           </SubHead>
-          <TechStackGrid groups={techStack} />
+          <div className="mt-4">
+            <TechStackGrid groups={techStack} />
+          </div>
         </div>
         <div>
           <SubHead>담당 모듈</SubHead>
-          <WorkScopeTable />
+          <div className="mt-4">
+            <WorkScopeTable />
+          </div>
         </div>
-        <div>
-          <SubHead>모듈별로 한 일</SubHead>
-          <MyRoleCards roles={roles} />
-        </div>
-        <div>
-          <SubHead>맡은 일로 남은 결과</SubHead>
-          <figure className="mb-6 grid grid-cols-[150px_minmax(0,1fr)] items-center gap-4 sm:grid-cols-[200px_minmax(0,1fr)] sm:gap-5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/projects/structverify-lab/award.jpg"
-              alt="멋쟁이사자처럼 NLP 집중과정 최우수상 상장"
-              loading="lazy"
-              className="block h-auto w-full rounded-sm border border-border"
-            />
-            <figcaption>
-              <p className="text-[17px] font-semibold text-foreground">멋쟁이사자처럼 NLP 집중과정 최우수상</p>
-              <p className="mt-1 text-[15px] leading-[1.7] text-foreground">
-                StructVerify-Lab(4인 팀) NLP 집중과정 최종프로젝트 최우수상 수상.
-                <Ev ids={["award"]} />
-              </p>
-            </figcaption>
-          </figure>
-          <ResultsGrid
-            items={[
-              { text: "KOSIS stat_catalog 262,783건 적재 + 1024차원 임베딩 INSERT 완료", ev: ["catalog", "dim"] },
-              "docker-compose — `docker-compose up -d` 한 줄로 PostgreSQL(pgvector) 환경 재현",
-              { text: "init_db.py에서 pgvector 확장 + 핵심 5 테이블 자동 생성 (sv_platform alembic 4 테이블 별도 = 총 9)", ev: ["tables", "tablesAlembic"] },
-              { text: "KOSIS 표 매칭 4종 필터로 영아·UN·IMF·장래추계 오매칭 차단", ev: ["filterIntl", "filterForecast", "filterRegion"] },
-              { text: "runtime 병렬화로 claim 8건 직렬 ~7분 → ~1/3 단축", ev: ["parallel", "parallelEst"] },
-              "HCX 429 exponential backoff로 schema_inductor 실패 자체 흡수",
-              "GitHub Actions CI/CD + AWS EC2 (nginx + pm2) 배포",
-            ]}
+        <SubHead>모듈별로 한 일</SubHead>
+        {roleItems(roles)}
+        <SubHead>맡은 일로 남은 결과</SubHead>
+        <figure className="grid grid-cols-[150px_minmax(0,1fr)] items-center gap-4 sm:grid-cols-[200px_minmax(0,1fr)] sm:gap-5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/projects/structverify-lab/award.jpg"
+            alt="멋쟁이사자처럼 NLP 집중과정 최우수상 상장"
+            loading="lazy"
+            className="block h-auto w-full border border-rule"
           />
-        </div>
+          <figcaption>
+            <p className="text-[17px] font-semibold text-ink">멋쟁이사자처럼 NLP 집중과정 최우수상</p>
+            <p className="mt-1 text-[15px] leading-[1.7] text-ink">
+              StructVerify-Lab(4인 팀) NLP 집중과정 최종프로젝트 최우수상 수상.
+              <Ev ids={["award"]} />
+            </p>
+          </figcaption>
+        </figure>
+        <ResultsGrid
+          items={[
+            { text: "KOSIS stat_catalog 262,783건 적재 + 1024차원 임베딩 INSERT 완료", ev: ["catalog", "dim"] },
+            "docker-compose, `docker-compose up -d` 한 줄로 PostgreSQL(pgvector) 환경 재현",
+            { text: "init_db.py에서 pgvector 확장 + 핵심 5 테이블 자동 생성 (sv_platform alembic 4 테이블 별도 = 총 9)", ev: ["tables", "tablesAlembic"] },
+            { text: "KOSIS 표 매칭 4종 필터로 영아·UN·IMF·장래추계 오매칭 차단", ev: ["filterIntl", "filterForecast", "filterRegion"] },
+            { text: "runtime 병렬화로 claim 8건 직렬 ~7분 → ~1/3 단축", ev: ["parallel", "parallelEst"] },
+            "HCX 429 exponential backoff로 schema_inductor 실패 자체 흡수",
+            "GitHub Actions CI/CD + AWS EC2 (nginx + pm2) 배포",
+          ]}
+        />
       </CaseSection>
 
       <CaseSection meta={S.flow}>
         <FlowFigure
           steps={project.flow!}
           caption={
-            <>
-              claim끼리 독립적이라는 점을 이용해, claim별 ReAct 루프(검색 → 검증 →
-              설명)를 asyncio.gather + Semaphore(3)로 병렬화했습니다(병렬화도 담당).
-              <Ev ids={["parallel"]} />
-            </>
+            <Graded
+              text="claim끼리 독립적이라는 점을 이용해, claim별 ReAct 루프(검색 → 검증 → 설명)를 asyncio.gather + Semaphore(3)로 병렬화했습니다(병렬화도 담당)."
+              ev={["parallel"]}
+            />
           }
         />
         <AgentFlowDiagram />
@@ -473,111 +476,93 @@ export default function StructVerifyPage() {
       </CaseSection>
 
       <CaseSection meta={S.decisions}>
-        <ol className="space-y-8">
-          {KEY_DECISIONS.map((d, i) => (
-            <li key={d.title}>
-              <h3 className="flex gap-3 text-[18px] font-semibold leading-snug tracking-tight text-foreground">
-                <span className="font-num text-[14px] font-normal leading-[1.9] text-muted-foreground">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span>{d.title}</span>
-              </h3>
-              <p className="mt-2 pl-9 text-[17px] leading-[1.75] text-foreground">
-                {d.body}
-                {d.ev && <Ev ids={d.ev} />}
-              </p>
-            </li>
-          ))}
-        </ol>
-
-        <div className="space-y-6">
-          <SubHead>코드로 본 결정</SubHead>
-          <div>
-            <p className="mb-3 text-[15px] leading-[1.7] text-muted-foreground">
-              docker-compose — <span className="font-mono">docker-compose up -d</span> 한
-              줄로 동일 환경 재현. {/* [1단계 A-3] 진행형 시제 정리 */}
-              프로젝트 종료(2026.09)까지 pgvector 단일 서비스로 가장 단순한 형태를
-              유지했고, Redis · Neo4j · MinIO · Elasticsearch는 로드맵에만 두고 추가하지
-              않았습니다.
+        {KEY_DECISIONS.map((d, i) => (
+          <div key={d.title}>
+            <ItemTitle n={i + 1}>{d.title}</ItemTitle>
+            <p className="mt-2 pl-9 text-ink">
+              <Graded text={d.body} ev={d.ev} />
             </p>
-            <CodeBlock
-              code={composeCode}
-              lang="yaml"
-              filename="docker-compose.yml"
-              source={{ label: "docker-compose.yml @fb4f5de", href: `${SV}/blob/${SV_MAIN}/docker-compose.yml`, kind: "관련 파일" }}
+          </div>
+        ))}
+        <SubHead>코드로 본 결정</SubHead>
+        <div>
+          <p className="mb-3 text-[15px] leading-[1.7] text-note">
+            docker-compose, <code>docker-compose up -d</code> 한 줄로 동일 환경 재현.{" "}
+            {/* [1단계 A-3] 진행형 시제 정리 */}
+            프로젝트 종료(2026.09)까지 pgvector 단일 서비스로 가장 단순한 형태를 유지했고,
+            Redis, Neo4j, MinIO, Elasticsearch는 로드맵에만 두고 추가하지 않았습니다.
+          </p>
+          <CodeBlock
+            code={composeCode}
+            lang="yaml"
+            filename="docker-compose.yml"
+            source={{ label: "docker-compose.yml @fb4f5de", href: `${SV}/blob/${SV_MAIN}/docker-compose.yml`, kind: "관련 파일" }}
+          />
+        </div>
+        <div>
+          <p className="mb-3 text-[15px] leading-[1.7] text-note">
+            {/* [1단계 A-4] 캡션을 현재 코드에 맞춤 */}
+            <Graded
+              text="KOSIS 메타 크롤러, 100건 단위로 나눠 적재하고, HCX 임베딩은 배치를 지원하지 않아 Semaphore(3)로 동시 3건씩 한 건씩 호출 + 429 재시도(최대 5회). 현재 코드에서는 임베딩 호출이 embedding_client로 분리돼 있습니다."
+              ev={["embedNow"]}
             />
-          </div>
-          <div>
-            <p className="mb-3 text-[15px] leading-[1.7] text-muted-foreground">
-              {/* [1단계 A-4] 캡션을 현재 코드에 맞춤 */}
-              KOSIS 메타 크롤러 — 100건 단위로 나눠 적재하고, HCX 임베딩은 배치를
-              지원하지 않아 Semaphore(3)로 동시 3건씩 한 건씩 호출 + 429 재시도(최대 5회).
-              현재 코드에서는 임베딩 호출이 embedding_client로 분리돼 있습니다.
-              <Ev ids={["embedNow"]} />
-            </p>
-            <div className="space-y-4">
-              <CodeBlock
-                code={crawlerCode}
-                lang="python"
-                filename="adaptation/kosis_crawler.py"
-                source={{
-                  label: "kosis_crawler.py L249–286 @fb4f5de",
-                  href: `${SV}/blob/${SV_MAIN}/structverify/adaptation/kosis_crawler.py#L249-L286`,
-                }}
-              />
-              <CodeBlock
-                code={embedCode}
-                lang="python"
-                filename="utils/embedding_client.py"
-                source={{
-                  label: "embedding_client.py L210–235 @fb4f5de",
-                  href: `${SV}/blob/${SV_MAIN}/structverify/utils/embedding_client.py#L210-L235`,
-                }}
-              />
-            </div>
-          </div>
-          <div>
-            <p className="mb-3 text-[15px] leading-[1.7] text-muted-foreground">
-              KOSIS 커넥터의 표 매칭 필터 4종 — 임베딩 검색의 한계를 도메인
-              규칙으로 보강.
-            </p>
-            <CodeBlock code={connectorFilterCode} lang="python" filename="retrieval/kosis_connector.py" />
-          </div>
-          <div>
-            <p className="mb-3 text-[15px] leading-[1.7] text-muted-foreground">
-              LLM 클라이언트 429 exponential backoff — V1/V3/structured 세 경로에
-              동일 패턴 적용.
-            </p>
+          </p>
+          <div className="space-y-5">
             <CodeBlock
-              code={retryCode}
+              code={crawlerCode}
               lang="python"
-              filename="utils/llm_client.py"
+              filename="adaptation/kosis_crawler.py"
               source={{
-                label: "llm_client.py L275–298 @24ac3a9",
-                href: `${SV}/blob/24ac3a97b4c58d599b5a9bae7c5c418572dfed28/structverify/utils/llm_client.py#L275-L298`,
+                label: "kosis_crawler.py L249–286 @fb4f5de",
+                href: `${SV}/blob/${SV_MAIN}/structverify/adaptation/kosis_crawler.py#L249-L286`,
+              }}
+            />
+            <CodeBlock
+              code={embedCode}
+              lang="python"
+              filename="utils/embedding_client.py"
+              source={{
+                label: "embedding_client.py L210–235 @fb4f5de",
+                href: `${SV}/blob/${SV_MAIN}/structverify/utils/embedding_client.py#L210-L235`,
               }}
             />
           </div>
         </div>
+        <div>
+          <p className="mb-3 text-[15px] leading-[1.7] text-note">
+            KOSIS 커넥터의 표 매칭 필터 4종, 임베딩 검색의 한계를 도메인 규칙으로 보강.
+          </p>
+          <CodeBlock code={connectorFilterCode} lang="python" filename="retrieval/kosis_connector.py" />
+        </div>
+        <div>
+          <p className="mb-3 text-[15px] leading-[1.7] text-note">
+            LLM 클라이언트 429 exponential backoff, V1/V3/structured 세 경로에 동일 패턴 적용.
+          </p>
+          <CodeBlock
+            code={retryCode}
+            lang="python"
+            filename="utils/llm_client.py"
+            source={{
+              label: "llm_client.py L275–298 @24ac3a9",
+              href: `${SV}/blob/24ac3a97b4c58d599b5a9bae7c5c418572dfed28/structverify/utils/llm_client.py#L275-L298`,
+            }}
+          />
+        </div>
       </CaseSection>
 
-      <CaseSection meta={S.failed}>
-        <TroubleCards troubles={troubles} />
-      </CaseSection>
+      <CaseSection meta={S.failed}>{troubleItems(troubles)}</CaseSection>
 
       <CaseSection meta={S.next}>
-        <LessonsList
-          items={[
-            "처음엔 KOSIS랑 HCX를 그냥 동기 루프로 돌렸는데, 몇 분 만에 429가 떴습니다. 외부 API는 코드를 잘 짜는 문제가 아니라 '한 번에 몇 개를, 얼마 간격으로 보낼지'를 먼저 정하는 문제였습니다. 지금은 새 API를 붙일 때 배치·세마포어·재시도부터 잡고 시작합니다.",
-            {
-              text: "코사인 유사도가 0.85씩 나오길래 잘 찾았다고 생각했는데, 막상 보면 단위나 연도가 어긋난 표였던 적이 여러 번입니다. 임베딩이 가깝다고 정답을 가르는 통계까지 가까운 건 아니었습니다. 그래서 임베딩으론 후보만 좁히고, 단위·연도·범위는 규칙으로 따로 확인합니다.",
-              ev: ["cos085"],
-            },
-            "도메인마다 컬럼이 다른 데이터라, 도메인별 테이블로 가면 새 도메인이 들어올 때마다 마이그레이션을 쳐야 했습니다. EAV로 풀고 나서야 테이블을 새로 정의하지 않고도 도메인을 늘릴 수 있었고, 범위가 계속 바뀌는 PoC에선 이 유연성이 성능보다 더 중요했습니다.",
-            "숫자 비교를 LLM한테 시켰더니 hallucination이 끼는 걸 보고, 판정과 설명을 아예 나눴습니다. 단위·연도·오차율 같은 수치 판정은 verifier가 결정론적 코드로만 하고, 자연어 설명은 explainer에서 LLM이 맡습니다. 이렇게 경계를 그으니 판정이 훨씬 안정적이었습니다.",
-            "재시도를 호출부마다 흩어놨더니 꼭 한 군데씩 빠졌습니다. llm_client.py 한 곳에 모으고 나선 그럴 일이 없어졌고, 어차피 일시적 429는 늘 생기니 한곳에서 흡수하는 게 맞았습니다.",
-          ]}
-        />
+        {lessonItems([
+          "처음엔 KOSIS랑 HCX를 그냥 동기 루프로 돌렸는데, 몇 분 만에 429가 떴습니다. 외부 API는 코드를 잘 짜는 문제가 아니라 '한 번에 몇 개를, 얼마 간격으로 보낼지'를 먼저 정하는 문제였습니다. 지금은 새 API를 붙일 때 배치·세마포어·재시도부터 잡고 시작합니다.",
+          {
+            text: "코사인 유사도가 0.85씩 나오길래 잘 찾았다고 생각했는데, 막상 보면 단위나 연도가 어긋난 표였던 적이 여러 번입니다. 임베딩이 가깝다고 정답을 가르는 통계까지 가까운 건 아니었습니다. 그래서 임베딩으론 후보만 좁히고, 단위·연도·범위는 규칙으로 따로 확인합니다.",
+            ev: ["cos085"],
+          },
+          "도메인마다 컬럼이 다른 데이터라, 도메인별 테이블로 가면 새 도메인이 들어올 때마다 마이그레이션을 쳐야 했습니다. EAV로 풀고 나서야 테이블을 새로 정의하지 않고도 도메인을 늘릴 수 있었고, 범위가 계속 바뀌는 PoC에선 이 유연성이 성능보다 더 중요했습니다.",
+          "숫자 비교를 LLM한테 시켰더니 hallucination이 끼는 걸 보고, 판정과 설명을 아예 나눴습니다. 단위·연도·오차율 같은 수치 판정은 verifier가 결정론적 코드로만 하고, 자연어 설명은 explainer에서 LLM이 맡습니다. 이렇게 경계를 그으니 판정이 훨씬 안정적이었습니다.",
+          "재시도를 호출부마다 흩어놨더니 꼭 한 군데씩 빠졌습니다. llm_client.py 한 곳에 모으고 나선 그럴 일이 없어졌고, 어차피 일시적 429는 늘 생기니 한곳에서 흡수하는 게 맞았습니다.",
+        ])}
       </CaseSection>
     </CaseLayout>
   );

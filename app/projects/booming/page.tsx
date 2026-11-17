@@ -3,9 +3,9 @@ import { Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
 import {
   TechStackGrid,
-  MyRoleCards,
-  TroubleCards,
-  LessonsList,
+  roleItems,
+  troubleItems,
+  lessonItems,
   PlainList,
   type Role,
   type Trouble,
@@ -53,7 +53,7 @@ const builtItems = [
   "flutter_secure_storage로 OS 보안 영역에 토큰 저장",
   "회원가입 / 로그인 / 마이페이지 / 게시판 / 채팅 UI 디자인·구현",
   "하단 탭 네비게이션 + 전체 화면 구성",
-  "Spring REST API (인증, 게시판 도메인 — 모임 도메인 제외)",
+  "Spring REST API (인증, 게시판 도메인, 모임 도메인 제외)",
   "JPA Entity 매핑 (사용자 / 게시판)",
   "MongoDB 채팅 메시지 컬렉션 설계",
   "Docker Compose 환경 (Spring Boot + Redis + MySQL + MongoDB)",
@@ -62,7 +62,7 @@ const builtItems = [
 // Part 2 — "What carried forward": 다음 프로젝트로 이어진 학습 사이클 (존댓말)
 const roles: Role[] = [
   {
-    title: "인증 — 토큰 전부 Redis로 통합 (HirePicker 반쪽 변경의 완성)",
+    title: "인증, 토큰 전부 Redis로 통합 (HirePicker 반쪽 변경의 완성)",
     bullets: [
       "Access + Refresh 둘 다 Redis에 저장했고, TTL 자동 만료로 회수 로직 자체를 제거했습니다.",
       "HirePicker에서 얻은 ‘Refresh도 영속 데이터가 아니라 세션 성격’이라는 결론을 코드로 옮겼습니다.",
@@ -70,7 +70,7 @@ const roles: Role[] = [
     ],
   },
   {
-    title: "WebSocket — SimpleBroker로 단순화 + JWT ChannelInterceptor",
+    title: "WebSocket, SimpleBroker로 단순화 + JWT ChannelInterceptor",
     bullets: [
       "HirePicker의 Redis Pub/Sub ‘과한 설계’ 회고를 받아, 단일 인스턴스 모바일 환경에는 Spring 내장 SimpleBroker로 충분하다고 판단했습니다.",
       "WebSocket의 ThreadLocal 한계(CONNECT/SEND 스레드가 다름)를 JwtChannelInterceptor와 세션 속성에 userDetails를 저장하는 패턴으로 해결했습니다.",
@@ -78,7 +78,7 @@ const roles: Role[] = [
     ],
   },
   {
-    title: "메시지 저장소 — MySQL에서 MongoDB로 (데이터 성격에 맞춰)",
+    title: "메시지 저장소, MySQL에서 MongoDB로 (데이터 성격에 맞춰)",
     bullets: [
       "HirePicker는 ChatMessage를 MySQL 관계형 테이블로 저장했지만, 컬럼 스키마가 채팅 메시지의 다양성(첨부·이모지·시스템 메시지·메타데이터)을 표현하기에 부족했습니다.",
       "Booming은 채팅 메시지가 본질적으로 ‘문서(document)’에 가깝다고 판단해 MongoDB로 전환했고, 스키마 자유도와 메시지 단위 쿼리·페이지네이션 효율을 얻었습니다.",
@@ -117,7 +117,7 @@ const troubles: Trouble[] = [
       "웹에서 HttpOnly Cookie로 깔끔하게 돌던 흐름을 Flutter에 그대로 옮겼더니, 같은 JWT인데도 쿠키가 자동으로 실리지 않아 첫 요청부터 401을 받았습니다. Flutter HTTP 클라이언트는 브라우저처럼 쿠키를 알아서 첨부하지 않아서, flutter_secure_storage(iOS Keychain / Android Keystore)에 토큰을 박고 모든 요청에 Bearer 헤더를 명시하는 식으로 다시 설계했습니다.",
   },
   {
-    title: "모바일 게시판 — 다른 사용자의 좋아요 +1이 즉시 보이지 않음",
+    title: "모바일 게시판, 다른 사용자의 좋아요 +1이 즉시 보이지 않음",
     problem:
       "게시판 좋아요는 HighWay Guide·HirePicker에서 두 번 다뤄본 다대다 매핑이라 DB 설계 자체는 어렵지 않았습니다. 다만 Booming은 모바일이라 한 번 그려진 화면이 상태를 오래 들고 있는 환경이라, 내가 좋아요를 누른 변화가 다른 사용자에게는 그 사용자가 직접 새로고침할 때까지 +1로 보이지 않았습니다. 웹에선 페이지 이동·새 요청 흐름에 묻혀 보이지 않던 동기화 문제가, 모바일 컨텍스트에서 새 난이도로 드러났습니다.",
     solve:
@@ -232,9 +232,9 @@ const S = Object.fromEntries(SECTIONS.map((s) => [s.id, s])) as Record<string, C
 
 function HighlightLine({ h }: { h: Highlight }) {
   return (
-    <p className="max-w-[680px] border-l-2 border-border-strong pl-4 text-[17px] leading-[1.75] text-foreground">
-      <span className="text-muted-foreground">{h.label}</span>{" "}
-      <span className="font-semibold">{h.value}</span> — {h.note}
+    <p className="max-w-[690px] border-l-2 border-ink pl-4 text-ink">
+      <span className="text-note">{h.label}</span>{" "}
+      <span className="font-semibold">{h.value}</span>, {h.note}
     </p>
   );
 }
@@ -246,8 +246,8 @@ export default function BoomingPage() {
         <Prose>
           <p>
             세 번째 풀스택 프로젝트이자 학습 사이클의 종착점입니다.{" "}
-            <span className="font-medium">HirePicker에서 미완으로 남긴 두 결정</span>
-            을 받아 정리했습니다 — (1) Refresh Token DB 저장 → Redis 통합, (2)
+            <span className="font-semibold">HirePicker에서 미완으로 남긴 두 결정</span>
+            을 받아 정리했습니다. (1) Refresh Token DB 저장 → Redis 통합, (2)
             WebSocket Redis Pub/Sub → SimpleBroker 단순화. 동시에 모바일이라는
             새 환경 조건이 더해져, 같은 JWT라도 저장소 전략을 다시 짜야 한다는
             교훈을 직접 적용했습니다.
@@ -256,23 +256,27 @@ export default function BoomingPage() {
       </CaseSection>
 
       <CaseSection meta={S.role}>
-        <MyRoleCards roles={[roles[3]]} />
+        {roleItems([roles[3]])}
         <div>
           <SubHead note="이 프로젝트에서 직접 구현한 영역">What I built</SubHead>
-          <PlainList items={builtItems} />
+          <div className="mt-4">
+            <PlainList items={builtItems} />
+          </div>
         </div>
         <div>
           <SubHead note="※ 직접 다룬 영역의 기술 세트.">사용 기술</SubHead>
-          <TechStackGrid groups={techStack} />
+          <div className="mt-4">
+            <TechStackGrid groups={techStack} />
+          </div>
         </div>
       </CaseSection>
 
       <CaseSection meta={S.flow}>
-        <FlowFigure steps={WS_AUTH_FLOW} caption="JwtChannelInterceptor — WebSocket의 ThreadLocal 한계를 세션 속성으로 우회" />
+        <FlowFigure steps={WS_AUTH_FLOW} caption="JwtChannelInterceptor, WebSocket의 ThreadLocal 한계를 세션 속성으로 우회" />
         <div>
-          <p className="mb-3 text-[15px] leading-[1.7] text-muted-foreground">
+          <p className="mb-3 text-[15px] leading-[1.7] text-note">
             WebSocket의 ThreadLocal 한계를 세션 속성으로 우회한 JWT 인증
-            인터셉터 — 이 프로젝트에서 가장 정교한 트러블슈팅이었습니다.
+            인터셉터, 이 프로젝트에서 가장 정교한 트러블슈팅이었습니다.
           </p>
           <CodeBlock code={interceptorCode} lang="java" filename="JwtChannelInterceptor.java" />
         </div>
@@ -284,28 +288,22 @@ export default function BoomingPage() {
             <HighlightLine key={h.label} h={h} />
           ))}
         </div>
-        <div>
-          <SubHead note="다음 프로젝트의 결정 근거가 된 학습 사이클">What carried forward</SubHead>
-          <MyRoleCards roles={roles.slice(0, 3)} />
-        </div>
+        <SubHead note="다음 프로젝트의 결정 근거가 된 학습 사이클">What carried forward</SubHead>
+        {roleItems(roles.slice(0, 3))}
       </CaseSection>
 
-      <CaseSection meta={S.failed}>
-        <TroubleCards troubles={troubles} />
-      </CaseSection>
+      <CaseSection meta={S.failed}>{troubleItems(troubles)}</CaseSection>
 
       <CaseSection meta={S.next}>
-        <LessonsList
-          items={[
-            "HighWay에서 단순하게 가본 한계와 HirePicker에서 과하게 설계해본 회고가 Booming의 통합·단순화 근거로 그대로 옮겨왔습니다. 세 프로젝트를 이어 만들면서 이전 한계가 다음 결정의 근거로 옮겨가는 사이클을 직접 굴려봤고, 다음 프로젝트도 이 사이클로 가져갈 생각입니다.",
-            {
-              text: "HTTP에서 자연스럽게 동작하던 @AuthenticationPrincipal을 WebSocket에 그대로 붙였더니 두세 메시지 만에 null이 떨어졌습니다. CONNECT와 SEND가 서로 다른 스레드라는 게 디버깅하면서 드러났고, JwtChannelInterceptor에서 검증한 사용자를 세션 속성에 저장하고 SEND/SUBSCRIBE에서 복원하는 패턴으로 다시 짰습니다.",
-              ev: ["fewMsgs"],
-            },
-            "웹에선 브라우저가 HttpOnly Cookie를 알아서 첨부해줘서 깔끔했는데, Flutter에선 같은 흐름이 안 통했습니다. 쿠키가 자동으로 안 실리니까 첫 요청부터 401이 떴고, flutter_secure_storage에 토큰을 박고 모든 요청에 Bearer 헤더를 명시하는 식으로 다시 설계했습니다.",
-            "채팅 메시지를 MySQL 컬럼에 욱여넣다 보니 첨부·이모지·시스템 메시지가 들어올 때마다 스키마가 흔들렸습니다. 그래서 사용자·모임·게시판은 MySQL, 채팅 메시지만 MongoDB로 갈라두는 폴리글랏 구조로 정리했습니다.",
-          ]}
-        />
+        {lessonItems([
+          "HighWay에서 단순하게 가본 한계와 HirePicker에서 과하게 설계해본 회고가 Booming의 통합·단순화 근거로 그대로 옮겨왔습니다. 세 프로젝트를 이어 만들면서 이전 한계가 다음 결정의 근거로 옮겨가는 사이클을 직접 굴려봤고, 다음 프로젝트도 이 사이클로 가져갈 생각입니다.",
+          {
+            text: "HTTP에서 자연스럽게 동작하던 @AuthenticationPrincipal을 WebSocket에 그대로 붙였더니 두세 메시지 만에 null이 떨어졌습니다. CONNECT와 SEND가 서로 다른 스레드라는 게 디버깅하면서 드러났고, JwtChannelInterceptor에서 검증한 사용자를 세션 속성에 저장하고 SEND/SUBSCRIBE에서 복원하는 패턴으로 다시 짰습니다.",
+            ev: ["fewMsgs"],
+          },
+          "웹에선 브라우저가 HttpOnly Cookie를 알아서 첨부해줘서 깔끔했는데, Flutter에선 같은 흐름이 안 통했습니다. 쿠키가 자동으로 안 실리니까 첫 요청부터 401이 떴고, flutter_secure_storage에 토큰을 박고 모든 요청에 Bearer 헤더를 명시하는 식으로 다시 설계했습니다.",
+          "채팅 메시지를 MySQL 컬럼에 욱여넣다 보니 첨부·이모지·시스템 메시지가 들어올 때마다 스키마가 흔들렸습니다. 그래서 사용자·모임·게시판은 MySQL, 채팅 메시지만 MongoDB로 갈라두는 폴리글랏 구조로 정리했습니다.",
+        ])}
       </CaseSection>
     </CaseLayout>
   );

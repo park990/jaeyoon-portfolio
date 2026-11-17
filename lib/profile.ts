@@ -5,7 +5,6 @@ import type { Grade } from "@/lib/projects";
 export const PROFILE = {
   nameKo: "박재윤",
   nameEn: "Jaeyoon Park",
-  title: "AI · NLP 엔지니어 — 수치 검증 · 데이터 파이프라인",
   email: "rhkgkrwk2008@gmail.com",
   github: "https://github.com/park990",
   huggingface: "https://huggingface.co/park990",
@@ -17,6 +16,64 @@ export const PROFILE = {
 
 // 재개발 서비스: 「사실」의 공개 문장까지만. 상세 페이지·그림 없음.
 // 경력 표와 홈 작업 띠가 모두 이 값을 읽는다(기간·14:1을 한 곳에만 둔다).
+// 홈 첫 화면 (2단계 3-2). 주장 줄의 mark = 형광(출처가 있는 숫자), struck = 반박된 숫자.
+// 링크가 없는 출처(href 없음)는 주석색 글자로만 보인다.
+export const HOME_HERO = {
+  role: { strong: "AI·NLP 엔지니어", rest: "수치 검증과 데이터 파이프라인" },
+  title: ["숫자를 말할 때는", "출처를 같이 붙입니다."],
+  intro:
+    "기사 속 수치 주장을 공식 통계와 대조하는 LLM 파이프라인을 만들었고, 지금은 흩어진 공공 자료를 모아 검사 규칙으로 자동 점검하는 서비스를 혼자 만들고 있습니다.",
+  example: {
+    head: ["팀에서 만든 검증기 StructVerify의 예시", "기준 데이터와 판정"],
+    // docs/공모전_결과보고서.md L55(예시 문장) · L121(600% vs 543.1% → 위반)
+    claim: { before: "“한국전력공사의 2023년 부채비율은 ", struck: "600%", after: "에 달했다”" },
+    reference: "기준 데이터 543.1%",
+    verdict: "불일치",
+    src: {
+      label: "저장소 문서",
+      href: "https://github.com/2026-StructVerify-Lab/structverify/blob/fb4f5de/docs/공모전_결과보고서.md?plain=1#L121",
+    },
+  },
+  claimsHead: ["같은 방식으로 본 제 숫자", "출처"],
+  claims: [
+    {
+      before: "구현 오류 두 곳을 고쳐 Dev F1을 ",
+      mark: "56.64에서 59.25",
+      after: "로 올렸습니다",
+      src: {
+        label: "팀 저장소 README 성능표",
+        href: "https://github.com/yeseul-kim01/2026-text2graph/blob/504504f/README.md?plain=1#L446-L447",
+      },
+    },
+    {
+      before: "KOSIS 통계표 ",
+      mark: "262,783건",
+      after: "을 검색할 수 있게 적재했습니다",
+      src: { label: "DB 이관 기록 (2026.05, 비공개)" },
+    },
+    {
+      before: "교육 과정 ",
+      mark: "6개 팀 중 최우수",
+      after: " 팀으로 뽑혔습니다",
+      // public/projects/structverify-lab/award.jpg 가 있어 링크로 둔다
+      src: { label: "멋쟁이사자처럼 NLP 과정 상장 사진", href: "/projects/structverify-lab/award.jpg" },
+    },
+  ],
+} as {
+  role: { strong: string; rest: string };
+  title: string[];
+  intro: string;
+  example: {
+    head: string[];
+    claim: { before: string; struck: string; after: string };
+    reference: string;
+    verdict: string;
+    src: { label: string; href: string };
+  };
+  claimsHead: string[];
+  claims: { before: string; mark: string; after: string; src: { label: string; href?: string } }[];
+};
+
 export const CURRENT_WORK = {
   name: "서울 재개발 분석 서비스",
   headline:
@@ -39,7 +96,8 @@ export type InlineGrade = { value: string; grade: Grade; note: string };
 export type TimelineRow = {
   period: string;
   title: string; // 직함 또는 과정명 (굵게)
-  org?: string;
+  /** 소속. 배열이면 항목 사이를 간격으로 나눈다 */
+  org?: string | string[];
   line?: string;
   grades?: InlineGrade[];
 };
@@ -49,8 +107,8 @@ export const TIMELINE: TimelineRow[] = [
   {
     period: CURRENT_WORK.period,
     title: CURRENT_WORK.name,
-    org: `${CURRENT_WORK.role} · ${CURRENT_WORK.status}`,
-    line: `${CURRENT_WORK.summary} ${CURRENT_WORK.audition}(경쟁률 ${CURRENT_WORK.ratio}) · ${CURRENT_WORK.mentor}`,
+    org: [CURRENT_WORK.role, CURRENT_WORK.status],
+    line: `${CURRENT_WORK.summary} ${CURRENT_WORK.audition}(경쟁률 ${CURRENT_WORK.ratio}), ${CURRENT_WORK.mentor}`,
     grades: [{ value: CURRENT_WORK.ratio, grade: CURRENT_WORK.ratioGrade, note: CURRENT_WORK.ratioNote }],
   },
   {
@@ -63,7 +121,7 @@ export const TIMELINE: TimelineRow[] = [
     period: "2026.03 ~ 05",
     title: "자연어처리(NLP) AI 엔지니어 집중 과정",
     org: "멋쟁이사자처럼",
-    line: "6팀 중 최우수상 — 최종 프로젝트 StructVerify-Lab",
+    line: "6팀 중 최우수상, 최종 프로젝트 StructVerify-Lab",
     grades: [{ value: "6팀 중 최우수상", grade: "문서", note: "멋쟁이사자처럼 NLP 과정 최종 프로젝트 상장" }],
   },
   {
@@ -74,7 +132,7 @@ export const TIMELINE: TimelineRow[] = [
   },
   {
     period: "2025.04 ~ 11",
-    title: "Java Full-Stack 개발자 양성과정 (AWS · Docker)",
+    title: "Java Full-Stack 개발자 양성과정 (AWS, Docker)",
     org: "쌍용교육센터",
     line: "6개월 + 심화 2개월",
   },
@@ -84,10 +142,10 @@ export const TIMELINE: TimelineRow[] = [
     grades: [{ value: "820", grade: "문서", note: "TOEIC 성적 (리포 밖 기록)" }],
   },
   {
-    period: "2024.06 ~ 09 · 4개월",
+    period: "2024.06 ~ 09, 4개월",
     title: "여객운송 인턴",
     org: "아시아나항공",
-    line: "인천국제공항 여객운송직 — 다양한 국적·성격의 승객을 동시에 응대하며 커뮤니케이션과 우선순위 판단을 단련. 이후 팀 프로젝트 협업의 자연스러운 기반이 됨.",
+    line: "인천국제공항 여객운송직, 다양한 국적·성격의 승객을 동시에 응대하며 커뮤니케이션과 우선순위 판단을 단련. 이후 팀 프로젝트 협업의 자연스러운 기반이 됨.",
   },
   {
     period: "2018.03 ~ 2025.02",

@@ -3,10 +3,11 @@ import { Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
 import {
   TechStackGrid,
-  MyRoleCards,
-  TroubleCards,
+  ItemTitle,
+  roleItems,
+  troubleItems,
   ResultsGrid,
-  LessonsList,
+  lessonItems,
   type Role,
   type Trouble,
 } from "@/components/project-detail/blocks";
@@ -39,7 +40,7 @@ const CAUSE = {
 const NEXT_TRY = {
   label: "다음 시도",
   value: "Adaptive RAG",
-  note: "relevance gate · 리랭커 · retrieval recall@k 선측정",
+  note: "relevance gate, 리랭커, retrieval recall@k 선측정",
 };
 
 const techStack = [
@@ -89,7 +90,7 @@ const roles: Role[] = [
     title: "자동 평가 시스템",
     bullets: [
       {
-        text: "VL 데이터셋 기반 평가 파이프라인 (`evaluation/metrics.py` 216줄 · `notebooks/colab_generation_eval.ipynb` 449줄)",
+        text: "VL 데이터셋 기반 평가 파이프라인 (`evaluation/metrics.py` 216줄, `notebooks/colab_generation_eval.ipynb` 449줄)",
         ev: ["evalLines216", "evalLines449"],
       },
       "객관식: 번호 매칭 (모델 출력에서 번호 추출 → 정답 라벨 비교)",
@@ -108,9 +109,9 @@ const roles: Role[] = [
   {
     title: "Out of scope (팀원 담당)",
     bullets: [
-      "LoRA fine-tuning (`training/main_train.py`, `adapter_config.json` 등) — 팀원 담당. 본 실험의 ablation에는 포함하지 않음 (LLM 단독 vs LLM+RAG 2-stage 비교만).",
-      "FastAPI 서빙 레이어 (`src/app/main.py`, `routers/chat.py`, `schemas/chat.py`) — 팀원 담당. 본 페이지의 기여 영역 외부.",
-      "Hybrid fusion 코드 (`src/retrieval/hybrid/fusion.py` — RRF · weighted_sum) — 팀원이 옵션 형태로 구현. ablation 측정에는 Dense만 사용했으므로 본 페이지 결과 수치는 hybrid 영향을 받지 않음.",
+      "LoRA fine-tuning (`training/main_train.py`, `adapter_config.json` 등), 팀원 담당. 본 실험의 ablation에는 포함하지 않음 (LLM 단독 vs LLM+RAG 2-stage 비교만).",
+      "FastAPI 서빙 레이어 (`src/app/main.py`, `routers/chat.py`, `schemas/chat.py`), 팀원 담당. 본 페이지의 기여 영역 외부.",
+      "Hybrid fusion 코드 (`src/retrieval/hybrid/fusion.py`, RRF, weighted_sum), 팀원이 옵션 형태로 구현. ablation 측정에는 Dense만 사용했으므로 본 페이지 결과 수치는 hybrid 영향을 받지 않음.",
     ],
   },
 ];
@@ -133,7 +134,7 @@ const troubles: Trouble[] = [
     problem:
       "구체 케이스. 사용자가 '대상포진 치료제'를 물으면 ko-sroberta 임베딩 공간에서 같은 VZV(varicella-zoster virus) 도메인의 '수두 백신' chunk가 top-k 안으로 들어왔습니다. 모델은 검색된 context에 끌려가 백신 쪽으로 답을 비틀었고, 원래 LLM 단독으로는 맞히던 문제까지 오답으로 떨어졌습니다.",
     solve:
-      "ablation 측정 안에서는 별도 처리 없이 distraction 케이스로 분류해 기록. 구조적 해결책은 다음 시도(아래 Lessons)로 묶었습니다: relevance threshold + 리랭커로 1차 거름, 또는 모델이 불확실할 때만 검색을 트리거하는 adaptive RAG.",
+      "ablation 측정 안에서는 별도 처리 없이 distraction 케이스로 분류해 기록. 구조적 해결책은 다음 시도(아래 ‘다음에 고칠 것’)로 묶었습니다: relevance threshold + 리랭커로 1차 거름, 또는 모델이 불확실할 때만 검색을 트리거하는 adaptive RAG.",
     lesson:
       "임베딩 거리가 가깝다는 건 주제가 가깝다는 뜻일 뿐, 정답을 가르는 chunk가 가깝다는 보장은 아니었습니다. 같은 도메인 어휘끼리도 '치료제 vs 백신'처럼 핵심을 다르게 가르는 축이 있는데, 임베딩만으론 그 축을 잡지 못했습니다. 검색 단계에 도메인 규칙이나 리랭커 한 층을 더 두는 패턴은 이후 StructVerify의 KOSIS 표 매칭 필터로도 가져갔습니다.",
   },
@@ -197,9 +198,9 @@ const S = Object.fromEntries(SECTIONS.map((s) => [s.id, s])) as Record<string, C
 
 function LeadLine({ item }: { item: { label: string; value: string; note: string } }) {
   return (
-    <p className="max-w-[680px] border-l-2 border-border-strong pl-4 text-[17px] leading-[1.75] text-foreground">
-      <span className="text-muted-foreground">{item.label}</span>{" "}
-      <span className="font-semibold">{item.value}</span> — {item.note}
+    <p className="max-w-[690px] border-l-2 border-ink pl-4 text-ink">
+      <span className="text-note">{item.label}</span>{" "}
+      <span className="font-semibold">{item.value}</span>, {item.note}
     </p>
   );
 }
@@ -213,7 +214,7 @@ export default function MedicalRagPage() {
             팀 프로젝트 자체는 의료 도메인 챗봇을 만드는 것이었고, 그중 제가
             맡은 부분은 RAG 파이프라인과 평가였습니다. &lsquo;RAG를 붙이면
             정답률이 오른다&rsquo;는 가설을 같은 평가셋에서 측정해봤는데,
-            결과는 오히려 <span className="font-medium">2.3pt 하락</span>으로
+            결과는 오히려 <span className="font-semibold">2.3pt 하락</span>으로
             가설을 반박했습니다. 그래서 RAG를 붙이는 데서 멈추지 않고,
             어떤 경우에 RAG가 정답을 흔드는지 오답 케이스를 직접 추적해
             원인을 분석했습니다.
@@ -223,7 +224,7 @@ export default function MedicalRagPage() {
       </CaseSection>
 
       <CaseSection meta={S.role}>
-        <MyRoleCards roles={roles} />
+        {roleItems(roles)}
         <div>
           <SubHead
             note={
@@ -235,7 +236,9 @@ export default function MedicalRagPage() {
           >
             사용 기술
           </SubHead>
-          <TechStackGrid groups={techStack} />
+          <div className="mt-4">
+            <TechStackGrid groups={techStack} />
+          </div>
         </div>
       </CaseSection>
 
@@ -244,25 +247,18 @@ export default function MedicalRagPage() {
       </CaseSection>
 
       <CaseSection meta={S.decisions}>
-        <ol className="space-y-8">
-          {KEY_DECISIONS.map((d, i) => (
-            <li key={d.title}>
-              <h3 className="flex gap-3 text-[18px] font-semibold leading-snug tracking-tight text-foreground">
-                <span className="font-num text-[14px] font-normal leading-[1.9] text-muted-foreground">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span>{d.title}</span>
-              </h3>
-              <p className="mt-2 pl-9 text-[17px] leading-[1.75] text-foreground">{d.body}</p>
-            </li>
-          ))}
-        </ol>
+        {KEY_DECISIONS.map((d, i) => (
+          <div key={d.title}>
+            <ItemTitle n={i + 1}>{d.title}</ItemTitle>
+            <p className="mt-2 pl-9 text-ink">{d.body}</p>
+          </div>
+        ))}
       </CaseSection>
 
       <CaseSection meta={S.eval}>
         <Prose>
           <p>
-            평가셋은 VL 데이터셋, 지표는 객관식 번호 매칭 · 단답 키워드 매칭으로
+            평가셋은 VL 데이터셋, 지표는 객관식 번호 매칭, 단답 키워드 매칭으로
             채점한 정답률입니다.
           </p>
           <p>
@@ -272,8 +268,8 @@ export default function MedicalRagPage() {
           </p>
         </Prose>
         <div>
-          <p className="mb-3 text-[15px] leading-[1.7] text-muted-foreground">
-            2-stage ablation 실행 흐름 — 동일 질문을 Mode A / Mode B에 통과시켜
+          <p className="mb-3 text-[15px] leading-[1.7] text-note">
+            2-stage ablation 실행 흐름, 동일 질문을 Mode A / Mode B에 통과시켜
             동일 채점 규칙으로 비교.
           </p>
           <CodeBlock
@@ -289,33 +285,31 @@ export default function MedicalRagPage() {
         </div>
         <ResultsGrid
           items={[
-            { text: "LLM 단독 65.4% → +RAG 63.1% (−2.3pt) — 2-stage ablation 측정 (LoRA 제외)", ev: ["ablation"] },
+            { text: "LLM 단독 65.4% → +RAG 63.1% (−2.3pt), 2-stage ablation 측정 (LoRA 제외)", ev: ["ablation"] },
             {
               text: "원천 의학 텍스트 3,447개 → 500자 chunking → 약 27,000 chunk → ko-sroberta 임베딩 → ChromaDB persist",
               ev: ["corpus", "chunk500"],
             },
             "자동 평가 파이프라인: 객관식 번호 매칭 + 단답 키워드 매칭 (VL 데이터셋 일괄)",
-            "오답 전환 케이스 수동 추적 — '대상포진 치료제' ↔ '수두 백신' 같은 같은-도메인 distraction 패턴 식별",
+            "오답 전환 케이스 수동 추적, '대상포진 치료제' ↔ '수두 백신' 같은 같은-도메인 distraction 패턴 식별",
           ]}
         />
       </CaseSection>
 
       <CaseSection meta={S.failed}>
         <LeadLine item={CAUSE} />
-        <TroubleCards troubles={troubles} />
+        {troubleItems(troubles)}
       </CaseSection>
 
       <CaseSection meta={S.next}>
         <LeadLine item={NEXT_TRY} />
-        <LessonsList
-          items={[
-            { text: "RAG만 붙이면 정답률이 오를 줄 알았는데, 측정해 보니 오히려 2.3pt가 떨어졌습니다. 다음에 RAG를 붙일 땐 켜기 전에 retrieval recall@k부터 재고, 그 점수가 LLM 단독보다 의미 있게 높을 때만 붙일 생각입니다.", ev: ["ablation"] },
-            "코사인 점수가 높길래 잘 찾았다고 생각했는데, 정작 모델은 그 chunk에 끌려가서 오답이 더 늘었습니다. 임베딩이 가깝다는 건 주제가 가깝다는 뜻일 뿐, 정답을 가르는 chunk가 가깝다는 보장은 아니었습니다. 그래서 지금은 검색 뒤에 도메인 규칙이나 리랭커를 한 층 더 둡니다.",
-            { text: "처음엔 그냥 ChromaDB를 깔고 시작했는데, Colab에서 의존성 충돌로 세팅에만 한참을 썼습니다. 27k chunk를 한 번 인덱싱하고 ablation으로 반복 검색만 하는 용도엔 persistence·메타데이터가 필요 없는 일이었고, 가벼운 in-memory 검색이라면 FAISS가 더 맞았을 작업이었습니다. 다음엔 실험용 정적 인덱스는 FAISS, 운영용 동적 데이터는 벡터 DB로 갈라둡니다.", ev: ["corpus"] },
-            { text: "다음 라운드로 미뤄둔 변수들 — relevance threshold·리랭커, 모델이 불확실할 때만 검색을 트리거하는 adaptive RAG, 500자보다 짧고 신호대잡음비가 높은 chunk 단위 실험입니다.", ev: ["chunk500"] },
-            "임베딩으로 후보를 좁힌 뒤 규칙으로 한 번 더 거르는 패턴은 이 실험에서 처음 손에 잡혔고, 이후 StructVerify의 KOSIS 표 매칭 필터(국제기구·추계·세부대상)로 그대로 옮겨갔습니다.",
-          ]}
-        />
+        {lessonItems([
+          { text: "RAG만 붙이면 정답률이 오를 줄 알았는데, 측정해 보니 오히려 2.3pt가 떨어졌습니다. 다음에 RAG를 붙일 땐 켜기 전에 retrieval recall@k부터 재고, 그 점수가 LLM 단독보다 의미 있게 높을 때만 붙일 생각입니다.", ev: ["ablation"] },
+          "코사인 점수가 높길래 잘 찾았다고 생각했는데, 정작 모델은 그 chunk에 끌려가서 오답이 더 늘었습니다. 임베딩이 가깝다는 건 주제가 가깝다는 뜻일 뿐, 정답을 가르는 chunk가 가깝다는 보장은 아니었습니다. 그래서 지금은 검색 뒤에 도메인 규칙이나 리랭커를 한 층 더 둡니다.",
+          { text: "처음엔 그냥 ChromaDB를 깔고 시작했는데, Colab에서 의존성 충돌로 세팅에만 한참을 썼습니다. 27k chunk를 한 번 인덱싱하고 ablation으로 반복 검색만 하는 용도엔 persistence·메타데이터가 필요 없는 일이었고, 가벼운 in-memory 검색이라면 FAISS가 더 맞았을 작업이었습니다. 다음엔 실험용 정적 인덱스는 FAISS, 운영용 동적 데이터는 벡터 DB로 갈라둡니다.", ev: ["corpus"] },
+          { text: "다음 라운드로 미뤄둔 변수들, relevance threshold·리랭커, 모델이 불확실할 때만 검색을 트리거하는 adaptive RAG, 500자보다 짧고 신호대잡음비가 높은 chunk 단위 실험입니다.", ev: ["chunk500"] },
+          "임베딩으로 후보를 좁힌 뒤 규칙으로 한 번 더 거르는 패턴은 이 실험에서 처음 손에 잡혔고, 이후 StructVerify의 KOSIS 표 매칭 필터(국제기구·추계·세부대상)로 그대로 옮겨갔습니다.",
+        ])}
       </CaseSection>
     </CaseLayout>
   );

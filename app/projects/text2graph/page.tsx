@@ -3,14 +3,15 @@ import { Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
 import {
   TechStackGrid,
-  MyRoleCards,
+  ItemTitle,
+  roleItems,
   ResultsGrid,
-  LessonsList,
+  lessonItems,
   type Role,
 } from "@/components/project-detail/blocks";
 import { CaseLayout } from "@/components/case/case-layout";
 import { CaseSection, SubHead, type CaseSectionMeta } from "@/components/case/case-parts";
-import { Ev } from "@/components/case/evidence";
+import { Graded } from "@/components/case/evidence";
 import {
   StagesDiagram,
   MetricsTable,
@@ -35,7 +36,7 @@ const techStack = [
 
 const roles: Role[] = [
   {
-    title: "Stage 2 전담 — 학습 파이프라인 구축, 평가 지표 분석",
+    title: "Stage 2 전담, 학습 파이프라인 구축, 평가 지표 분석",
     bullets: [
       "ATLOP + DREEAM 모듈 학습/평가 코드 전 영역 담당",
       "팀 4-Stage Incremental Stacking 구조 중 Stage 2 독립 책임",
@@ -63,7 +64,7 @@ const roles: Role[] = [
 // 일반적인 Trouble-shooting 카드와 의도적으로 다른 frame: 무엇이 깨졌나가 아니라 어떻게 의심·검증·수정했나.
 const DEBUGGING_REASONING = [
   {
-    title: "Evaluation의 Adaptive Threshold 적용 누락 — 평가 코드부터 의심",
+    title: "Evaluation의 Adaptive Threshold 적용 누락, 평가 코드부터 의심",
     hypothesis:
       "학습은 pair별 adaptive threshold를 출력하는데 dev F1이 56.64%에서 정체했습니다. 모델 가중치보다 평가/추론 코드를 먼저 의심했습니다.",
     verification:
@@ -73,7 +74,7 @@ const DEBUGGING_REASONING = [
     ev: { hypothesis: ["f1"], verification: ["th05"] },
   },
   {
-    title: "ATLOP ranking loss 오구현 — 원 논문 수식과 직접 대조",
+    title: "ATLOP ranking loss 오구현, 원 논문 수식과 직접 대조",
     hypothesis:
       "학습 곡선이 일찍 정체했습니다. 모델 구조보다 손실 함수 구현을 의심했습니다.",
     verification:
@@ -83,7 +84,7 @@ const DEBUGGING_REASONING = [
     ev: { fix: ["f1"] },
   },
   {
-    title: "관계별 성능 격차 해석 — 전체 F1만 보지 않기",
+    title: "관계별 성능 격차 해석, 전체 F1만 보지 않기",
     hypothesis:
       "F1 평균이 같아도 관계 종류별로 성능이 균일하지 않을 것이라 봤습니다. 어떤 관계 유형에 약한지 봐야 모델 한계를 진단할 수 있다고 판단했습니다.",
     verification:
@@ -99,14 +100,9 @@ type Debug = (typeof DEBUGGING_REASONING)[number];
 function DebugItem({ d, n }: { d: Debug; n: number }) {
   const ev = d.ev as { hypothesis?: string[]; verification?: string[]; fix?: string[] };
   return (
-    <li>
-      <h3 className="flex gap-3 text-[18px] font-semibold leading-snug tracking-tight text-foreground">
-        <span className="font-num text-[14px] font-normal leading-[1.9] text-muted-foreground">
-          {String(n).padStart(2, "0")}
-        </span>
-        <span>{d.title}</span>
-      </h3>
-      <dl className="mt-3 space-y-3 pl-9 text-[17px] leading-[1.75]">
+    <div>
+      <ItemTitle n={n}>{d.title}</ItemTitle>
+      <dl className="mt-3 space-y-3 pl-9 text-[17px] leading-[1.8]">
         {(
           [
             ["가설", d.hypothesis, ev.hypothesis],
@@ -115,15 +111,14 @@ function DebugItem({ d, n }: { d: Debug; n: number }) {
           ] as const
         ).map(([k, v, e]) => (
           <div key={k}>
-            <dt className="text-[14px] font-medium text-muted-foreground">{k}</dt>
-            <dd className="text-foreground">
-              {v}
-              {e && <Ev ids={[...e]} />}
+            <dt className="text-[14px] text-note">{k}</dt>
+            <dd className="text-ink">
+              <Graded text={v} ev={e} />
             </dd>
           </div>
         ))}
       </dl>
-    </li>
+    </div>
   );
 }
 
@@ -196,10 +191,10 @@ export default function Text2GraphPage() {
       <CaseSection meta={S.problem}>
         <Prose>
           <p>
-            DocRED 데이터셋 기반으로 위키피디아 문서 내 Entity 간 관계(97종)를
-            자동 추출하는 모델 학습 파이프라인. 팀의 4-Stage Incremental Stacking
-            구조에서 Stage 2 (ATLOP + DREEAM)를 단독 담당했습니다.
-            <Ev ids={["rel97"]} />
+            <Graded
+              text="DocRED 데이터셋 기반으로 위키피디아 문서 내 Entity 간 관계(97종)를 자동 추출하는 모델 학습 파이프라인. 팀의 4-Stage Incremental Stacking 구조에서 Stage 2 (ATLOP + DREEAM)를 단독 담당했습니다."
+              ev={["rel97"]}
+            />
           </p>
         </Prose>
       </CaseSection>
@@ -211,22 +206,23 @@ export default function Text2GraphPage() {
             학습된 모델은 HuggingFace에 park990/hihi_model로 배포했습니다.
           </p>
         </Prose>
-        <div>
-          <SubHead>맡은 일</SubHead>
-          <MyRoleCards roles={roles} />
-        </div>
+        <SubHead>맡은 일</SubHead>
+        {roleItems(roles)}
         <div>
           <SubHead>직접 생성한 관계 매핑</SubHead>
-          <p className="mb-3 text-[15px] leading-[1.7] text-muted-foreground">
-            직접 생성한 97개 관계 매핑. P17(country)부터 P175까지 위키데이터
-            속성을 0–96 라벨로.
-            <Ev ids={["rel97"]} />
+          <p className="mb-3 mt-4 text-[15px] leading-[1.7] text-note">
+            <Graded
+              text="직접 생성한 97개 관계 매핑. P17(country)부터 P175까지 위키데이터 속성을 0–96 라벨로."
+              ev={["rel97"]}
+            />
           </p>
-          <CodeBlock code={rel2idCode} lang="json" filename="meta/rel2id.json" />
+          <CodeBlock code={rel2idCode} lang="jsonc" filename="meta/rel2id.json" />
         </div>
         <div>
           <SubHead>사용 기술</SubHead>
-          <TechStackGrid groups={techStack} />
+          <div className="mt-4">
+            <TechStackGrid groups={techStack} />
+          </div>
         </div>
       </CaseSection>
 
@@ -241,38 +237,36 @@ export default function Text2GraphPage() {
       <CaseSection meta={S.eval}>
         <Prose>
           <p>
-            평가셋은 DocRED dev set(998 문서), 지표는 Micro F1 · Precision · Recall입니다.
-            <Ev ids={["dev998"]} />
+            <Graded
+              text="평가셋은 DocRED dev set(998 문서), 지표는 Micro F1, Precision, Recall입니다."
+              ev={["dev998"]}
+            />
           </p>
         </Prose>
         <MetricsTable />
-        <p className="max-w-[680px] text-[17px] leading-[1.75] text-foreground">
-          벤치마크 대비: 논문 ATLOP-BERT 64.19%는 distant pre-training 데이터 30배
-          사용. 본 프로젝트는 annotated만 사용한 조건에서 v2 59.25%로, 데이터 격차를
-          감안하면 정상 범위.
-          <Ev ids={["bench", "f1"]} />
+        <p className="max-w-[690px] text-ink">
+          <Graded
+            text="벤치마크 대비: 논문 ATLOP-BERT 64.19%는 distant pre-training 데이터 30배 사용. 본 프로젝트는 annotated만 사용한 조건에서 v2 59.25%로, 데이터 격차를 감안하면 정상 범위."
+            ev={["bench", "f1"]}
+          />
         </p>
         <ResultsGrid
           items={[
             { text: "v1 F1 56.64% (구현 오류 포함된 baseline)", ev: ["f1"] },
-            { text: "v2 F1 59.25% — ATLOP Ranking Loss + Adaptive Threshold 평가 동시 정정 (+2.61pt)", ev: ["f1"] },
+            { text: "v2 F1 59.25%, ATLOP Ranking Loss + Adaptive Threshold 평가 동시 정정 (+2.61pt)", ev: ["f1"] },
             "HuggingFace 모델 배포: park990/hihi_model (v1 best_model_f1_56_64 + v2 best_model_V2)",
             { text: "dev set 998 문서 → 10,494 triple 추출 후 NetworkX KG 시각화", ev: ["dev998", "triples"] },
             { text: "관계별 정밀도: 생년월일/사망일 80–90%, 민족/하위분류 0–12.5% (long-tail 격차 확인)", ev: ["relgap"] },
           ]}
         />
-        <ol>
-          <DebugItem d={DEBUGGING_REASONING[2]} n={3} />
-        </ol>
+        <DebugItem d={DEBUGGING_REASONING[2]} n={3} />
       </CaseSection>
 
       <CaseSection meta={S.failed}>
-        <ol className="space-y-10">
-          <DebugItem d={DEBUGGING_REASONING[0]} n={1} />
-          <DebugItem d={DEBUGGING_REASONING[1]} n={2} />
-        </ol>
+        <DebugItem d={DEBUGGING_REASONING[0]} n={1} />
+        <DebugItem d={DEBUGGING_REASONING[1]} n={2} />
         <div>
-          <p className="mb-3 text-[15px] leading-[1.7] text-muted-foreground">
+          <p className="mb-3 text-[15px] leading-[1.7] text-note">
             ATLOP Ranking Loss 재구현. 논문 원본 수식 그대로 옮긴 버전.
           </p>
           <CodeBlock code={lossCode} lang="python" filename="loss.py" />
@@ -280,15 +274,13 @@ export default function Text2GraphPage() {
       </CaseSection>
 
       <CaseSection meta={S.next}>
-        <LessonsList
-          items={[
-            {
-              text: "처음엔 모델이 잘못된 줄 알고 가중치부터 만지려 했는데, dev F1이 56.64%에서 계속 정체했습니다. evaluate_on_dev를 따라가 보니 학습된 adaptive threshold가 평가에서 무시되고 고정 0.5로 잘리고 있었습니다. 한 줄짜리 버그가 학습 결함보다 더 큰 점수 손실을 내는 걸 본 뒤로, F1이 안 오르면 모델보다 평가·추론 코드부터 의심합니다.",
-              ev: ["f1", "th05"],
-            },
-            "ATLOP Loss를 'BCE + threshold class concat' 약식으로 두니까 학습 곡선이 일찍 정체했습니다. 원 논문 ranking loss 수식 그대로 다시 옮기고 나서야 곡선이 살아났고, 그래서 논문 구현은 수식 단위까지 맞춰 옮기는 식으로 정리했습니다.",
-          ]}
-        />
+        {lessonItems([
+          {
+            text: "처음엔 모델이 잘못된 줄 알고 가중치부터 만지려 했는데, dev F1이 56.64%에서 계속 정체했습니다. evaluate_on_dev를 따라가 보니 학습된 adaptive threshold가 평가에서 무시되고 고정 0.5로 잘리고 있었습니다. 한 줄짜리 버그가 학습 결함보다 더 큰 점수 손실을 내는 걸 본 뒤로, F1이 안 오르면 모델보다 평가·추론 코드부터 의심합니다.",
+            ev: ["f1", "th05"],
+          },
+          "ATLOP Loss를 'BCE + threshold class concat' 약식으로 두니까 학습 곡선이 일찍 정체했습니다. 원 논문 ranking loss 수식 그대로 다시 옮기고 나서야 곡선이 살아났고, 그래서 논문 구현은 수식 단위까지 맞춰 옮기는 식으로 정리했습니다.",
+        ])}
       </CaseSection>
     </CaseLayout>
   );

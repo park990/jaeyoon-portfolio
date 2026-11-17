@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { getNextProject, type FlowStep, type Project } from "@/lib/projects";
+import { Children } from "react";
+import { getNextProject, type Evidence, type FlowStep, type Metric, type Project } from "@/lib/projects";
 export type { FlowStep };
-import { Ev } from "@/components/case/evidence";
-import { NumText } from "@/components/num-text";
+import { Graded, SideNotes, SourceLink } from "@/components/case/evidence";
+import { InlineText, marksFor } from "@/components/case/inline";
+import { collectEv } from "@/components/case/collect-ev";
 
 // 사례 페이지 공통 틀의 조각들 (서버 컴포넌트)
 
@@ -14,77 +16,119 @@ export type CaseSectionMeta = {
   title: string;
 };
 
-/** 맨 위: 라벨 줄 → 문장형 제목 → 결과 수치 → 요약 → 리포 링크 */
-export function CaseHeader({ project: p }: { project: Project }) {
-  // 기간 표기에 상태가 이미 들어 있으면(예: "2025.11 ~ 진행 중") 상태를 반복하지 않는다
-  const labels = [p.kind, `팀 ${p.team}`, `역할 ${p.role}`, p.period, ...(p.period.includes(p.status) ? [] : [p.status])];
+/** 메타 줄 — 항목 사이는 간격으로 나눈다(" · " 없음). 첫 항목은 먹색 굵게 */
+export function MetaLine({ items, className = "" }: { items: string[]; className?: string }) {
   return (
-    <header className="pb-10">
-      <p className="text-[14px] leading-[1.7] text-muted-foreground">
-        <span className="font-semibold text-foreground">{p.title}</span>
-        <span> — {p.subtitle}</span>
-        {labels.map((l) => (
-          <span key={l}>
-            <span aria-hidden="true"> · </span>
-            {l}
+    <p className={`meta ${className}`}>
+      {items.map((x) => (
+        <span key={x}>{x}</span>
+      ))}
+    </p>
+  );
+}
+
+/** 결과 타일: 큰 값 · 한 줄 설명 · 출처(링크 또는 추정 설명) */
+function ResultTile({ m, p }: { m: Metric; p: Project }) {
+  const marks = marksFor(p.evidence, m.ev);
+  const evs = m.ev
+    .map((id) => ({ e: p.evidence.find((x) => x.id === id), n: p.evidence.findIndex((x) => x.id === id) + 1 }))
+    .filter((x): x is { e: Evidence; n: number } => !!x.e);
+  const sources = evs.map(({ e, n }) => {
+    // 추정: 지금 있는 설명 문장(근거 출처의 첫 구절)
+    if (e.grade === "추정") return <span key={e.id}>{e.source.split(" (")[0]}</span>;
+    // 확인 필요: 표시 없이 근거 표의 그 줄로만
+    if (e.grade === "확인 필요")
+      return (
+        <a key={e.id} href={`#ev-${n}`} className="hit" aria-label={`근거 표 ${n}번 줄`}>
+          근거 {n}
+        </a>
+      );
+    if (e.href) return <SourceLink key={e.id} e={e} className="hit" />;
+    return <span key={e.id}>{e.source}</span>;
+  });
+  return (
+    <li className="min-w-0">
+      <p className="num">
+        <InlineText text={m.value} marks={marks} />
+      </p>
+      <p className="mt-1 text-[16px] leading-[1.6]">
+        {m.label}
+        {m.note && (
+          <>
+            , <InlineText text={m.note} marks={marks} />
+          </>
+        )}
+      </p>
+      <p className="mt-0.5 text-[14px] leading-[1.6] text-note">
+        {sources.map((s, i) => (
+          <span key={i}>
+            {i > 0 && ", "}
+            {s}
           </span>
         ))}
       </p>
-      <h1 className="mt-3 text-[28px] font-semibold leading-[1.32] tracking-[-0.02em] text-foreground sm:text-[34px]">
-        {p.headline}
-      </h1>
+    </li>
+  );
+}
+
+/** 맨 위: 메타 줄 → 문장형 제목 → 결과 타일 → 칸 목록 → 요약 → 리포 링크 */
+export function CaseHeader({ project: p, toc }: { project: Project; toc: CaseSectionMeta[] }) {
+  // 기간 표기에 상태가 이미 들어 있으면(예: "2025.11 ~ 진행 중") 상태를 반복하지 않는다
+  const items = [
+    p.title,
+    p.subtitle,
+    p.kind,
+    `팀 ${p.team}`,
+    `역할 ${p.role}`,
+    p.period,
+    ...(p.period.includes(p.status) ? [] : [p.status]),
+  ];
+  return (
+    <header>
+      <MetaLine items={items} />
+      <h1 className="mt-3">{p.headline}</h1>
 
       {p.metrics.length > 0 && (
-        <dl className="mt-7 divide-y divide-border border-y border-border">
-          {p.metrics.map((m) => (
-            <div
-              key={m.label}
-              className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-0.5 py-2.5 sm:grid-cols-[minmax(0,1fr)_auto_7.5rem]"
-            >
-              <dt className="text-[15px] text-muted-foreground">
-                {m.label}
-                {m.note && <span className="block text-[13.5px] leading-[1.5]">{m.note}</span>}
-              </dt>
-              <dd className="text-[17px] font-semibold text-foreground">
-                <NumText text={m.value} />
-              </dd>
-              <dd className="col-span-2 text-left sm:col-span-1 sm:text-right">
-                <Ev ids={m.ev} />
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <section aria-labelledby="results-title" className="sec mt-7">
+          <h2 id="results-title" className="sec-label">
+            결과
+          </h2>
+          <ul className="results mt-3">
+            {p.metrics.map((m) => (
+              <ResultTile key={m.label} m={m} p={p} />
+            ))}
+          </ul>
+        </section>
       )}
 
-      <p className="mt-7 text-[17px] leading-[1.75] text-foreground">
-        {p.summary}
-        {p.summaryEv && <Ev ids={p.summaryEv} />}
+      {/* 오른쪽 고정 목차 대신: 결과 아래 한 줄짜리 칸 링크 */}
+      <nav aria-label="이 페이지의 칸" className="meta mt-6">
+        <span>목차</span>
+        {toc.map((s) => (
+          <a key={s.id} href={`#${s.id}`} className="py-[9px]">
+            {s.label}
+          </a>
+        ))}
+      </nav>
+
+      <p className="mt-5 max-w-[690px]">
+        <Graded text={p.summary} ev={p.summaryEv} />
       </p>
 
       {(p.repo || p.links?.length) && (
-        <ul className="mt-5 space-y-1 text-[15px]">
+        <ul className="mt-3 text-[15px] leading-[1.8]">
           {p.repo && (
             <li>
-              <span className="text-muted-foreground">리포 (커밋 고정) </span>
-              <a
-                href={p.repo.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-num text-[14px] text-primary underline underline-offset-[3px] hover:no-underline"
-              >
-                {p.repo.label} ↗
+              <span className="text-note">리포 (커밋 고정) </span>
+              <a href={p.repo.href} target="_blank" rel="noopener noreferrer" className="hit font-mono text-[14px]">
+                {p.repo.label}
               </a>
             </li>
           )}
           {p.links?.map((l) => (
             <li key={l.href}>
-              <a
-                href={l.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary underline underline-offset-[3px] hover:no-underline"
-              >
-                {l.label} ↗
+              <a href={l.href} target="_blank" rel="noopener noreferrer" className="hit">
+                {l.label}
               </a>
             </li>
           ))}
@@ -94,23 +138,33 @@ export function CaseHeader({ project: p }: { project: Project }) {
   );
 }
 
-export function CaseSection({
-  meta,
-  children,
-}: {
-  meta: CaseSectionMeta;
-  children: React.ReactNode;
-}) {
+/**
+ * 본문 칸. 직계 자식 하나가 한 줄(.case-body)이 되고,
+ * 그 줄이 기대는 근거를 오른쪽 여백 주석(aside)에 둔다. 좁은 화면에서는 주석이 아래로 내려간다.
+ */
+export function CaseSection({ meta, children }: { meta: CaseSectionMeta; children: React.ReactNode }) {
+  const rows = Children.toArray(children);
   return (
-    <section id={meta.id} aria-labelledby={`${meta.id}-title`} className="border-t border-border pt-10 pb-4">
-      <p className="text-[13px] font-medium text-muted-foreground">{meta.label}</p>
-      <h2
-        id={`${meta.id}-title`}
-        className="mt-1 text-[22px] font-semibold leading-[1.4] tracking-[-0.01em] text-foreground sm:text-[24px]"
-      >
+    <section id={meta.id} aria-labelledby={`${meta.id}-title`} className="sec mt-16">
+      <p className="sec-label">{meta.label}</p>
+      <h2 id={`${meta.id}-title`} className="mt-1 max-w-[690px]">
         {meta.title}
       </h2>
-      <div className="mt-6 space-y-10">{children}</div>
+      <div className="mt-7 flex flex-col gap-9">
+        {rows.map((row, i) => {
+          const ids = collectEv(row);
+          return (
+            <div key={i} className="case-body">
+              <div className="case-text">{row}</div>
+              {ids.length > 0 && (
+                <aside aria-label="근거 주석">
+                  <SideNotes ids={ids} />
+                </aside>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 }
@@ -118,9 +172,9 @@ export function CaseSection({
 /** 칸 안의 작은 묶음 제목 */
 export function SubHead({ children, note }: { children: React.ReactNode; note?: React.ReactNode }) {
   return (
-    <div className="mb-4">
-      <h3 className="text-[17px] font-semibold tracking-tight text-foreground">{children}</h3>
-      {note && <p className="mt-1 text-[14px] leading-[1.6] text-muted-foreground">{note}</p>}
+    <div className="subhead">
+      <h3 className="text-[17px] font-semibold leading-[1.5] text-ink">{children}</h3>
+      {note && <p className="mt-1 text-[14px] leading-[1.6] text-note">{note}</p>}
     </div>
   );
 }
@@ -128,11 +182,12 @@ export function SubHead({ children, note }: { children: React.ReactNode; note?: 
 export function NextCase({ slug }: { slug: string }) {
   const next = getNextProject(slug);
   return (
-    <nav aria-label="다음 사례" className="mt-16 border-t-2 border-border-strong pt-6">
-      <Link href={`/projects/${next.slug}`} className="group block">
-        <span className="block text-[13px] text-muted-foreground">다음 사례 · {next.title}</span>
-        <span className="mt-1 block text-[19px] font-semibold leading-snug text-foreground group-hover:underline group-hover:underline-offset-4">
-          {next.headline} →
+    <nav aria-label="다음 사례" className="sec mt-20">
+      <p className="sec-label">다음 사례</p>
+      <Link href={`/projects/${next.slug}`} className="mt-1 block max-w-[860px] py-2">
+        <span className="block text-[15px] text-note">{next.title}</span>
+        <span className="mt-1 block font-serif text-[21px] font-bold leading-[1.45] tracking-[-0.02em]">
+          {next.headline}
         </span>
       </Link>
     </nav>
@@ -140,54 +195,37 @@ export function NextCase({ slug }: { slug: string }) {
 }
 
 // ─── 흐름 그림 ────────────────────────────────────────────────────────
-// 본문(또는 리포)에 적힌 단계를 그대로 세로 흐름으로 그린다. 장식 없음.
+// 본문(또는 리포)에 적힌 단계를 그대로 세로 목록으로. 담당 단계는 굵은 글씨(.mine).
 
-export function FlowFigure({
-  steps,
-  caption,
-  dense = false,
-}: {
-  steps: FlowStep[];
-  caption?: React.ReactNode;
-  dense?: boolean;
-}) {
+export function FlowFigure({ steps, caption }: { steps: FlowStep[]; caption?: React.ReactNode }) {
   return (
     <figure>
-      <ol>
-        {steps.map((s, i) => (
-          <li key={s.name} className={`relative pl-9 ${i < steps.length - 1 ? (dense ? "pb-3" : "pb-5") : ""}`}>
-            {i < steps.length - 1 && (
-              <span aria-hidden="true" className="absolute bottom-0 left-[11px] top-7 w-px bg-border-strong" />
-            )}
-            <span
-              aria-hidden="true"
-              className={
-                "absolute left-0 top-[3px] flex h-[23px] w-[23px] items-center justify-center rounded-full font-num text-[11.5px] " +
-                (s.mine
-                  ? "bg-foreground text-background"
-                  : "border border-border-strong bg-background text-foreground")
-              }
-            >
-              {i + 1}
-            </span>
-            <p className={`${dense ? "text-[14.5px]" : "text-[15.5px]"} font-semibold leading-[1.5] text-foreground`}>
-              {s.name}
-              {s.mine && (
-                <span className="ml-2 border border-border-strong px-1 py-px align-[1px] text-[11.5px] font-medium">
-                  담당
-                </span>
+      <ol className="steps">
+        {steps.map((s, i) => {
+          const lines = s.detail === undefined ? [] : Array.isArray(s.detail) ? s.detail : [s.detail];
+          return (
+            <li key={s.name} className={s.mine ? "mine" : undefined}>
+              <span>{i + 1}</span>
+              <span>
+                {s.tag && <span className="mr-3">{s.tag}</span>}
+                {s.tag && " "}
+                {s.name}
+              </span>
+              {lines.length > 0 && (
+                <small>
+                  {lines.map((l, j) => (
+                    <span key={l} className="block">
+                      <Graded text={l} ev={s.ev} refs={j === lines.length - 1} />
+                    </span>
+                  ))}
+                </small>
               )}
-            </p>
-            {s.detail && (
-              <p className={`${dense ? "text-[13.5px]" : "text-[14.5px]"} leading-[1.55] text-muted-foreground`}>
-                {s.detail}
-                {s.ev && <Ev ids={s.ev} />}
-              </p>
-            )}
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ol>
-      {caption && <figcaption className="mt-4 text-[13.5px] leading-[1.6] text-muted-foreground">{caption}</figcaption>}
+      {caption && <figcaption className="mt-4 text-[14px] leading-[1.6] text-note">{caption}</figcaption>}
     </figure>
   );
 }
+

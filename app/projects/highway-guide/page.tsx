@@ -3,14 +3,15 @@ import { Prose } from "@/components/project-detail/section";
 import { CodeBlock } from "@/components/project-detail/code-block";
 import {
   TechStackGrid,
-  TroubleCards,
-  LessonsList,
+  ItemTitle,
+  troubleItems,
+  lessonItems,
   PlainList,
   type Trouble,
 } from "@/components/project-detail/blocks";
 import { CaseLayout } from "@/components/case/case-layout";
 import { CaseSection, SubHead, type CaseSectionMeta } from "@/components/case/case-parts";
-import { Ev } from "@/components/case/evidence";
+import { Graded } from "@/components/case/evidence";
 import { LineText, type Line } from "@/components/project-detail/blocks";
 import { getProjectBySlug, HIGHWAY_SERVICE_LINE } from "@/lib/projects";
 
@@ -22,7 +23,7 @@ const project = getProjectBySlug(SLUG)!;
 // 메인 랜딩 — 가로형, 풀폭. 페이지 진입 hero.
 function HeroShot() {
   return (
-    <figure className="overflow-hidden rounded-sm border border-border">
+    <figure className="overflow-hidden border border-rule">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/projects/highway-guide/hero-landing.png"
@@ -30,8 +31,8 @@ function HeroShot() {
         loading="lazy"
         className="block h-auto w-full"
       />
-      <figcaption className="border-t border-border px-4 py-2.5 text-[14px] leading-[1.6] text-muted-foreground">
-        메인 랜딩 — 출발지·목적지를 입력해 경로 내 휴게시설을 한 번에 검색.
+      <figcaption className="border-t border-rule px-4 py-2.5 text-[14px] leading-[1.6] text-note">
+        메인 랜딩, 출발지·목적지를 입력해 경로 내 휴게시설을 한 번에 검색.
       </figcaption>
     </figure>
   );
@@ -40,7 +41,7 @@ function HeroShot() {
 // 휴게소 상세 모달 — portrait.
 function BookmarkShot() {
   return (
-    <figure className="max-w-[220px] overflow-hidden rounded-sm border border-border">
+    <figure className="max-w-[220px] overflow-hidden border border-rule">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/projects/highway-guide/favorite-modal.png"
@@ -48,7 +49,7 @@ function BookmarkShot() {
         loading="lazy"
         className="block h-auto w-full"
       />
-      <figcaption className="border-t border-border px-2.5 py-1.5 text-[13px] leading-snug text-muted-foreground">
+      <figcaption className="border-t border-rule px-2.5 py-1.5 text-[13px] leading-snug text-note">
         빨간 하트 = BookMark 토글
       </figcaption>
     </figure>
@@ -63,65 +64,65 @@ function ActionFlowShot() {
     ["/favor.do", "FavoriteAction"],
   ];
   return (
-    <figure className="rounded-sm border border-border">
-      <div className="border-b border-border px-3 py-2 text-[13px] text-muted-foreground">
-        MVC Model 2 — Action Controller
+    <figure className=" border border-rule">
+      <div className="border-b border-rule px-3 py-2 text-[13px] text-note">
+        MVC Model 2, Action Controller
       </div>
 
       <div className="space-y-2 p-4 text-[14px]">
         {/* 1. 요청 */}
-        <div className="rounded-sm border border-border px-3 py-2 text-center">
-          <span className="text-muted-foreground">Browser</span>
-          <span className="ml-2 font-mono text-foreground">GET /login.do</span>
+        <div className=" border border-rule px-3 py-2 text-center">
+          <span className="text-note">Browser</span>
+          <span className="ml-2 font-mono text-ink">GET /login.do</span>
         </div>
-        <div className="text-center text-muted-foreground" aria-hidden>
+        <div className="text-center text-note" aria-hidden>
           ↓
         </div>
 
         {/* 2. FrontController + 라우팅 테이블 (핵심) */}
-        <div className="rounded-sm border-2 border-border-strong">
-          <div className="border-b border-border px-3 py-2 text-center font-semibold text-foreground">
+        <div className=" border-2 border-ink">
+          <div className="border-b border-rule px-3 py-2 text-center font-semibold text-ink">
             FrontController
-            <span className="ml-1 font-normal text-muted-foreground">(URL → Action 매핑)</span>
+            <span className="ml-1 font-normal text-note">(URL → Action 매핑)</span>
           </div>
           <div className="space-y-1 px-3 py-2.5 font-mono text-[13px]">
             {routes.map(([u, a]) => (
               <div key={u} className="flex items-center justify-between gap-2">
-                <span className="text-foreground">{u}</span>
-                <span className="text-muted-foreground">→</span>
-                <span className="flex-1 text-right text-foreground">{a}</span>
+                <span className="text-ink">{u}</span>
+                <span className="text-note">→</span>
+                <span className="flex-1 text-right text-ink">{a}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* 3. Action 실행 */}
-        <div className="text-center text-muted-foreground" aria-hidden>
+        <div className="text-center text-note" aria-hidden>
           ↓
         </div>
-        <div className="rounded-sm border border-border px-3 py-2 text-center text-foreground">
+        <div className=" border border-rule px-3 py-2 text-center text-ink">
           Action.<span className="font-mono">execute()</span>
         </div>
 
         {/* 4. 두 갈래 응답 분기 */}
-        <div className="text-center text-muted-foreground" aria-hidden>
+        <div className="text-center text-note" aria-hidden>
           ↓
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-sm border border-border px-3 py-2 text-center">
-            <p className="font-semibold text-foreground">JSP 화면</p>
-            <p className="mt-0.5 text-[13px] text-muted-foreground">페이지 이동</p>
+          <div className=" border border-rule px-3 py-2 text-center">
+            <p className="font-semibold text-ink">JSP 화면</p>
+            <p className="mt-0.5 text-[13px] text-note">페이지 이동</p>
           </div>
-          <div className="rounded-sm border border-border px-3 py-2 text-center">
-            <p className="font-semibold text-foreground">JSON 응답</p>
-            <p className="mt-0.5 text-[13px] text-muted-foreground">AJAX</p>
+          <div className=" border border-rule px-3 py-2 text-center">
+            <p className="font-semibold text-ink">JSON 응답</p>
+            <p className="mt-0.5 text-[13px] text-note">AJAX</p>
           </div>
         </div>
 
         {/* 5. 강결합 경고 */}
-        <div className="flex items-start gap-2 border-l-2 border-border-strong px-3 py-2">
-          <span aria-hidden>⚠</span>
-          <span className="flex-1 text-foreground">
+        {/* 아이콘(⚠) 없음 — 2단계 규칙 */}
+        <div className="flex items-start gap-2 border-l-2 border-ink px-3 py-2">
+          <span className="flex-1 text-ink">
             한 Action 안에 두 응답 방식이 섞임 → <span className="font-semibold">강결합</span>
           </span>
         </div>
@@ -133,7 +134,7 @@ function ActionFlowShot() {
 // MySQL users 테이블 — 실제 MySQL 클라이언트 캡처.
 function UserTableShot() {
   return (
-    <figure className="overflow-hidden rounded-sm border border-border">
+    <figure className="overflow-hidden border border-rule">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/projects/highway-guide/users-table.png"
@@ -141,8 +142,8 @@ function UserTableShot() {
         loading="lazy"
         className="block h-auto w-full"
       />
-      <figcaption className="border-t border-border px-3 py-2 text-[13px] leading-snug text-muted-foreground">
-        실제 <span className="text-foreground">UserVO</span> 테이블 — user_pw 컬럼 = BCrypt hash (평문 저장 X)
+      <figcaption className="border-t border-rule px-3 py-2 text-[13px] leading-snug text-note">
+        실제 <span className="text-ink">UserVO</span> 테이블, user_pw 컬럼 = BCrypt hash (평문 저장 X)
       </figcaption>
     </figure>
   );
@@ -151,7 +152,7 @@ function UserTableShot() {
 // slide 7 흐름: 입력 위젯(image9) → ↓ → 경로상 휴게시설 결과(image8)
 function SearchResultShot() {
   return (
-    <figure className="overflow-hidden rounded-sm border border-border">
+    <figure className="overflow-hidden border border-rule">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/projects/highway-guide/search-input.png"
@@ -159,7 +160,7 @@ function SearchResultShot() {
         loading="lazy"
         className="block h-auto w-full"
       />
-      <div className="flex justify-center border-y border-border py-2 text-xl text-muted-foreground" aria-hidden>
+      <div className="flex justify-center border-y border-rule py-2 text-xl text-note" aria-hidden>
         ↓
       </div>
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -169,8 +170,8 @@ function SearchResultShot() {
         loading="lazy"
         className="block h-auto w-full"
       />
-      <figcaption className="border-t border-border px-4 py-2.5 text-[14px] leading-[1.6] text-muted-foreground">
-        출발지·도착지 입력 → 경로상 휴게시설을 카드로 표출 (편의시설 · 주유비 · 평점 · 대표메뉴).
+      <figcaption className="border-t border-rule px-4 py-2.5 text-[14px] leading-[1.6] text-note">
+        출발지·도착지 입력 → 경로상 휴게시설을 카드로 표출 (편의시설, 주유비, 평점, 대표메뉴).
       </figcaption>
     </figure>
   );
@@ -191,30 +192,21 @@ function RoleGridCard({
   visual?: React.ReactNode;
 }) {
   return (
-    <li>
-      <h3 className="flex gap-3 text-[18px] font-semibold leading-snug tracking-tight text-foreground">
-        <span className="font-num text-[14px] font-normal leading-[1.9] text-muted-foreground">
-          {String(n).padStart(2, "0")}
-        </span>
-        <span>{title}</span>
-      </h3>
+    <div>
+      <ItemTitle n={n}>{title}</ItemTitle>
       {description ? (
-        <p className="mt-2 pl-9 text-[17px] leading-[1.75] text-foreground">{description}</p>
+        <p className="mt-2 pl-9 text-ink">{description}</p>
       ) : (
-        <ul className="mt-2 space-y-1.5 pl-9 text-[17px] leading-[1.75] text-foreground">
+        <ul className="dash-list mt-2 space-y-1.5 pl-9 text-[17px] leading-[1.8] text-ink">
           {bullets?.map((b) => (
-            <li key={typeof b === "string" ? b : b.text} className="relative pl-4">
-              <span
-                className="absolute left-0 top-[0.8em] h-[5px] w-[5px] rounded-full bg-muted-foreground"
-                aria-hidden="true"
-              />
+            <li key={typeof b === "string" ? b : b.text}>
               <LineText line={b} />
             </li>
           ))}
         </ul>
       )}
       {visual && <div className="mt-4 pl-9">{visual}</div>}
-    </li>
+    </div>
   );
 }
 
@@ -224,7 +216,7 @@ export const metadata: Metadata = {
 };
 
 const techStack = [
-  { category: "Frontend", items: ["JSP", "JavaScript", "AJAX", "Kakao Map · Mobility API", "Naver Geocoding API"] },
+  { category: "Frontend", items: ["JSP", "JavaScript", "AJAX", "Kakao Map, Mobility API", "Naver Geocoding API"] },
   {
     category: "Backend",
     items: [
@@ -232,7 +224,7 @@ const techStack = [
       "MyBatis",
       "BCrypt",
       "HttpSession",
-      "OAuth 2.0 (Kakao · Naver)",
+      "OAuth 2.0 (Kakao, Naver)",
       "JavaMail (Gmail SMTP)",
     ],
   },
@@ -258,9 +250,9 @@ const authRole = {
 // Part 1 — "What I built": 단순 구현 작업 망라 (발전 narrative와 분리)
 const builtItems = [
   "BCrypt 비밀번호 해시 + HttpSession 사용자 인증",
-  "OAuth 2.0 소셜 로그인 (Kakao · Naver)",
+  "OAuth 2.0 소셜 로그인 (Kakao, Naver)",
   "Google SMTP 기반 이메일 인증 + 비밀번호 재발급",
-  "Kakao Map · Mobility API 지도/경로 시각화",
+  "Kakao Map, Mobility API 지도/경로 시각화",
   "Naver Geocoding API 좌표 변환",
   "AJAX 비동기 통신 (즐겨찾기 실시간 토글 등)",
   "MVC Model 2 Front Controller (Action 라우팅 설계)",
@@ -280,7 +272,7 @@ const bookmarkRole: { title: string; bullets: Line[] } = {
 
 const troubles: Trouble[] = [
   {
-    title: "HttpSession Stateful 한계 — 토큰 없는 단일 서버 의존",
+    title: "HttpSession Stateful 한계, 토큰 없는 단일 서버 의존",
     star: true,
     problem:
       "첫 풀스택이라 가장 직관적인 HttpSession + 평문 비밀번호 → BCrypt 해시 구조로 출발했습니다. 단일 서버에서는 문제가 없었지만, Scale-out 가정에서는 세션 불일치와 메모리 부하라는 Stateful의 근본 한계가 보였습니다. 이때는 토큰(JWT)을 아예 도입하지 않았습니다.",
@@ -333,7 +325,7 @@ const SECTIONS: CaseSectionMeta[] = [
   {
     id: "decisions",
     label: "결정과 이유",
-    title: "HttpSession · Action Forward · BookMark 연결 테이블, 가장 단순한 형태로 출발했습니다",
+    title: "HttpSession, Action Forward, BookMark 연결 테이블, 가장 단순한 형태로 출발했습니다",
   },
   {
     id: "failed",
@@ -343,7 +335,7 @@ const SECTIONS: CaseSectionMeta[] = [
   {
     id: "next",
     label: "다음에 고칠 것",
-    title: "세 가지 한계가 HirePicker의 JWT · REST 분리 · 즐겨찾기 재설계로 이어졌습니다",
+    title: "세 가지 한계가 HirePicker의 JWT, REST 분리, 즐겨찾기 재설계로 이어졌습니다",
   },
 ];
 const S = Object.fromEntries(SECTIONS.map((s) => [s.id, s])) as Record<string, CaseSectionMeta>;
@@ -357,12 +349,12 @@ export default function HighwayGuidePage() {
           <p>{HIGHWAY_SERVICE_LINE}입니다.</p>
           <p>
             JSP/Servlet 기반의 첫 풀스택 프로젝트입니다. 아는 것이 별로
-            없어서 <span className="font-medium">가장 단순한 형태</span>로 끝까지
+            없어서 <span className="font-semibold">가장 단순한 형태</span>로 끝까지
             가봤습니다. JWT 없이 BCrypt + HttpSession을 사용했고, JSP Forward와
             AJAX JSON을 한 Action에서 같이 처리하는 구조였습니다. 그 단순함이 만든
             한계가 그대로 다음 프로젝트(HirePicker)의 기술 선택 근거가 되었기에, 이
             프로젝트의 가치는 결과물보다{" "}
-            <span className="font-medium">학습 사이클의 출발점</span>에 있습니다.
+            <span className="font-semibold">학습 사이클의 출발점</span>에 있습니다.
           </p>
         </Prose>
         <HeroShot />
@@ -371,11 +363,15 @@ export default function HighwayGuidePage() {
       <CaseSection meta={S.role}>
         <div>
           <SubHead note="이 프로젝트에서 직접 구현한 영역">What I built</SubHead>
-          <PlainList items={builtItems} />
+          <div className="mt-4">
+            <PlainList items={builtItems} />
+          </div>
         </div>
         <div>
           <SubHead note="※ 직접 다룬 영역의 기술 세트.">사용 기술</SubHead>
-          <TechStackGrid groups={techStack} />
+          <div className="mt-4">
+            <TechStackGrid groups={techStack} />
+          </div>
         </div>
       </CaseSection>
 
@@ -385,58 +381,50 @@ export default function HighwayGuidePage() {
       </CaseSection>
 
       <CaseSection meta={S.decisions}>
+        <SubHead note="다음 프로젝트의 결정 근거가 된 학습 사이클">What carried forward</SubHead>
+        <RoleGridCard n={1} {...actionRole} />
+        <RoleGridCard n={2} {...authRole} visual={<UserTableShot />} />
+        <RoleGridCard n={3} {...bookmarkRole} visual={<BookmarkShot />} />
         <div>
-          <SubHead note="다음 프로젝트의 결정 근거가 된 학습 사이클">What carried forward</SubHead>
-          <ol className="space-y-10">
-            <RoleGridCard n={1} {...actionRole} />
-            <RoleGridCard n={2} {...authRole} visual={<UserTableShot />} />
-            <RoleGridCard n={3} {...bookmarkRole} visual={<BookmarkShot />} />
-          </ol>
-        </div>
-        <div>
-          <p className="mb-3 text-[15px] leading-[1.7] text-muted-foreground">
-            다대다 관계 첫 설계 — 다음 프로젝트에서 같은 패턴을 재사용할 토대가
+          <p className="mb-3 text-[15px] leading-[1.7] text-note">
+            다대다 관계 첫 설계, 다음 프로젝트에서 같은 패턴을 재사용할 토대가
             되었습니다.
           </p>
           <CodeBlock code={bookmarkCode} lang="sql" filename="BookMark 테이블 + 토글 패턴" />
         </div>
       </CaseSection>
 
-      <CaseSection meta={S.failed}>
-        <TroubleCards troubles={troubles} />
-      </CaseSection>
+      <CaseSection meta={S.failed}>{troubleItems(troubles)}</CaseSection>
 
       <CaseSection meta={S.next}>
         <div>
-          <SubHead>Evolution — 다음 프로젝트로의 발전</SubHead>
-          <Prose>
-            <p>이 프로젝트의 세 가지 한계가 그대로 HirePicker의 결정으로 이어졌습니다.</p>
-          </Prose>
-          <ol className="mt-5 space-y-4">
-            <EvolutionRow
-              from="BCrypt + HttpSession (Stateful)"
-              to="JWT 도입 (Stateless) — Access Token + Refresh Token"
-              note="단일 서버 가정의 세션이 Scale-out 가정에서 깨질 것을 체감 → 무상태 토큰 인증으로 전환"
-            />
-            <EvolutionRow
-              from="Action 한 곳에서 JSP Forward + JSON 응답"
-              to="Next.js(렌더링) + Spring Boot REST(순수 JSON) 분리"
-              note="UI 수정에도 자바 + 재빌드가 필요한 강결합 고통 → 프론트/백 완전 분리"
-            />
-            <EvolutionRow
-              from="휴게소-사용자 다대다 (BookMark, 첫 시도)"
-              to="공고-사용자 즐겨찾기 다대다를 더 정확하게 재설계"
-              note="3페이지 상태 불일치 + 모달 코드 중복으로 데이터 정합성 깨짐 → 다음 프로젝트에서 동일 패턴을 더 깔끔히"
-              ev={["threePages"]}
-            />
-          </ol>
+          <SubHead>Evolution, 다음 프로젝트로의 발전</SubHead>
+          <div className="mt-4">
+            <Prose>
+              <p>이 프로젝트의 세 가지 한계가 그대로 HirePicker의 결정으로 이어졌습니다.</p>
+            </Prose>
+          </div>
         </div>
-        <LessonsList
-          items={[
-            "아는 게 별로 없어서 단일 서버·HttpSession·MyBatis 같은 가장 단순한 형태로 끝까지 가봤습니다. 그러고 나니 '왜 분리하고 왜 무상태로 가는지'가 다음 라운드(HirePicker)에서 훨씬 또렷한 결정 근거로 남았습니다.",
-            "'프론트/백 분리, 무상태 토큰, 연결 테이블 정합성' 같은 말은 책으로 읽을 땐 그냥 좋은 말이었는데, 빌드 사이클·세션 끊김·다대다 불일치를 며칠 겪고 나니 같은 문장이 다르게 읽혔습니다. 다음 프로젝트들의 결정 근거가 이 마찰들에서 그대로 나왔습니다.",
-          ]}
+        <EvolutionRow
+          from="BCrypt + HttpSession (Stateful)"
+          to="JWT 도입 (Stateless), Access Token + Refresh Token"
+          note="단일 서버 가정의 세션이 Scale-out 가정에서 깨질 것을 체감 → 무상태 토큰 인증으로 전환"
         />
+        <EvolutionRow
+          from="Action 한 곳에서 JSP Forward + JSON 응답"
+          to="Next.js(렌더링) + Spring Boot REST(순수 JSON) 분리"
+          note="UI 수정에도 자바 + 재빌드가 필요한 강결합 고통 → 프론트/백 완전 분리"
+        />
+        <EvolutionRow
+          from="휴게소-사용자 다대다 (BookMark, 첫 시도)"
+          to="공고-사용자 즐겨찾기 다대다를 더 정확하게 재설계"
+          note="3페이지 상태 불일치 + 모달 코드 중복으로 데이터 정합성 깨짐 → 다음 프로젝트에서 동일 패턴을 더 깔끔히"
+          ev={["threePages"]}
+        />
+        {lessonItems([
+          "아는 게 별로 없어서 단일 서버·HttpSession·MyBatis 같은 가장 단순한 형태로 끝까지 가봤습니다. 그러고 나니 '왜 분리하고 왜 무상태로 가는지'가 다음 라운드(HirePicker)에서 훨씬 또렷한 결정 근거로 남았습니다.",
+          "'프론트/백 분리, 무상태 토큰, 연결 테이블 정합성' 같은 말은 책으로 읽을 땐 그냥 좋은 말이었는데, 빌드 사이클·세션 끊김·다대다 불일치를 며칠 겪고 나니 같은 문장이 다르게 읽혔습니다. 다음 프로젝트들의 결정 근거가 이 마찰들에서 그대로 나왔습니다.",
+        ])}
       </CaseSection>
     </CaseLayout>
   );
@@ -445,13 +433,12 @@ export default function HighwayGuidePage() {
 // 전 → 후 비교 한 줄.
 function EvolutionRow({ from, to, note, ev }: { from: string; to: string; note: string; ev?: string[] }) {
   return (
-    <li className="border-l-2 border-border-strong pl-4">
-      <p className="text-[16px] leading-[1.6] text-muted-foreground">{from}</p>
-      <p className="text-[16px] font-semibold leading-[1.6] text-foreground">→ {to}</p>
-      <p className="mt-1 text-[15px] leading-[1.65] text-muted-foreground">
-        {note}
-        {ev && <Ev ids={ev} />}
+    <div className="border-l-2 border-ink pl-4">
+      <p className="text-[16px] leading-[1.6] text-note">{from}</p>
+      <p className="text-[16px] font-semibold leading-[1.6] text-ink">→ {to}</p>
+      <p className="mt-1 text-[15px] leading-[1.65] text-note">
+        <Graded text={note} ev={ev} />
       </p>
-    </li>
+    </div>
   );
 }
