@@ -3,7 +3,6 @@ import { PROFILE } from "@/lib/profile";
 
 // 머리줄: 사이트 이름(왼쪽) · 메뉴(오른쪽). 메뉴 항목은 1단계 그대로(작업 · 경력 · 연락 · GitHub · 메일).
 // 홈 구역 앵커는 "/#..."로 두어 사례 페이지에서도 홈의 해당 구역으로 간다.
-// (주의: /lab 시안은 body > header 를 숨기므로 이 요소는 body 직계 <header>여야 한다)
 const nav = [
   { href: "/#work", label: "작업" },
   { href: "/#career", label: "경력" },

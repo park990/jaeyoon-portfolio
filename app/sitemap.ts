@@ -4,7 +4,7 @@ import { projects } from "@/lib/projects";
 const SITE_URL = "https://jaeyoon-portfolio.vercel.app";
 
 // Next.js App Router 컨벤션 — 빌드 시 정적 sitemap.xml 생성.
-// 홈 + 각 사례 페이지. /lab 시안은 넣지 않는다.
+// 홈 + 각 사례 페이지.
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 

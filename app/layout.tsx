@@ -80,7 +80,6 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${serif.variable} ${sans.variable} ${mono.variable} h-full`}>
       <body className="flex min-h-full flex-col">
-        {/* /lab 시안은 body > header · body > footer 를 숨기므로 둘 다 body 직계로 둔다 */}
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

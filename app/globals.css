@@ -20,10 +20,6 @@
   --dots: #b4b9c0;
   --rule: #e3e5e8;
   --code: #f5f6f7;
-
-  /* /lab 시안 호환: Pretendard 파일을 뺀 뒤에도 lab의 var(--font-pretendard)
-   * 선언이 통째로 무효가 되지 않도록 본문 고딕으로 잇는다. (lab 파일은 그대로) */
-  --font-pretendard: var(--font-plex-sans-kr);
 }
 
 @theme inline {
@@ -45,7 +41,8 @@
 }
 
 /* ─── 베이스 ─────────────────────────────────────────────────────────
- * 요소 선택자는 /lab 시안에 새지 않도록 body:not(:has([data-lab-root]))로 묶는다.
+ * 요소 선택자의 body:not(:has([data-lab-root]))는 3단계에서 지운 /lab 시안용 범위였다. 선택자 우선순위가
+ * 바뀌지 않도록 그대로 둔다(지금은 모든 페이지에 적용).
  * (전부 base 레이어라 Tailwind 유틸리티가 항상 이긴다) */
 @layer base {
   html {
