@@ -383,12 +383,15 @@
     white-space: nowrap;
   }
 
-  /* 단독 링크의 누르는 높이 44px 확보 (배치는 그대로 두고 위아래로만 넓힌다) */
+  /* 단독 링크의 누르는 높이 44px 확보 (배치는 그대로 두고 위아래로만 넓힌다).
+   * 1lh = 그 글자의 줄 높이. 줄 높이가 작은 글자(13px 고정폭 등)도 44px이 되게 계산한다.
+   * .sha의 5px 위아래 여백(누르는 높이 약 28px)도 이 클래스가 붙으면 44px로 넓어진다. */
   .hit {
+    --hit-pad: max(11px, calc((44px - 1lh) / 2 + 0.5px));
     display: inline-block;
     max-width: 100%;
-    padding-block: 11px;
-    margin-block: -11px;
+    padding-block: var(--hit-pad);
+    margin-block: calc(var(--hit-pad) * -1);
   }
 
   /* 글머리: 둥근 점 대신 짧은 줄 */

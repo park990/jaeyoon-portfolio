@@ -96,7 +96,7 @@ export function SideNotes({ ids }: { ids: readonly string[] }) {
           <span className="text-[13px]">근거 {n}</span>
           {e.href && (
             <span className="block">
-              <SourceLink e={e} />
+              <SourceLink e={e} className="hit" />
               {e.date && <span className="ml-2 text-[13px]">{e.date}</span>}
             </span>
           )}
