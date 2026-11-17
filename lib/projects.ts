@@ -734,7 +734,7 @@ export const projects: Project[] = [
         grade: "문서",
         claim: "원천 의학 텍스트 3,447개 문서 → 약 27,000 chunk",
         source:
-          "팀 저장소 문서에 3,447 문서(약 1,229만 자), 약 27,000 chunk로 기재 [MP], [MR]#L88. 팀 저장소에 커밋된 ChromaDB(팀원 구축)는 28,916 chunk",
+          "팀 저장소 문서에 3,447 문서(약 1,229만 자), 약 27,000 chunk로 기재 [MP], [MR]#L88. 팀 저장소에 커밋된 ChromaDB(팀원 구축)는 28,916 chunk. 학술 논문·기타 미사용도 README L88에 기재. 폴더별 문서 수는 본인 실행 기록(비공개)",
         href: MED_MP,
         hrefLabel: "portfolio.html L860",
         srcLinks: [

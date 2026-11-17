@@ -80,6 +80,11 @@ const roles: Role[] = [
   {
     title: "RAG 파이프라인 구축",
     bullets: [
+      // [6단계 A2] 원천 폴더 중 사용 범위 (근거 4)
+      {
+        text: "원천 5개 폴더 14,164개 문서 가운데 의학 교과서, 학회 가이드라인, 온라인 의료 정보 세 폴더 3,447개만 사용 (학술 논문 9,685개와 기타 1,032개는 임베딩 시간이 길어져 제외)",
+        ev: ["corpus"],
+      },
       { text: "원천 의학 텍스트 3,447개 문서를 500자 단위로 chunking → 약 27,000 chunk 생성", ev: ["corpus", "chunk500"] },
       "ko-sroberta 임베딩 → ChromaDB persist (vector + 메타데이터 + 컬렉션 자동 영구화)",
       "Dense retrieval 기반 (Hybrid fusion 옵션은 팀원이 별도 구현, ablation 본 측정은 Dense 기준)",

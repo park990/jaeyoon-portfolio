@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { PROFILE } from "@/lib/profile";
 
-// 연락 — 메일, GitHub, 위치. 이력서 PDF는 내용이 옛 버전이라 숨김(PROFILE.showResume).
+// 연락 — 메일, GitHub, 위치.
 // 링크는 펜 + 밑줄(열리는 링크의 뜻 하나), 단독 링크·버튼은 누르는 높이 44px 이상.
 export function Contact() {
   const [copied, setCopied] = useState(false);
@@ -38,11 +38,6 @@ export function Contact() {
         >
           {copied ? "복사됨" : "주소 복사"}
         </button>
-        {PROFILE.showResume && (
-          <a href={PROFILE.resume} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center">
-            이력서 PDF
-          </a>
-        )}
       </div>
 
       <dl className="mt-6 grid max-w-[560px] grid-cols-[7rem_minmax(0,1fr)] items-baseline gap-y-1 text-[16px] leading-[1.6]">

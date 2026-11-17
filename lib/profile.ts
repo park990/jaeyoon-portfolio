@@ -8,9 +8,6 @@ export const PROFILE = {
   email: "rhkgkrwk2008@gmail.com",
   github: "https://github.com/park990",
   huggingface: "https://huggingface.co/park990",
-  // 이력서 PDF는 내용(주소·경력)이 옛 버전이라 화면에서 숨김. 새 PDF로 교체하면 true.
-  resume: "/jaeyoon-park-resume.pdf",
-  showResume: false,
   location: "서울특별시 마포구",
 } as const;
 
