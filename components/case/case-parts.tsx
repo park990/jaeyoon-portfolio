@@ -41,11 +41,12 @@ function ResultTile({ m, p }: { m: Metric; p: Project }) {
   const sources = evs.map(({ e, n }) => {
     // 추정: 지금 있는 설명 문장(근거 출처의 첫 구절)
     if (e.grade === "추정") return <span key={e.id}>{e.source.split(" (")[0]}</span>;
-    // 비공개 기록: 링크 없이 "근거 n · 본인 실행 기록(비공개)"
+    // 비공개 기록: 링크 없이 두 칸 "근거 n" + "본인 실행 기록 (비공개)" — 여백 주석과 같은 10px 간격
     if (e.grade === "비공개 기록")
       return (
         <span key={e.id}>
-          근거 {n} · {PRIVATE_NOTE}
+          <span>근거 {n}</span>
+          <span className="ml-2.5">{p.privateNote ?? PRIVATE_NOTE}</span>
         </span>
       );
     // 본인 기재: 표시 없이 근거 표의 그 줄로만
@@ -93,7 +94,7 @@ export function CaseHeader({ project: p, toc }: { project: Project; toc: CaseSec
     { text: p.title },
     { text: p.subtitle },
     { text: p.kind },
-    { text: `팀 ${p.team}`, roleTeam: true },
+    ...(p.team ? [{ text: `팀 ${p.team}`, roleTeam: true }] : []),
     { text: `역할 ${p.role}`, roleTeam: true },
     { text: p.period },
     ...(p.period.includes(p.status) ? [] : [{ text: p.status }]),
@@ -131,9 +132,10 @@ export function CaseHeader({ project: p, toc }: { project: Project; toc: CaseSec
           ))}
         </nav>
 
-        {/* 요약은 여백 주석이 붙는 본문 문단이 아니라 형광 없음(추정 점선·근거 번호는 유지) */}
+        {/* 요약은 여백 주석이 붙는 본문 문단이 아니라 형광 없음(추정 점선·근거 번호는 유지).
+            [4단계] summaryHl인 사례(재개발 스캐너)만 요약에 형광 */}
         <p className="mt-5 max-w-[690px]">
-          <Graded text={p.summary} ev={p.summaryEv} hl={false} />
+          <Graded text={p.summary} ev={p.summaryEv} hl={!!p.summaryHl} />
         </p>
 
         {(p.repo || p.links?.length) && (

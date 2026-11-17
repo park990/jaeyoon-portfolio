@@ -18,21 +18,24 @@ import {
 // - 여백 주석(SideNotes): 커밋은 7자리 번호 + 날짜와 한 줄, 문서·파일은 이름 링크
 // - 등급 이름은 근거 표의 '종류' 칸에만 글자로 쓴다.
 
-type Ctx = { evidence: Evidence[]; linkBase?: string };
+type Ctx = { evidence: Evidence[]; linkBase?: string; privateNote?: string };
 const EvidenceContext = createContext<Ctx | null>(null);
 
 /** linkBase가 있으면(홈) "근거 n"은 그 사례 페이지의 근거 표 줄로 가는 링크가 된다 */
 export function EvidenceProvider({
   evidence,
   linkBase,
+  privateNote,
   children,
 }: {
   evidence: Evidence[];
   linkBase?: string;
+  /** 비공개 기록 주석 문구 (없으면 PRIVATE_NOTE) */
+  privateNote?: string;
   children: React.ReactNode;
 }) {
   return (
-    <EvidenceContext.Provider value={{ evidence, linkBase }}>{children}</EvidenceContext.Provider>
+    <EvidenceContext.Provider value={{ evidence, linkBase, privateNote }}>{children}</EvidenceContext.Provider>
   );
 }
 
@@ -81,11 +84,12 @@ export function Graded({
   hl = true,
   max = 2,
   exclude,
+  paren,
 }: { text: string; ev?: readonly string[]; refs?: boolean } & MarkOpts) {
   const ctx = useContext(EvidenceContext);
   return (
     <>
-      <InlineText text={text} marks={marksFor(ctx?.evidence ?? [], ev)} opts={{ hl, max, exclude }} />
+      <InlineText text={text} marks={marksFor(ctx?.evidence ?? [], ev)} opts={{ hl, max, exclude, paren }} />
       {refs && ev && ev.length > 0 && <Ev ids={ev} />}
     </>
   );
@@ -106,20 +110,22 @@ export function SourceLink({ e, className = "", title }: { e: Evidence; classNam
 /**
  * 여백 주석 (2.5단계): 한 건 = 한 줄 — "근거 n" + 링크(커밋 7자리 또는 파일·행) + 날짜.
  * 설명 문장은 근거 표에만 두고 링크 title 속성에 남긴다. 열 수 있는 출처가 없으면 "근거 n"이 표의 그 줄로 가는 링크.
- * [3단계] 비공개 기록은 링크 없이 "근거 n · 본인 실행 기록(비공개)".
+ * [4단계 A1] 비공개 기록은 링크 없이 두 칸: "근거 n" + 주석색 "본인 실행 기록 (비공개)" (가운뎃점 없음).
  * 좁은 화면(960px 미만)과 근거가 6건을 넘는 덩어리에서는 CSS가 한 줄짜리 목록으로 바꾼다.
  */
 export function SideNotes({ ids }: { ids: readonly string[] }) {
   const items = useEvidence(ids);
+  const privateNote = useContext(EvidenceContext)?.privateNote ?? PRIVATE_NOTE;
   if (items.length === 0) return null;
   return (
     <ol className="note-list">
       {items.map(({ e, n }) => (
         <li key={e.id}>
           {e.grade === "비공개 기록" ? (
-            <span title={e.claim}>
-              근거 {n} · {PRIVATE_NOTE}
-            </span>
+            <>
+              <span>근거 {n}</span>
+              <span title={e.claim}>{privateNote}</span>
+            </>
           ) : e.href ? (
             <>
               <span>근거 {n}</span>

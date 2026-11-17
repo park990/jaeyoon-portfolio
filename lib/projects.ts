@@ -37,6 +37,8 @@ export type Evidence = {
    * [2.5단계] 설정값·차원·개수(1024차원, Semaphore(3), 500자, top-k 등)는 결과가 아니라 넣지 않는다.
    */
   marks?: string[];
+  /** [4단계] 종류와 상관없이 점선(추정)으로 그릴 글자 — 비공개 기록 안의 추정값 (예: 규칙 수 "약 27개") */
+  estMarks?: string[];
   /** 커밋 근거의 커밋 날짜 (클론에서 git show -s --date=short) */
   date?: string;
 };
@@ -88,10 +90,13 @@ export type Project = {
   summary: string;
   /** summary 속 수치의 근거 id */
   summaryEv?: string[];
+  /** [4단계] 요약 문장에도 형광을 단다 (기본은 형광 없음) */
+  summaryHl?: boolean;
   /** 검색·공유용 설명 (기존 각 페이지 metadata.description) */
   description: string;
   period: string;
-  team: string;
+  /** 없으면(1인 개발) 메타 줄에 팀 항목을 만들지 않는다 */
+  team?: string;
   role: string;
   status: string;
   stack: string[];
@@ -111,6 +116,12 @@ export type Project = {
   display: "work" | "other";
   /** 홈 '그 밖의 작업' 목록 줄에 기간 대신 쓸 표기 (없으면 period) */
   homePeriod?: string;
+  /** [4단계] 홈 작업 띠 메타 줄 (없으면 이름 · 부제 · 역할 · 팀 · 기간 · 상태) */
+  homeMeta?: string[];
+  /** [4단계] 홈 작업 띠 결과 줄 아래 한 줄 (선정 이력 등). 형광 1개 + 출처 링크 + 근거 번호 */
+  homeNote?: { text: string; ev?: string[]; link?: ProjectLink };
+  /** [4단계] 비공개 기록 근거의 주석 문구 (없으면 "본인 실행 기록 (비공개)") */
+  privateNote?: string;
 };
 
 const SV = "https://github.com/2026-StructVerify-Lab/structverify";
@@ -120,8 +131,10 @@ const T2G_MAIN = "504504f914ff4c211725a5448efadb0de511a745";
 // [3단계] 근거 링크 (지시문 [R0408] [Rnow] [NB] [RPT])
 const T2G_R0408 = `${T2G}/blob/269da67c14ca4212000016863547c0bca4b6a74f/README.md?plain=1#L51-L58`;
 const T2G_RNOW = `${T2G}/blob/${T2G_MAIN}/README.md?plain=1#L97-L103`;
-// [NB] 953KB 노트북은 ?plain=1에서도 렌더된 노트북으로 보여 줄 번호 앵커가 동작하지 않는다 → 파일 링크만 (줄 범위는 표기에 남김)
+// [NB] [4단계 A2] 노트북 링크는 ?plain=1 + 줄 앵커. 로그인한 사람은 그 줄로 가고, 아니면 렌더된 노트북 화면이 열린다
 const T2G_NB = `${T2G}/blob/3769725bc82acf3a488213e1ce4756befab5bfa9/project1/runtimeCheck.ipynb?plain=1`;
+const T2G_NB_REL2ID = `${T2G_NB}#L12756-L12760`;
+const T2G_NB_DREEAM = `${T2G_NB}#L12676-L12678`;
 const T2G_RPT = `${T2G}/blob/${T2G_MAIN}/${encodeURI("레포트최종본.pdf")}`;
 const MED = "https://github.com/ljhljh0703-cmd/Medical-Chatbot";
 const MED_DEV = "f2bc415fce1afb7be58bc51c898422d6c557f17d";
@@ -392,7 +405,7 @@ export const projects: Project[] = [
     description:
       "Document-level Relation Extraction. ATLOP Loss + Adaptive Threshold 두 구현 오류를 수정해 v1 56.64% → v2 59.25% (+2.61pt)",
     summaryEv: ["f1"],
-    period: "2026.04 ~ 06",
+    period: "2026.04",
     team: "4명",
     role: "Stage 2 (ATLOP + DREEAM) 담당",
     status: "종료",
@@ -433,7 +446,7 @@ export const projects: Project[] = [
         hrefLabel: "rel2id.json",
         srcLinks: [
           { token: "rel2id.json", label: "rel2id.json", href: `${T2G}/blob/${T2G_MAIN}/pipeline/data/meta/rel2id.json` },
-          { token: "[NB]#L12756-L12760", label: "runtimeCheck.ipynb L12756–12760", href: T2G_NB },
+          { token: "[NB]#L12756-L12760", label: "runtimeCheck.ipynb L12756–12760", href: T2G_NB_REL2ID },
         ],
       },
       {
@@ -474,10 +487,10 @@ export const projects: Project[] = [
         grade: "코드",
         claim: "DREEAM 공식 코드 재현: dev F1 61.71, Ign F1 59.79, Evidence F1 52.21 (bert-base, 30 epoch)",
         source: "본인 노트북 출력 [NB]#L12676-L12678 (jaeyoon·dev 브랜치)",
-        href: T2G_NB,
+        href: T2G_NB_DREEAM,
         hrefLabel: "runtimeCheck.ipynb L12676–12678",
         srcLinks: [
-          { token: "[NB]#L12676-L12678", label: "runtimeCheck.ipynb L12676–12678", href: T2G_NB },
+          { token: "[NB]#L12676-L12678", label: "runtimeCheck.ipynb L12676–12678", href: T2G_NB_DREEAM },
         ],
         marks: ["61.71%"],
       },
@@ -525,7 +538,7 @@ export const projects: Project[] = [
       "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인(Qwen2.5-7B, ChromaDB)과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락이 측정돼 오답 케이스로 원인을 분석했습니다.",
     oneLinerEv: ["ablation"],
     summary:
-      "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% (−2.3pt) 하락을 측정해 distraction 원인을 케이스 단위로 추적. 실험은 제 Colab에서 직접 구성해 돌렸고, 팀 저장소에 남은 평가 노트북·metrics.py·지식베이스 구축 코드는 팀원이 작성했습니다.",
+      "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% (−2.3pt) 하락을 측정해 distraction 원인을 케이스 단위로 추적. 실험용 벡터 DB와 평가 코드는 제가 Colab에서 따로 만들어 돌렸습니다. 팀 저장소에 남은 코드(평가 노트북, metrics.py, 지식베이스 구축 스크립트)는 팀원이 작성했습니다.",
     description:
       "팀 프로젝트 의료 도메인 챗봇. RAG 파이프라인(Qwen2.5-7B, ChromaDB) + 자동 평가 담당. ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락 측정 + distraction 원인 분석.",
     summaryEv: ["ablation"],
@@ -558,8 +571,8 @@ export const projects: Project[] = [
           {
             token: "colab_generation_eval.ipynb L307–308",
             label: "colab_generation_eval.ipynb L307–308",
-            // 노트북은 ?plain=1에서도 렌더된 노트북으로 보여 줄 번호 앵커가 동작하지 않아 파일 링크만
-            href: `${MED}/blob/${MED_DEV}/notebooks/colab_generation_eval.ipynb?plain=1`,
+            // [4단계 A2] ?plain=1 + 줄 앵커 (로그인하면 그 줄, 아니면 렌더된 노트북 화면)
+            href: `${MED}/blob/${MED_DEV}/notebooks/colab_generation_eval.ipynb?plain=1#L307-L308`,
           },
         ],
       },

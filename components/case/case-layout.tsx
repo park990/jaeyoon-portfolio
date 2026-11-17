@@ -26,7 +26,7 @@ export function CaseLayout({
   const toc = hasEvidence ? [...sections, indexMeta] : sections;
 
   return (
-    <EvidenceProvider evidence={project.evidence}>
+    <EvidenceProvider evidence={project.evidence} privateNote={project.privateNote}>
       <article className="site-wrap page case">
         <CaseHeader project={project} toc={toc} />
         {children}

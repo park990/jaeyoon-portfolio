@@ -241,7 +241,7 @@ export default function Text2GraphPage() {
         <SubHead>맡은 일</SubHead>
         {roleItems(roles)}
         <div>
-          <SubHead>직접 생성한 관계 매핑</SubHead>
+          <SubHead>DREEAM 실행용 관계 매핑</SubHead>
           <p className="mb-3 mt-4 text-[15px] leading-[1.7] text-note">
             <Graded text="DREEAM 실행용 rel2id.json을 만든 노트북 셀." ev={["rel97"]} />
           </p>

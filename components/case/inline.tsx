@@ -17,12 +17,19 @@ export type MarkSpec = { s: string; kind: MarkKind };
  * - exclude: 이미 쓴 형광 글자 (한 띠 안에서 같은 값은 처음 한 번)
  * - 괄호에 바로 붙은 값은 형광을 넣지 않는다("( 값 )"처럼 벌어지지 않게)
  */
-export type MarkOpts = { hl?: boolean; max?: number; exclude?: readonly string[] };
+export type MarkOpts = {
+  hl?: boolean;
+  max?: number;
+  exclude?: readonly string[];
+  /** [4단계] 괄호에 바로 붙은 값에도 형광을 넣는다 (지시 문구가 괄호 안 값을 형광으로 정한 줄만) */
+  paren?: boolean;
+};
 
 const MARK_GRADES: Grade[] = ["코드", "평가표", "문서"];
 
-/** 비공개 기록 근거의 주석 문구 (링크 없음, 주석색) — 여백 주석과 결과 타일 출처 줄이 같이 쓴다 */
-export const PRIVATE_NOTE = "본인 실행 기록(비공개)";
+/** 비공개 기록 근거의 주석 문구 (링크 없음, 주석색) — 여백 주석과 결과 타일 출처 줄이 같이 쓴다.
+ *  [4단계 A1] "근거 n"과 따로 두 칸으로 그린다(가운뎃점 없음). 사례마다 Project.privateNote로 바꿀 수 있다. */
+export const PRIVATE_NOTE = "본인 실행 기록 (비공개)";
 
 export function markKind(grade: Grade): MarkKind | null {
   if (MARK_GRADES.includes(grade)) return "mark";
@@ -37,6 +44,8 @@ export function marksFor(evidence: Evidence[], ids: readonly string[] | undefine
   for (const id of ids) {
     const e = evidence.find((x) => x.id === id);
     if (!e) continue;
+    // estMarks: 종류와 상관없이 점선 (비공개 기록 안의 추정값)
+    for (const s of e.estMarks ?? []) out.push({ s, kind: "est" });
     const kind = markKind(e.grade);
     if (!kind) continue;
     for (const s of e.marks ?? []) out.push({ s, kind });
@@ -47,7 +56,7 @@ export function marksFor(evidence: Evidence[], ids: readonly string[] | undefine
 type Range = { start: number; end: number; kind: MarkKind };
 
 function findRanges(text: string, marks: MarkSpec[], opts: MarkOpts = {}): Range[] {
-  const { hl = true, max = Infinity, exclude = [] } = opts;
+  const { hl = true, max = Infinity, exclude = [], paren = false } = opts;
   const specs = marks
     .map((m) => {
       const i = m.s.indexOf("{");
@@ -70,7 +79,7 @@ function findRanges(text: string, marks: MarkSpec[], opts: MarkOpts = {}): Range
       if (!takenPlain.some(([a, b]) => k < b && pe > a)) {
         takenPlain.push([k, pe]);
         const word = text.slice(start, end);
-        const inParen = text[start - 1] === "(" || text[end] === ")";
+        const inParen = !paren && (text[start - 1] === "(" || text[end] === ")");
         const skip =
           sp.kind === "mark" && (!hl || inParen || exclude.includes(word));
         if (!skip) taken.push({ start, end, kind: sp.kind });
