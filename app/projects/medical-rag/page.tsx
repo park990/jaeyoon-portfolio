@@ -34,7 +34,7 @@ export const metadata: Metadata = caseMetadata(project);
 const CAUSE = {
   label: "원인",
   value: "Distraction",
-  note: "주제는 비슷하지만 정답을 가르지 못하는 chunk가 맞던 문제까지 흔듦",
+  note: "질문과 맞지 않는 chunk가 맞던 문제까지 흔듦",
 };
 const NEXT_TRY = {
   label: "다음 시도",
@@ -99,7 +99,7 @@ const roles: Role[] = [
     title: "Ablation 측정 + 원인 분석",
     bullets: [
       { text: "LLM 단독 65.4% → +RAG 63.1% (−2.3pt) 측정", ev: ["ablation"] },
-      "오답으로 전환된 케이스를 수동 추적해 distraction 패턴 분류",
+      "오답 예시와 검색 결과를 직접 열어 원인 확인",
       // [4단계 A6] 수두 백신 사례는 기록에 없어 검색 테스트에서 본 사례로 교체
       "검색 테스트에서 본 사례: ‘대상포진’을 넣으니 궤양성 대장염 문서가 나왔고, ‘폐렴의 치료’는 1위가 폐렴 가이드라인인데 2위가 당뇨병 선별 검사 문서",
     ],
@@ -121,14 +121,13 @@ const troubles: Trouble[] = [
     problem:
       "측정 결과 LLM 단독 65.4% → +RAG 63.1%로 2.3pt 하락. '의학 지식 공백을 메우면 오를 것'이라는 도입 근거가 무너졌습니다. RAG는 항상 +가 아니라는 일반론은 알고 있었지만, 우리 데이터셋에서 실제로 −가 나온 원인을 짚어야 했습니다.",
     solve:
-      "오답으로 전환된 케이스를 직접 들춰보니 두 가지 패턴이 보였습니다. (1) 모델이 이미 아는 문제가 많아 RAG로 메울 지식 공백이 작았고, (2) 검색이 '주제는 비슷하지만 정답을 가르지 못하는' chunk를 가져왔습니다. relevance gate/리랭커 없이 top-k=3을 그대로 주입한 점, 500자 chunk의 낮은 신호대잡음비가 distraction을 키운 원인.",
+      "오답 예시와 검색 결과를 직접 열어 보고 원인을 두 가지로 봤습니다. (1) 모델이 이미 아는 문제가 많아 RAG로 메울 지식 공백이 작았고, (2) 검색이 질문과 맞지 않는 chunk를 가져왔습니다. relevance gate/리랭커 없이 top-k=3을 그대로 주입한 점, 500자 chunk의 낮은 신호대잡음비가 distraction을 키운 원인.",
     lesson:
       "RAG를 켜면 오를 거라 보고 붙였는데, 측정 결과가 오히려 -2.3pt였습니다. 다음에 RAG를 붙일 땐 retrieval recall@k부터 먼저 재고, 그 점수가 충분히 높을 때만 LLM에 붙일 생각입니다.",
     ev: { problem: ["ablation"], solve: ["topk", "chunk500"], lesson: ["ablation"] },
   },
   {
     title: "검색 결과에 질문과 무관한 문서가 섞임(검색 테스트 사례)",
-    star: true,
     problem:
       "검색 테스트에서 ‘대상포진’을 넣으니 궤양성 대장염 문서가 나왔습니다. ‘폐렴의 치료’는 1위로 폐렴 가이드라인이 나왔지만 2위는 당뇨병 선별 검사 문서였습니다. 이런 문서가 걸러지지 않은 채 top-k에 섞여 프롬프트에 그대로 들어갔습니다.",
     solve:
@@ -185,7 +184,7 @@ const SECTIONS: CaseSectionMeta[] = [
   {
     id: "failed",
     label: "안 된 것",
-    title: "검색이 주제만 비슷한 chunk를 가져와 맞던 문제까지 흔들었습니다",
+    title: "검색이 질문과 맞지 않는 chunk를 가져와 맞던 문제까지 흔들었습니다",
   },
   {
     id: "next",
@@ -269,7 +268,7 @@ export default function MedicalRagPage() {
           <p>
             Qwen2.5-7B-Instruct(4bit)와 ko-sroberta 임베딩 검색(측정 때는 FAISS 인덱스)으로 LLM 단독(Mode A) vs
             LLM + RAG(Mode B) 2-stage ablation을 동일 평가셋에 돌렸고,
-            전환된 오답 케이스를 수동 추적해 distraction 패턴까지 정리했습니다.
+            오답 예시와 검색 결과를 직접 열어 원인을 확인했습니다.
           </p>
         </Prose>
         <div>

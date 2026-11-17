@@ -37,6 +37,8 @@ export type Evidence = {
    * [2.5단계] 설정값·차원·개수(1024차원, Semaphore(3), 500자, top-k 등)는 결과가 아니라 넣지 않는다.
    */
   marks?: string[];
+  /** [5단계] 열 수 있는 출처가 없는 근거의 여백 주석 문구 — 있으면 "근거 n" 링크 대신 두 칸("근거 n" + 주석색 문구) */
+  note?: string;
   /** [4단계] 종류와 상관없이 점선(추정)으로 그릴 글자 — 비공개 기록 안의 추정값 (예: 규칙 수 "약 27개") */
   estMarks?: string[];
   /** 커밋 근거의 커밋 날짜 (클론에서 git show -s --date=short) */
@@ -471,6 +473,8 @@ export const projects: Project[] = [
         grade: "추정",
         claim: "캐시 적중률 46.6~84.1%",
         source: "설계 문서의 추정값, 실측 아님",
+        // [5단계] 여백 주석: 링크 대신 두 칸 「근거 8」 + 「설계 문서의 추정」
+        note: "설계 문서의 추정",
         marks: ["46.6~84.1%"],
       },
       {
@@ -511,7 +515,7 @@ export const projects: Project[] = [
     ],
     homeMeta: ["재개발 스캐너", "서울 재개발 분석 서비스", "1인 개발 (예비창업자)", "2026.05 ~ 현재", "진행 중"],
     homeNote: {
-      text: "2026.10 중소벤처기업부 ‘모두의 창업’ 2기 1라운드 선정 (지원 9.3만 명 중 1만 명), 멘토기관 서울시립대학교",
+      text: "2026.10 중소벤처기업부 ‘모두의 창업’ 2기 1라운드 선정, 지원 9.3만 명 중 1만 명 선발, 멘토기관 서울시립대학교",
       ev: ["selected"],
       link: { label: "정책브리핑", href: KR_BRIEFING },
     },
@@ -677,7 +681,7 @@ export const projects: Project[] = [
       "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인(Qwen2.5-7B, ChromaDB)과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락이 측정돼 오답 케이스로 원인을 분석했습니다.",
     oneLinerEv: ["ablation"],
     summary:
-      "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% (−2.3pt) 하락을 측정해 distraction 원인을 케이스 단위로 추적. 실험용 벡터 DB와 평가 코드는 제가 Colab에서 따로 만들어 돌렸습니다. 팀 저장소에 남은 코드(평가 노트북, metrics.py, 지식베이스 구축 스크립트)는 팀원이 작성했습니다.",
+      "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% (−2.3pt) 하락을 측정했고, 오답 예시와 검색 결과를 열어 원인을 확인. 실험용 벡터 DB와 평가 코드는 제가 Colab에서 따로 만들어 돌렸습니다. 팀 저장소에 남은 코드(평가 노트북, metrics.py, 지식베이스 구축 스크립트)는 팀원이 작성했습니다.",
     description:
       "팀 프로젝트 의료 도메인 챗봇. RAG 파이프라인(Qwen2.5-7B, ChromaDB) + 자동 평가 담당. ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락 측정 + distraction 원인 분석.",
     summaryEv: ["ablation"],

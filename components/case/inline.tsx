@@ -21,8 +21,6 @@ export type MarkOpts = {
   hl?: boolean;
   max?: number;
   exclude?: readonly string[];
-  /** [4단계] 괄호에 바로 붙은 값에도 형광을 넣는다 (지시 문구가 괄호 안 값을 형광으로 정한 줄만) */
-  paren?: boolean;
 };
 
 const MARK_GRADES: Grade[] = ["코드", "평가표", "문서"];
@@ -56,7 +54,7 @@ export function marksFor(evidence: Evidence[], ids: readonly string[] | undefine
 type Range = { start: number; end: number; kind: MarkKind };
 
 function findRanges(text: string, marks: MarkSpec[], opts: MarkOpts = {}): Range[] {
-  const { hl = true, max = Infinity, exclude = [], paren = false } = opts;
+  const { hl = true, max = Infinity, exclude = [] } = opts;
   const specs = marks
     .map((m) => {
       const i = m.s.indexOf("{");
@@ -79,7 +77,7 @@ function findRanges(text: string, marks: MarkSpec[], opts: MarkOpts = {}): Range
       if (!takenPlain.some(([a, b]) => k < b && pe > a)) {
         takenPlain.push([k, pe]);
         const word = text.slice(start, end);
-        const inParen = !paren && (text[start - 1] === "(" || text[end] === ")");
+        const inParen = text[start - 1] === "(" || text[end] === ")";
         const skip =
           sp.kind === "mark" && (!hl || inParen || exclude.includes(word));
         if (!skip) taken.push({ start, end, kind: sp.kind });

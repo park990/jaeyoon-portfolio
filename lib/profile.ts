@@ -90,7 +90,7 @@ export type TimelineRow = {
   grades?: InlineGrade[];
 };
 
-// 최신순 (시작 시점 기준)
+// 진행 중 우선, 그다음 시작 시점 최신순
 export const TIMELINE: TimelineRow[] = [
   {
     // [4단계 B14] 재개발 스캐너 (사례 페이지 /projects/redev-scanner). 홈 작업 띠는 lib/projects.ts에서 읽는다

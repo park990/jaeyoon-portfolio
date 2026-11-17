@@ -10,7 +10,7 @@ import { extProps, markedWords, marksFor } from "@/components/case/inline";
 // [2.5단계] 형광은 결과 줄에만 — 줄마다 핵심 값 1개, 한 띠 안에서 같은 값은 처음 한 번.
 //          요약 문장·단계 설명에는 없다(추정 점선과 근거 번호는 유지).
 // [4단계] 재개발 스캐너도 같은 띠. 메타 줄은 homeMeta, 결과 줄 아래 선정 줄은 homeNote
-//          (형광 1개 + 출처 링크 + 근거 번호. 괄호 안 값이라 paren으로 형광을 허용).
+//          (형광 1개 + 출처 링크 + 근거 번호).
 
 function ProjectBand({ p, first }: { p: Project; first?: boolean }) {
   // 결과 줄마다 형광 1개, 앞 줄에서 쓴 값은 다시 쓰지 않는다
@@ -43,7 +43,7 @@ function ProjectBand({ p, first }: { p: Project; first?: boolean }) {
               ))}
               {p.homeNote && (
                 <li>
-                  <Graded text={p.homeNote.text} ev={p.homeNote.ev} refs={false} max={1} paren />
+                  <Graded text={p.homeNote.text} ev={p.homeNote.ev} refs={false} max={1} />
                   {p.homeNote.ev && <Ev ids={p.homeNote.ev} />}
                   {p.homeNote.link && (
                     <span className="ev-ref">
