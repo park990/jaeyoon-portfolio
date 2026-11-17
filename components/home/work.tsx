@@ -8,7 +8,8 @@ import { extProps, markedWords, marksFor } from "@/components/case/inline";
 // 왼쪽: 문장형 제목 → 메타 → 요약 문장(16px) → 결과 줄(15.5px) → 스택(13px) → "○○ 사례 읽기"
 // 오른쪽: 단계 목록(.steps), 담당 단계는 굵은 글씨.
 // [2.5단계] 형광은 결과 줄에만 — 줄마다 핵심 값 1개, 한 띠 안에서 같은 값은 처음 한 번.
-//          요약 문장·단계 설명에는 없다(추정 점선과 근거 번호는 유지).
+//          요약 문장·단계 설명에는 없다(추정 점선은 유지).
+// [7단계] 근거 번호도 결과 줄에만 — 요약 문장·단계 설명은 refs={false}.
 // [4단계] 재개발 스캐너도 같은 띠. 메타 줄은 homeMeta, 결과 줄 아래 선정 줄은 homeNote
 //          (형광 1개 + 출처 링크 + 근거 번호).
 
@@ -32,7 +33,7 @@ function ProjectBand({ p, first }: { p: Project; first?: boolean }) {
             items={p.homeMeta ?? [p.title, p.subtitle, p.role, ...(p.team ? [`팀 ${p.team}`] : []), p.period, p.status]}
           />
           <p className="mt-3 text-[16px] leading-[1.75]">
-            <Graded text={p.oneLiner} ev={p.oneLinerEv} hl={false} />
+            <Graded text={p.oneLiner} ev={p.oneLinerEv} hl={false} refs={false} />
           </p>
           {results.length > 0 && (
             <ul className="dash-list mt-3 space-y-1 text-[15.5px] leading-[1.7]">
@@ -65,7 +66,7 @@ function ProjectBand({ p, first }: { p: Project; first?: boolean }) {
         </div>
         {p.flow && (
           <div className="min-w-0">
-            <FlowFigure steps={p.flow} caption={p.flowCaption} />
+            <FlowFigure steps={p.flow} caption={p.flowCaption} refs={false} />
           </div>
         )}
       </article>

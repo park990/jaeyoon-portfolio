@@ -222,7 +222,16 @@ export function NextCase({ slug }: { slug: string }) {
 // ─── 흐름 그림 ────────────────────────────────────────────────────────
 // 본문(또는 리포)에 적힌 단계를 그대로 세로 목록으로. 담당 단계는 굵은 글씨(.mine).
 
-export function FlowFigure({ steps, caption }: { steps: FlowStep[]; caption?: React.ReactNode }) {
+export function FlowFigure({
+  steps,
+  caption,
+  refs = true,
+}: {
+  steps: FlowStep[];
+  caption?: React.ReactNode;
+  /** 근거 번호 표시. [7단계] 홈 띠에서는 false (근거 번호는 결과 줄에만) */
+  refs?: boolean;
+}) {
   return (
     <figure>
       <ol className="steps">
@@ -240,7 +249,7 @@ export function FlowFigure({ steps, caption }: { steps: FlowStep[]; caption?: Re
                 <small>
                   {lines.map((l, j) => (
                     <span key={l} className="block">
-                      <Graded text={l} ev={s.ev} refs={j === lines.length - 1} hl={false} />
+                      <Graded text={l} ev={s.ev} refs={refs && j === lines.length - 1} hl={false} />
                     </span>
                   ))}
                 </small>

@@ -91,10 +91,10 @@ export type TimelineRow = {
 export const TIMELINE: TimelineRow[] = [
   {
     // [4단계 B14] 재개발 스캐너 (사례 페이지 /projects/redev-scanner). 홈 작업 띠는 lib/projects.ts에서 읽는다
-    period: "2026.05 ~ 현재",
+    period: "2026.07 ~ 현재",
     title: "재개발 스캐너 (서울 재개발 분석 서비스)",
     org: "1인 개발, 예비창업자",
-    line: "여러 곳에 흩어진 공공 자료를 모으고, 틀린 값이 섞이지 않도록 검사 규칙으로 자동 점검합니다. 2026.10 중소벤처기업부 ‘모두의 창업’ 2기 1라운드 선정, 멘토기관 서울시립대학교",
+    line: "2026.06 인턴 중 시작, 2026.07부터 전업. 여러 곳에 흩어진 공공 자료를 모으고, 틀린 값이 섞이지 않도록 검사 규칙으로 자동 점검합니다. 2026.10 중소벤처기업부 ‘모두의 창업’ 2기 1라운드 선정, 멘토기관 서울시립대학교",
   },
   {
     period: "2026.06 ~ 07",
@@ -122,11 +122,6 @@ export const TIMELINE: TimelineRow[] = [
     line: "6개월 + 심화 2개월",
   },
   {
-    period: "2024.12",
-    title: "TOEIC 820",
-    grades: [{ value: "820", grade: "문서", note: "TOEIC 성적 (리포 밖 기록)" }],
-  },
-  {
     period: "2024.06 ~ 09, 4개월",
     title: "여객운송 인턴",
     org: "아시아나항공",
@@ -136,8 +131,11 @@ export const TIMELINE: TimelineRow[] = [
     period: "2018.03 ~ 2025.02",
     title: "항공산업공학과 학사",
     org: "한서대학교",
-    line: "GPA 3.8 / 4.5",
-    grades: [{ value: "GPA 3.8 / 4.5", grade: "문서", note: "성적증명서 (리포 밖 기록)" }],
+    line: "GPA 3.8 / 4.5, TOEIC 820 (2024.12)",
+    grades: [
+      { value: "GPA 3.8 / 4.5", grade: "문서", note: "성적증명서 (리포 밖 기록)" },
+      { value: "820", grade: "문서", note: "TOEIC 성적 (리포 밖 기록)" },
+    ],
   },
 ];
 

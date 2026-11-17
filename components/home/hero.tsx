@@ -4,9 +4,9 @@ import { HOME_HERO } from "@/lib/profile";
 // 데이터는 lib/profile.ts(HOME_HERO). 형광 = 출처가 있는 숫자, 펜 취소선 = 반박된 숫자.
 function Src({ label, href }: { label: string; href?: string }) {
   if (!href) return <span className="src closed">{label}</span>;
-  const external = href.startsWith("http");
+  // [7단계] 내부 경로(상장 사진 등)도 새 탭
   return (
-    <a href={href} className="src" {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+    <a href={href} className="src" target="_blank" rel="noopener noreferrer">
       {label}
     </a>
   );
