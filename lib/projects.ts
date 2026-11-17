@@ -432,6 +432,7 @@ export const projects: Project[] = [
         href: `${T2G}/blob/${T2G_MAIN}/pipeline/data/meta/rel2id.json`,
         hrefLabel: "rel2id.json",
         srcLinks: [
+          { token: "rel2id.json", label: "rel2id.json", href: `${T2G}/blob/${T2G_MAIN}/pipeline/data/meta/rel2id.json` },
           { token: "[NB]#L12756-L12760", label: "runtimeCheck.ipynb L12756–12760", href: T2G_NB },
         ],
       },
@@ -557,7 +558,8 @@ export const projects: Project[] = [
           {
             token: "colab_generation_eval.ipynb L307–308",
             label: "colab_generation_eval.ipynb L307–308",
-            href: `${MED}/blob/${MED_DEV}/notebooks/colab_generation_eval.ipynb?plain=1#L307-L308`,
+            // 노트북은 ?plain=1에서도 렌더된 노트북으로 보여 줄 번호 앵커가 동작하지 않아 파일 링크만
+            href: `${MED}/blob/${MED_DEV}/notebooks/colab_generation_eval.ipynb?plain=1`,
           },
         ],
       },
