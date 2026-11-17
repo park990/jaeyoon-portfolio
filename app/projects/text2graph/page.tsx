@@ -32,17 +32,30 @@ const techStack = [
   { category: "환경", items: ["Google Colab Pro (T4 GPU)", "VS Code + SSH", "Git"] },
 ];
 
+// [3단계 C4~C7] 담당 범위를 팀 README 담당 표에 맞춤. 지시문의 "(근거 n)"은 글자가 아니라 ev로 붙인다.
 const roles: Role[] = [
   {
-    title: "Stage 2 전담, 학습 파이프라인 구축, 평가 지표 분석",
+    title: "Stage 2 담당, 학습·평가 실행과 지표 분석",
     bullets: [
-      "ATLOP + DREEAM 모듈 학습/평가 코드 전 영역 담당",
-      "팀 4-Stage Incremental Stacking 구조 중 Stage 2 독립 책임",
+      { text: "ATLOP ranking loss 구현, 평가 단계 adaptive threshold 수정", ev: ["th05"] },
+      {
+        text: "2026-04-08 팀 README 담당 분배 표에 Stage 2 담당으로 기재. 통합 모델 코드와 학습 스크립트 골격은 팀 PM 작성",
+        ev: ["owner"],
+      },
     ],
   },
   {
-    title: "meta/rel2id.json 직접 생성 (97개 관계 매핑)",
-    bullets: [{ text: "P17(country) ~ P175 등 위키데이터 속성 97종을 0-96 라벨로 매핑", ev: ["rel97"] }],
+    title: "DREEAM 공식 코드 재현 학습 (dev F1 61.71)",
+    bullets: [
+      {
+        text: "Colab에서 DREEAM 공식 코드를 bert-base, 30 epoch로 학습: dev F1 61.71, Ign F1 59.79, Evidence F1 52.21",
+        ev: ["dreeam"],
+      },
+      {
+        text: "실행에 필요한 meta/rel2id.json을 rel_info.json에서 생성(97개 관계), 최신 transformers의 AdamW import 오류 수정",
+        ev: ["rel97"],
+      },
+    ],
   },
   {
     title: "V1/V2 ablation 비교 및 Stage 3/4 팀원에게 baseline 제공",
@@ -50,11 +63,20 @@ const roles: Role[] = [
   },
   {
     title: "HuggingFace 모델 배포 (park990/hihi_model)",
-    bullets: ["V1: best_model_f1_56_64", "V2: best_model_V2", "README + config + tokenizer 메타데이터 정리"],
+    bullets: [
+      "V1: best_model_V1.pt (처음 이름 best_model_f1_56_64.pt)",
+      "V2: best_model_V2.pt",
+      "모델 카드(README) 작성. 팀 README 12장에 Stage 2 체크포인트로 등록",
+    ],
   },
   {
     title: "NetworkX 기반 Knowledge Graph 시각화",
-    bullets: [{ text: "dev 998 문서 → 10,494 triple 추출 후 그래프 시각화", ev: ["dev998", "triples"] }],
+    bullets: [
+      {
+        text: "dev 998 문서 예측을 (개체, 관계, 개체) triple 10,494건으로 바꾸고 문서 단위로 NetworkX 그래프를 그림. 팀 최종 KG 빌더(kg_builder.py)는 팀 PM 작성",
+        ev: ["dev998", "triples"],
+      },
+    ],
   },
 ];
 
@@ -86,7 +108,7 @@ const DEBUGGING_REASONING = [
     hypothesis:
       "F1 평균이 같아도 관계 종류별로 성능이 균일하지 않을 것이라 봤습니다. 어떤 관계 유형에 약한지 봐야 모델 한계를 진단할 수 있다고 판단했습니다.",
     verification:
-      "dev 998 문서 → 10,494 triple 추출 후 관계 종류별 정밀도를 쟀습니다. 생년월일/사망일 같은 표면 패턴 관계는 80~90%인 반면, 민족/하위분류처럼 상식 추론이 필요한 관계는 0~12.5%로 격차가 컸습니다.",
+      "dev 998 문서 → 10,494 triple 추출 후 관계 종류별 F1을 쟀습니다. 생년월일(90.3%)·사망일(85.4%) 같은 표면 패턴 관계는 80~90%대인 반면, 민족·하위분류(둘 다 0%)를 포함한 하위 10개 관계는 0~12.5%로 격차가 컸습니다.",
     fix:
       "결론은 BERT-base가 표면 패턴은 잡지만 상식 추론은 약하다는 것이었습니다. 단순 모델 교체보다 commonsense KG 외부 지식 주입을 다음 라운드 방향으로 잡았고, F1 평균만 보지 않고 관계별 분포까지 같이 봅니다.",
     ev: { verification: ["dev998", "triples", "relgap"] },
@@ -120,28 +142,40 @@ function DebugItem({ d, n }: { d: Debug; n: number }) {
   );
 }
 
-const rel2idCode = `{
-  "Na": 0,
-  "P17": 1,        // country
-  "P19": 2,        // place of birth
-  "P569": 3,       // date of birth
-  "P570": 4,       // date of death
-  ...
-  "P175": 96
-}
+// [3단계 C5] DREEAM 실행용 rel2id.json을 만든 노트북 셀 (project1/runtimeCheck.ipynb @3769725)
+const rel2idCode = `rel_info = json.load(open('/content/2026-Text2Graph/project1/data/rel_info.json', 'r'))
+rel2id = {"Na": 0}  # 관계 없음 = 0번
+for i, rel in enumerate(rel_info.keys()):
+    rel2id[rel] = i + 1
+json.dump(rel2id, open('meta/rel2id.json', 'w'))
 `;
 
-const lossCode = `def compute_loss(logits, labels, threshold_class=0):
-    # Positive: 정답 관계 점수가 threshold보다 높아야 함
-    # Negative: 오답 관계 점수가 threshold보다 낮아야 함
+// [3단계 C12] 커밋 31e47dc의 pipeline/src/losses.py L81–L105 글자 그대로 (들여쓰기만 8칸 줄임)
+const lossCode = `# ── 핵심: ATLOP ranking loss ──
+# positive class는 TH보다 높아야 함
+# negative class는 TH보다 낮아야 함
+th_logit = logits[:, -1:]  # [num_pairs, 1]
 
-    pos_logits = logits[labels == 1]
-    neg_logits = logits[labels == 0]
-    th_logit = logits[:, threshold_class:threshold_class+1]
+# log(1 + sum_neg(exp(neg - TH))) + log(1 + sum_pos(exp(TH - pos)))
+pos_mask = full_labels[:, :-1]   # [num_pairs, num_rels]
+neg_mask = 1 - pos_mask
 
-    loss = torch.log(1 + torch.exp(neg_logits - th_logit).sum(dim=1)) + \\
-           torch.log(1 + torch.exp(th_logit - pos_logits).sum(dim=1))
-    return loss.mean()
+pos_logits = logits[:, :-1]  # [num_pairs, num_rels]
+
+# negative part: exp(logit_neg - TH)
+neg_loss = torch.logsumexp(
+    pos_logits * neg_mask + (-1e30) * pos_mask - th_logit, dim=-1
+)
+neg_loss = torch.log1p(torch.exp(neg_loss))
+
+# positive part: exp(TH - logit_pos)
+pos_loss = torch.logsumexp(
+    -pos_logits * pos_mask + (-1e30) * neg_mask + th_logit, dim=-1
+)
+pos_loss = torch.log1p(torch.exp(pos_loss))
+
+loss = (neg_loss + pos_loss).mean()
+return loss
 `;
 
 const SECTIONS: CaseSectionMeta[] = [
@@ -153,7 +187,7 @@ const SECTIONS: CaseSectionMeta[] = [
   {
     id: "role",
     label: "내가 맡은 것",
-    title: "4-Stage 중 Stage 2(ATLOP + DREEAM)의 학습·평가를 혼자 맡았습니다",
+    title: "4-Stage 중 Stage 2(ATLOP + DREEAM)를 맡아 학습·평가하고 구현 오류 두 곳을 고쳤습니다",
   },
   {
     id: "flow",
@@ -163,7 +197,7 @@ const SECTIONS: CaseSectionMeta[] = [
   {
     id: "decisions",
     label: "결정과 이유",
-    title: "Stage 1 baseline에서 다섯 개 축을 ATLOP·DREEAM 방식으로 바꿨습니다",
+    title: "Stage 2는 Stage 1 baseline에서 다섯 축이 바뀌는 단계였고, 그중 손실 함수와 평가 임계값을 고쳤습니다",
   },
   {
     id: "eval",
@@ -190,8 +224,8 @@ export default function Text2GraphPage() {
         <Prose>
           <p>
             <Graded
-              text="DocRED 데이터셋 기반으로 위키피디아 문서 내 Entity 간 관계(97종)를 자동 추출하는 모델 학습 파이프라인. 팀의 4-Stage Incremental Stacking 구조에서 Stage 2 (ATLOP + DREEAM)를 단독 담당했습니다."
-              ev={["rel97"]}
+              text="DocRED 데이터셋 기반으로 위키피디아 문서 내 Entity 간 관계(97종)를 자동 추출하는 모델 학습 파이프라인. 팀의 4-Stage Incremental Stacking 구조에서 Stage 2 (ATLOP + DREEAM)를 맡았습니다. 파이프라인 골격과 통합 모델 코드는 팀 PM이 작성했고, 저는 Stage 2의 학습·평가 실행과 손실 함수·평가 임계값 수정을 했습니다."
+              ev={["rel97", "owner"]}
             />
           </p>
         </Prose>
@@ -209,12 +243,9 @@ export default function Text2GraphPage() {
         <div>
           <SubHead>직접 생성한 관계 매핑</SubHead>
           <p className="mb-3 mt-4 text-[15px] leading-[1.7] text-note">
-            <Graded
-              text="직접 생성한 97개 관계 매핑. P17(country)부터 P175까지 위키데이터 속성을 0–96 라벨로."
-              ev={["rel97"]}
-            />
+            <Graded text="DREEAM 실행용 rel2id.json을 만든 노트북 셀." ev={["rel97"]} />
           </p>
-          <CodeBlock code={rel2idCode} lang="jsonc" filename="meta/rel2id.json" />
+          <CodeBlock code={rel2idCode} lang="python" filename="project1/runtimeCheck.ipynb @3769725" />
         </div>
         <div>
           <SubHead>사용 기술</SubHead>
@@ -230,6 +261,12 @@ export default function Text2GraphPage() {
 
       <CaseSection meta={S.decisions}>
         <Stage2ChangesTable />
+        <p className="max-w-[690px] text-ink">
+          <Graded
+            text="다섯 축의 모델 코드는 팀 PM이 작성했고, 제가 고친 곳은 Loss(ATL Ranking Loss 구현)와 Threshold(평가 때 adaptive threshold 적용)입니다."
+            ev={["th05", "owner"]}
+          />
+        </p>
       </CaseSection>
 
       <CaseSection meta={S.eval}>
@@ -244,17 +281,20 @@ export default function Text2GraphPage() {
         <MetricsTable />
         <p className="max-w-[690px] text-ink">
           <Graded
-            text="벤치마크 대비: 논문 ATLOP-BERT 64.19%는 distant pre-training 데이터 30배 사용. 본 프로젝트는 annotated만 사용한 조건에서 v2 59.25%로, 데이터 격차를 감안하면 정상 범위."
-            ev={["bench", "f1"]}
+            text="팀 최종 보고서 표 3.2의 ATLOP-BERT Dev F1 64.19%는 distant supervision 사전학습을 쓴 값입니다(학습 문서 3,053건 대비 101,873건, 약 33배). 사람이 라벨링한 데이터만 쓴 원 논문 값은 61.09%이고, 같은 조건에서 제가 DREEAM 공식 코드를 재현한 값은 61.71%, 팀 구현 v2는 59.25%입니다."
+            ev={["f1", "bench", "dreeam"]}
           />
         </p>
         <ResultsGrid
           items={[
             { text: "v1 F1 56.64% (구현 오류 포함된 baseline)", ev: ["f1"] },
             { text: "v2 F1 59.25%, ATLOP Ranking Loss + Adaptive Threshold 평가 동시 정정 (+2.61pt)", ev: ["f1"] },
-            "HuggingFace 모델 배포: park990/hihi_model (v1 best_model_f1_56_64 + v2 best_model_V2)",
+            "HuggingFace 모델 배포: park990/hihi_model (v1 best_model_V1.pt + v2 best_model_V2.pt)",
             { text: "dev set 998 문서 → 10,494 triple 추출 후 NetworkX KG 시각화", ev: ["dev998", "triples"] },
-            { text: "관계별 정밀도: 생년월일/사망일 80–90%, 민족/하위분류 0–12.5% (long-tail 격차 확인)", ev: ["relgap"] },
+            {
+              text: "관계별 F1: 생년월일 90.3%, 사망일 85.4%, 출생지 81.5% / 민족 0%, 하위분류 0%를 포함한 하위 10개 관계 0~12.5% (정답 10건 이상 기준)",
+              ev: ["relgap"],
+            },
           ]}
         />
         <DebugItem d={DEBUGGING_REASONING[2]} n={3} />
@@ -264,10 +304,8 @@ export default function Text2GraphPage() {
         <DebugItem d={DEBUGGING_REASONING[0]} n={1} />
         <DebugItem d={DEBUGGING_REASONING[1]} n={2} />
         <div>
-          <p className="mb-3 text-[15px] leading-[1.7] text-note">
-            ATLOP Ranking Loss 재구현. 논문 원본 수식 그대로 옮긴 버전.
-          </p>
-          <CodeBlock code={lossCode} lang="python" filename="loss.py" />
+          <p className="mb-3 text-[15px] leading-[1.7] text-note">커밋 31e47dc에 들어간 ranking loss 부분.</p>
+          <CodeBlock code={lossCode} lang="python" filename="pipeline/src/losses.py @31e47dc (ATLOPLoss.forward 일부)" />
         </div>
       </CaseSection>
 

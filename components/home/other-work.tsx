@@ -23,7 +23,7 @@ export function OtherWork() {
                 {p.title}
               </Link>
               <span className="text-[15px] text-note">{p.subtitle}</span>
-              <span className="text-[15px] text-note">{p.period}</span>
+              <span className="text-[15px] text-note">{p.homePeriod ?? p.period}</span>
             </p>
             <p className="mt-1 text-[17px] leading-[1.75] text-ink">
               {p.slug === "highway-guide" ? `${HIGHWAY_SERVICE_LINE}. ${p.oneLiner}` : p.oneLiner}

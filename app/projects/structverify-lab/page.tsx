@@ -170,7 +170,7 @@ const troubles: Trouble[] = [
     // [2.5단계] 1단계에서 빠진 KOSIS 세마포어를 실제 값으로 되살림: (2) update_embeddings.py L138–139(5866f0b)
     //           기존 (2)는 (3)으로 번호만 바뀜
     solve:
-      "(1) 처음(OpenAI 임베딩, 2026-04-27)엔 100건 단위 배치로 묶어 호출 횟수를 1/100로 줄였고, NCP HCX 임베딩 v2로 바꾼 뒤(04-29)엔 배치를 지원하지 않아 한 건씩 호출하되 asyncio.Semaphore(3)로 임베딩 동시 호출을 3개로 제한하고 429가 나면 지수 백오프로 최대 5회 재시도했습니다. (2) 임베딩 갱신 스크립트에서 KOSIS 호출 동시 실행을 15에서 5로, HCX 임베딩 호출을 5에서 3으로 줄임. (3) 메타 수집 + 임베딩 INSERT를 한 파이프라인에 묶어 ETL 중간 산출물 관리 부담 제거.",
+      "(1) 처음(OpenAI 임베딩, 2026-04-27)엔 100건 단위 배치로 묶어 호출 횟수를 1/100로 줄였고, NCP HCX 임베딩 v2로 바꾼 뒤(04-29)엔 배치를 지원하지 않아 한 건씩 호출하되 asyncio.Semaphore(3)로 임베딩 동시 호출을 3개로 제한하고 429가 나면 지수 백오프로 최대 5회 재시도했습니다. (2) 임베딩 갱신 스크립트에서 KOSIS 호출 동시 실행을 5, HCX 임베딩 호출을 3으로 제한함(코드 주석에는 이전 값 15와 5가 적혀 있음). (3) 메타 수집 + 임베딩 INSERT를 한 파이프라인에 묶어 ETL 중간 산출물 관리 부담 제거.",
     lesson:
       "처음에는 메타 수집 코드를 짜기 바빠서 그냥 동기 루프로 KOSIS·HCX를 두드렸는데, 몇 분 만에 KOSIS 429와 HCX 동시 호출 한도 경고가 동시에 떴습니다. 코드를 좋게 쓰는 문제가 아니라 ‘한 번에 몇 개, 얼마 간격으로 부를지’를 처음부터 설계해야 한다는 걸 그때 알게 됐고, 이후로는 새로운 외부 API를 붙일 때 가장 먼저 배치·세마포어·재시도 자리를 비워두고 시작하게 됐습니다.",
     ev: { problem: ["categories", "catalog"], solve: ["embedOpenAI", "embedHcx", "semKosis"] },
@@ -207,9 +207,7 @@ services:
     image: pgvector/pgvector:pg16
     container_name: factcheck-db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: factcheck
+      # 계정·비밀번호·DB 이름 3줄 생략
     ports:
       - "5432:5432"
     volumes:
@@ -496,7 +494,7 @@ export default function StructVerifyPage() {
           <p className="mb-3 text-[15px] leading-[1.7] text-note">
             docker-compose, <code>docker-compose up -d</code> 한 줄로 동일 환경 재현.{" "}
             {/* [1단계 A-3] 진행형 시제 정리 */}
-            프로젝트 종료(2026.09)까지 pgvector 단일 서비스로 가장 단순한 형태를 유지했고,
+            프로젝트 종료(2026.08)까지 pgvector 단일 서비스로 가장 단순한 형태를 유지했고,
             Redis, Neo4j, MinIO, Elasticsearch는 로드맵에만 두고 추가하지 않았습니다.
           </p>
           <CodeBlock
@@ -509,7 +507,7 @@ export default function StructVerifyPage() {
         <div>
           <p className="mb-3 text-[15px] leading-[1.7] text-note">
             <Graded
-              text="임베딩 갱신 스크립트의 동시 실행 제한, KOSIS 호출 15 → 5, HCX 임베딩 호출 5 → 3."
+              text="임베딩 갱신 스크립트의 동시 실행 제한, KOSIS 호출 5, HCX 임베딩 호출 3."
               ev={["semKosis"]}
             />
           </p>

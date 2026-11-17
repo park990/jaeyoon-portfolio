@@ -3,7 +3,7 @@ import { Children } from "react";
 import { getNextProject, type Evidence, type FlowStep, type Metric, type Project } from "@/lib/projects";
 export type { FlowStep };
 import { Graded, SideNotes, SourceLink } from "@/components/case/evidence";
-import { InlineText, markKind, marksFor } from "@/components/case/inline";
+import { InlineText, PRIVATE_NOTE, markKind, marksFor } from "@/components/case/inline";
 import { collectEv } from "@/components/case/collect-ev";
 
 // 사례 페이지 공통 틀의 조각들 (서버 컴포넌트)
@@ -29,8 +29,8 @@ export function MetaLine({ items, className = "" }: { items: string[]; className
 
 /**
  * 결과 타일: 큰 값(숫자나 핵심어, 8자 이내 한 줄) · 설명 줄 · 출처(링크 또는 추정 설명).
- * 큰 값은 대표 근거(ev 첫 항목)의 등급대로 통째로 표시: 코드·평가표·문서 = 형광, 추정 = 점선, 확인 필요 = 없음.
- * 설명 줄에는 형광을 넣지 않는다(추정 점선은 유지).
+ * 큰 값은 대표 근거(ev 첫 항목)의 종류대로 통째로 표시: 코드·평가표·문서 = 형광, 추정 = 점선,
+ * 비공개 기록·본인 기재 = 없음. 설명 줄에는 형광을 넣지 않는다(추정 점선은 유지).
  */
 function ResultTile({ m, p }: { m: Metric; p: Project }) {
   const marks = marksFor(p.evidence, m.ev);
@@ -41,8 +41,15 @@ function ResultTile({ m, p }: { m: Metric; p: Project }) {
   const sources = evs.map(({ e, n }) => {
     // 추정: 지금 있는 설명 문장(근거 출처의 첫 구절)
     if (e.grade === "추정") return <span key={e.id}>{e.source.split(" (")[0]}</span>;
-    // 확인 필요: 표시 없이 근거 표의 그 줄로만
-    if (e.grade === "확인 필요")
+    // 비공개 기록: 링크 없이 "근거 n · 본인 실행 기록(비공개)"
+    if (e.grade === "비공개 기록")
+      return (
+        <span key={e.id}>
+          근거 {n} · {PRIVATE_NOTE}
+        </span>
+      );
+    // 본인 기재: 표시 없이 근거 표의 그 줄로만
+    if (e.grade === "본인 기재")
       return (
         <a key={e.id} href={`#ev-${n}`} className="hit" aria-label={`근거 표 ${n}번 줄`}>
           근거 {n}
@@ -81,7 +88,7 @@ function ResultTile({ m, p }: { m: Metric; p: Project }) {
  * 메타 항목은 머리(.case-head)의 직계 span이라 560px 미만에서 역할·팀만 결과 아래로 옮길 수 있다(CSS order).
  */
 export function CaseHeader({ project: p, toc }: { project: Project; toc: CaseSectionMeta[] }) {
-  // 기간 표기에 상태가 이미 들어 있으면(예: "2025.11 ~ 진행 중") 상태를 반복하지 않는다
+  // 기간 표기에 상태가 이미 들어 있으면 상태를 반복하지 않는다
   const items: { text: string; roleTeam?: boolean }[] = [
     { text: p.title },
     { text: p.subtitle },

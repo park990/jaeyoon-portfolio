@@ -50,7 +50,11 @@ export const HOME_HERO = {
       before: "KOSIS 통계표 ",
       mark: "262,783건",
       after: "을 검색할 수 있게 적재했습니다",
-      src: { label: "DB 이관 기록 (2026.05, 비공개)" },
+      // [3단계 B5] 공개 문서 링크 (문서에는 26만 건으로 기재)
+      src: {
+        label: "팀 저장소 문서 (26만 건으로 기재)",
+        href: "https://github.com/2026-StructVerify-Lab/structverify/blob/fb4f5deb35469ec36c9b5a83cb796b1ce078748f/docs/custom-embedding-plan.md?plain=1#L4",
+      },
     },
     {
       // [2.5단계] 형광은 "최우수"만 — 상장 이미지에 팀 수는 없다("6개 팀 중"은 일반 글자)

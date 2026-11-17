@@ -25,7 +25,8 @@ import { getProjectBySlug } from "@/lib/projects";
 const SLUG = "medical-rag";
 const project = getProjectBySlug(SLUG)!;
 const MED = "https://github.com/ljhljh0703-cmd/Medical-Chatbot";
-const MED_DEV = "f2bc415fce1afb7be58bc51c898422d6c557f17d";
+// [3단계 D4] 팀 README (juhyeong 브랜치 @25b0592) — L99–101 Mode A/B/C 표
+const MED_MR = `${MED}/blob/25b0592c82ab2491c1388590a6a6135b302659f8/README.md?plain=1`;
 
 export const metadata: Metadata = caseMetadata(project);
 
@@ -44,11 +45,11 @@ const NEXT_TRY = {
 const techStack = [
   {
     category: "Model",
-    items: ["Qwen2.5-7B-Instruct (4bit)", "Colab A100 (Google Colab Pro)"],
+    items: ["Qwen2.5-7B-Instruct (4bit)", "Colab L4 GPU"],
   },
   {
     category: "RAG",
-    items: ["ChromaDB", "ko-sroberta (임베딩)", "BM25 + Dense Hybrid 옵션 (측정은 Dense)", "top-k = 5"],
+    items: ["ChromaDB", "ko-sroberta (임베딩)", "BM25 + Dense Hybrid 옵션 (측정은 Dense)", "top-k = 3"],
   },
   {
     category: "Evaluation",
@@ -66,7 +67,7 @@ const KEY_DECISIONS = [
   {
     title: "ChromaDB vs FAISS",
     body:
-      "FAISS는 인덱스 직렬화와 persist를 별도 단계로 관리해야 합니다. ChromaDB는 PoC 규모에서 메타데이터·벡터·persist를 단일 라이브러리로 처리할 수 있어 채택했습니다. 운영 부담을 우선했습니다.",
+      "FAISS는 인덱스 직렬화와 persist를 별도 단계로 관리해야 합니다. ChromaDB는 PoC 규모에서 메타데이터·벡터·persist를 단일 라이브러리로 처리할 수 있어 채택했습니다. 운영 부담을 우선했습니다. 다만 평가를 돌리던 Colab 세션에서 ChromaDB가 의존성 충돌을 내서, 측정은 같은 문서로 만든 FAISS 인덱스로 마쳤습니다.",
   },
   {
     title: "Dense vs Hybrid retrieval",
@@ -87,10 +88,8 @@ const roles: Role[] = [
   {
     title: "자동 평가 시스템",
     bullets: [
-      {
-        text: "VL 데이터셋 기반 평가 파이프라인 (`evaluation/metrics.py` 216줄, `notebooks/colab_generation_eval.ipynb` 449줄)",
-        ev: ["evalLines216", "evalLines449"],
-      },
+      // [3단계 D3] 팀원 파일(metrics.py·평가 노트북) 줄 수 대신 직접 작성한 평가 코드
+      "VL 데이터셋 평가 코드를 Colab 노트북에 직접 작성 (번호 추출·키워드 매칭 함수, 조건별 일괄 실행, 문항별 결과 JSON 저장)",
       "객관식: 번호 매칭 (모델 출력에서 번호 추출 → 정답 라벨 비교)",
       "단답: 키워드 매칭 (정답 키워드 포함 여부)",
       "Mode A (LLM only) vs Mode B (LLM + RAG) 두 경로를 동일 데이터셋에 일괄 실행",
@@ -121,7 +120,7 @@ const troubles: Trouble[] = [
     problem:
       "측정 결과 LLM 단독 65.4% → +RAG 63.1%로 2.3pt 하락. '의학 지식 공백을 메우면 오를 것'이라는 도입 근거가 무너졌습니다. RAG는 항상 +가 아니라는 일반론은 알고 있었지만, 우리 데이터셋에서 실제로 −가 나온 원인을 짚어야 했습니다.",
     solve:
-      "오답으로 전환된 케이스를 직접 들춰보니 두 가지 패턴이 보였습니다. (1) 모델이 이미 아는 문제가 많아 RAG로 메울 지식 공백이 작았고, (2) 검색이 '주제는 비슷하지만 정답을 가르지 못하는' chunk를 가져왔습니다. relevance gate/리랭커 없이 top-k=5를 그대로 주입한 점, 500자 chunk의 낮은 신호대잡음비가 distraction을 키운 원인.",
+      "오답으로 전환된 케이스를 직접 들춰보니 두 가지 패턴이 보였습니다. (1) 모델이 이미 아는 문제가 많아 RAG로 메울 지식 공백이 작았고, (2) 검색이 '주제는 비슷하지만 정답을 가르지 못하는' chunk를 가져왔습니다. relevance gate/리랭커 없이 top-k=3을 그대로 주입한 점, 500자 chunk의 낮은 신호대잡음비가 distraction을 키운 원인.",
     lesson:
       "RAG를 켜면 오를 거라 보고 붙였는데, 측정 결과가 오히려 -2.3pt였습니다. 다음에 RAG를 붙일 땐 retrieval recall@k부터 먼저 재고, 그 점수가 충분히 높을 때만 LLM에 붙일 생각입니다.",
     ev: { problem: ["ablation"], solve: ["topk", "chunk500"], lesson: ["ablation"] },
@@ -138,20 +137,21 @@ const troubles: Trouble[] = [
   },
 ];
 
-const evalCode = `# notebooks/colab_generation_eval.ipynb — 2-stage ablation (Mode A vs Mode B)
+// [3단계 D5] 실행 흐름 요약(의사 코드). 실제 실행은 본인 Colab 노트북, 저장소에는 없음
+const evalCode = `# 2-stage ablation 흐름 요약 (Mode A vs Mode B)
 
 # Mode A: LLM only
 out_a = generation_service.generate(question, context=None)
 
 # Mode B: LLM + RAG
-ctx = build_rag_context(question, top_k=5)   # ChromaDB 검색
+ctx = build_rag_context(question, top_k=3)   # 벡터 검색
 out_b = generation_service.generate(question, context=ctx)
 
 # 자동 채점 — 객관식 번호 매칭 / 단답 키워드 매칭
 score_a = match_objective(out_a, gt) or match_keywords(out_a, gt)
 score_b = match_objective(out_b, gt) or match_keywords(out_b, gt)
 
-# 결과: 같은 VL 데이터셋에서 Mode A 65.4% / Mode B 63.1% (−2.3pt)
+# 결과: 객관식 995문항에서 Mode A 65.4% / Mode B 63.1% (−2.3pt)
 `;
 
 
@@ -164,7 +164,7 @@ const SECTIONS: CaseSectionMeta[] = [
   {
     id: "role",
     label: "내가 맡은 것",
-    title: "팀 챗봇 중 RAG 파이프라인과 자동 평가를 맡았습니다",
+    title: "팀 챗봇 프로젝트에서 RAG 실험과 자동 평가를 제 Colab에서 직접 구성해 돌렸습니다",
   },
   {
     id: "flow",
@@ -256,11 +256,17 @@ export default function MedicalRagPage() {
       <CaseSection meta={S.eval}>
         <Prose>
           <p>
-            평가셋은 VL 데이터셋, 지표는 객관식 번호 매칭, 단답 키워드 매칭으로
-            채점한 정답률입니다.
+            평가셋은 VL 데이터셋의 객관식 995문항이고, 모델 출력에서 번호를 뽑아 정답과
+            비교했습니다(651 → 628문항). 단답형 105문항은 키워드 포함 여부로 따로 채점했는데
+            2 → 4문항이라 결론에는 쓰지 않았습니다. 팀 최종 측정(팀원 실행)에서도 방향은
+            같았습니다:{" "}
+            <a href={`${MED_MR}#L99-L101`} target="_blank" rel="noopener noreferrer">
+              객관식 EM 0.69 → 0.67
+            </a>
+            .
           </p>
           <p>
-            Qwen2.5-7B-Instruct(4bit) + ChromaDB 기반으로 LLM 단독(Mode A) vs
+            Qwen2.5-7B-Instruct(4bit)와 ko-sroberta 임베딩 검색(측정 때는 FAISS 인덱스)으로 LLM 단독(Mode A) vs
             LLM + RAG(Mode B) 2-stage ablation을 동일 평가셋에 돌렸고,
             전환된 오답 케이스를 수동 추적해 distraction 패턴까지 정리했습니다.
           </p>
@@ -273,12 +279,7 @@ export default function MedicalRagPage() {
           <CodeBlock
             code={evalCode}
             lang="python"
-            filename="notebooks/colab_generation_eval.ipynb (요약)"
-            source={{
-              label: "colab_generation_eval.ipynb @f2bc415",
-              href: `${MED}/blob/${MED_DEV}/notebooks/colab_generation_eval.ipynb`,
-              kind: "관련 파일",
-            }}
+            caption="실행 흐름 요약 (의사 코드). 실제 실행은 제 Colab 노트북에서 했고 저장소에는 없습니다."
           />
         </div>
         <ResultsGrid
@@ -304,7 +305,7 @@ export default function MedicalRagPage() {
         {lessonItems([
           { text: "RAG만 붙이면 정답률이 오를 줄 알았는데, 측정해 보니 오히려 2.3pt가 떨어졌습니다. 다음에 RAG를 붙일 땐 켜기 전에 retrieval recall@k부터 재고, 그 점수가 LLM 단독보다 의미 있게 높을 때만 붙일 생각입니다.", ev: ["ablation"] },
           "코사인 점수가 높길래 잘 찾았다고 생각했는데, 정작 모델은 그 chunk에 끌려가서 오답이 더 늘었습니다. 임베딩이 가깝다는 건 주제가 가깝다는 뜻일 뿐, 정답을 가르는 chunk가 가깝다는 보장은 아니었습니다. 그래서 지금은 검색 뒤에 도메인 규칙이나 리랭커를 한 층 더 둡니다.",
-          { text: "처음엔 그냥 ChromaDB를 깔고 시작했는데, Colab에서 의존성 충돌로 세팅에만 한참을 썼습니다. 27k chunk를 한 번 인덱싱하고 ablation으로 반복 검색만 하는 용도엔 persistence·메타데이터가 필요 없는 일이었고, 가벼운 in-memory 검색이라면 FAISS가 더 맞았을 작업이었습니다. 다음엔 실험용 정적 인덱스는 FAISS, 운영용 동적 데이터는 벡터 DB로 갈라둡니다.", ev: ["corpus"] },
+          { text: "FAISS로 시작했다가 관리가 편한 ChromaDB로 옮겼는데, 평가 세션에서 Colab 의존성 충돌로 세팅에만 한참을 썼고 결국 측정은 FAISS 인덱스로 돌렸습니다. 27k chunk를 한 번 인덱싱하고 ablation으로 반복 검색만 하는 용도엔 persistence·메타데이터가 필요 없는 일이었고, 가벼운 in-memory 검색이라면 FAISS가 더 맞았을 작업이었습니다. 다음엔 실험용 정적 인덱스는 FAISS, 운영용 동적 데이터는 벡터 DB로 갈라둡니다.", ev: ["corpus"] },
           { text: "다음 라운드로 미뤄둔 변수들, relevance threshold·리랭커, 모델이 불확실할 때만 검색을 트리거하는 adaptive RAG, 500자보다 짧고 신호대잡음비가 높은 chunk 단위 실험입니다.", ev: ["chunk500"] },
           "임베딩으로 후보를 좁힌 뒤 규칙으로 한 번 더 거르는 패턴은 이 실험에서 처음 손에 잡혔고, 이후 StructVerify의 KOSIS 표 매칭 필터(국제기구·추계·세부대상)로 그대로 옮겨갔습니다.",
         ])}

@@ -21,20 +21,24 @@ export async function CodeBlock({
   code,
   lang,
   filename,
+  caption,
   source,
 }: {
   code: string;
   lang: string;
   filename?: string;
+  /** 파일 이름 대신 쓰는 설명 문장 (고딕) — 저장소에 없는 요약 코드 등 */
+  caption?: string;
   source?: { label: string; href: string; kind?: "원본" | "관련 파일" };
 }) {
   const html = await codeToHtml(code, { lang, theme: MONO_INK });
 
   return (
     <figure className="min-w-0">
-      {(filename || source) && (
+      {(filename || caption || source) && (
         <figcaption className="flex flex-wrap items-baseline justify-between gap-x-4 pb-1.5 text-[13px] leading-[1.6] text-note">
           {filename && <span className="font-mono">{filename}</span>}
+          {caption && <span>{caption}</span>}
           {source && (
             <a href={source.href} target="_blank" rel="noopener noreferrer" className="hit">
               {source.kind ?? "원본"} <span className="font-mono">{source.label}</span>

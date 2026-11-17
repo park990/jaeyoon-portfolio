@@ -52,7 +52,7 @@ export function MetricsTable() {
   return (
     <table className="tbl w-full border-collapse text-left text-[15px] leading-[1.6]">
       <caption className="pb-2 text-left text-[13px] text-note">
-        DocRED dev, V1 (best_model_f1_56_64) vs V2 (best_model_V2)
+        DocRED dev, V1 (best_model_V1.pt) vs V2 (best_model_V2.pt)
         <Ev ids={["f1"]} />
       </caption>
       <thead>

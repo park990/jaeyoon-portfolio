@@ -3,15 +3,20 @@
 // 기간 · 팀 · 역할 · 상태 · 한 줄 소개 · 결과 수치 · 근거를 모두 여기서 읽는다.
 // 화면 문자열은 2단계 부호 규칙을 따른다: 문장 속 나열은 쉼표, " — " 꼬리말은 쉼표나 별도 항목.
 
-// ─── 근거 등급 ───────────────────────────────────────────────────────
-// 코드      = 커밋·파일 줄로 확인됨 (커밋 고정 URL)
-// 평가표    = 평가 결과가 리포에 남아 있음
-// 문서      = 수상·선발·DB 건수 같은 리포 밖 기록
-// 추정      = 측정 없이 잡은 값
-// 확인 필요 = 아직 못 정한 값 (main 병합 전에 0개가 되어야 하는 임시 등급)
-export type Grade = "코드" | "평가표" | "문서" | "추정" | "확인 필요";
+// ─── 근거 종류 (3단계: 여섯 가지) ─────────────────────────────────────
+// 코드        = 커밋·파일 줄로 확인됨 (커밋 고정 URL)
+// 문서        = 수상·팀 문서·보고서처럼 열어 볼 수 있는 기록
+// 평가표      = 평가 결과가 리포에 남아 있음
+// 추정        = 측정 없이 잡은 값
+// 비공개 기록 = 내 실행 로그·DB 기록처럼 공개 링크가 없는 근거
+// 본인 기재   = 기록이 남지 않아 본인 기억으로만 적은 값
+// 형광은 코드·문서·평가표의 결과 숫자에만, 추정은 점선, 비공개 기록·본인 기재는 표시 없음.
+export type Grade = "코드" | "문서" | "평가표" | "추정" | "비공개 기록" | "본인 기재";
 
-export const GRADES: Grade[] = ["코드", "평가표", "문서", "추정", "확인 필요"];
+export const GRADES: Grade[] = ["코드", "문서", "평가표", "추정", "비공개 기록", "본인 기재"];
+
+/** 출처 문장 속 링크 — token 글자를 label 링크로 바꿔 그린다 (근거 표 '출처' 칸) */
+export type SourceLinkSpec = { token: string; label: string; href: string };
 
 export type Evidence = {
   id: string;
@@ -24,9 +29,11 @@ export type Evidence = {
   href?: string;
   /** 링크에 보일 짧은 표기 — SHA, 파일·줄 등 */
   hrefLabel?: string;
+  /** 출처 문장 속 링크들 (같은 주소가 href면 표 끝에 다시 붙이지 않는다) */
+  srcLinks?: SourceLinkSpec[];
   /**
    * 이 근거가 뒷받침하는 "결과로 내세우는 숫자" 표기. 화면에서 이 글자에 형광(코드·평가표·문서)이나
-   * 점선 밑줄(추정)을 단다. 확인 필요는 표시하지 않는다. "{…}"가 있으면 그 부분만 표시.
+   * 점선 밑줄(추정)을 단다. 비공개 기록·본인 기재는 표시하지 않는다. "{…}"가 있으면 그 부분만 표시.
    * [2.5단계] 설정값·차원·개수(1024차원, Semaphore(3), 500자, top-k 등)는 결과가 아니라 넣지 않는다.
    */
   marks?: string[];
@@ -102,14 +109,25 @@ export type Project = {
   links?: ProjectLink[];
   /** 홈 노출 위치: work = 작업 띠, other = 그 밖의 작업 한 줄 */
   display: "work" | "other";
+  /** 홈 '그 밖의 작업' 목록 줄에 기간 대신 쓸 표기 (없으면 period) */
+  homePeriod?: string;
 };
 
 const SV = "https://github.com/2026-StructVerify-Lab/structverify";
 const SV_MAIN = "fb4f5deb35469ec36c9b5a83cb796b1ce078748f";
 const T2G = "https://github.com/yeseul-kim01/2026-Text2Graph";
 const T2G_MAIN = "504504f914ff4c211725a5448efadb0de511a745";
+// [3단계] 근거 링크 (지시문 [R0408] [Rnow] [NB] [RPT])
+const T2G_R0408 = `${T2G}/blob/269da67c14ca4212000016863547c0bca4b6a74f/README.md?plain=1#L51-L58`;
+const T2G_RNOW = `${T2G}/blob/${T2G_MAIN}/README.md?plain=1#L97-L103`;
+// [NB] 953KB 노트북은 ?plain=1에서도 렌더된 노트북으로 보여 줄 번호 앵커가 동작하지 않는다 → 파일 링크만 (줄 범위는 표기에 남김)
+const T2G_NB = `${T2G}/blob/3769725bc82acf3a488213e1ce4756befab5bfa9/project1/runtimeCheck.ipynb?plain=1`;
+const T2G_RPT = `${T2G}/blob/${T2G_MAIN}/${encodeURI("레포트최종본.pdf")}`;
 const MED = "https://github.com/ljhljh0703-cmd/Medical-Chatbot";
 const MED_DEV = "f2bc415fce1afb7be58bc51c898422d6c557f17d";
+// [3단계] 근거 링크 (지시문 [MR] [MP]) — 팀 README·문서 (juhyeong 브랜치 @25b0592)
+const MED_MR = `${MED}/blob/25b0592c82ab2491c1388590a6a6135b302659f8/README.md?plain=1`;
+const MED_MP = `${MED}/blob/25b0592c82ab2491c1388590a6a6135b302659f8/docs/portfolio.html#L860`;
 const HP = "https://github.com/wlsksekf/hire-picker";
 const HP_JAEYOON = "d99d665dae4097cfc96e67bd478fb3262f18501a";
 const HW = "https://github.com/CodeGlove/-SIST-Project2-HighwayRestInfo";
@@ -133,7 +151,7 @@ export const projects: Project[] = [
     description:
       "v2.0 LLM 사실검증 플랫폼. 인프라·데이터 적재·KOSIS 메타/검색·LLM 429 backoff·runtime 병렬화·검증 판단까지 8개 모듈 담당.",
     summaryEv: ["catalog", "filterIntl", "filterForecast", "filterRegion", "parallelEst", "parallel"],
-    period: "2026.04 ~ 09",
+    period: "2026.04 ~ 08",
     team: "4명 (멋쟁이사자처럼 NLP 과정)",
     role: "데이터 레이어, runtime 검증 병렬화, LLM 클라이언트 안정화, 검증 판단",
     status: "종료",
@@ -149,7 +167,7 @@ export const projects: Project[] = [
         id: "award",
         grade: "문서",
         claim: "멋쟁이사자처럼 NLP 과정 최종 프로젝트 6팀 중 최우수상",
-        source: "상장 이미지",
+        source: "상장 이미지 (최우수상·팀명·날짜 기재. ‘6팀’은 상장에 없고 본인 기재)",
         href: "/projects/structverify-lab/award.jpg",
         hrefLabel: "상장",
         marks: ["최우수"],
@@ -158,7 +176,18 @@ export const projects: Project[] = [
         id: "catalog",
         grade: "문서",
         claim: "KOSIS 통계 카탈로그(kosis_stat_catalog) 262,783건 적재",
-        source: "kosis_stat_catalog 행 수, 2026.05 EC2 이관 기록 (리포 밖)",
+        // [3단계 B5] 공개 문서 링크 (팀 저장소 문서에는 26만으로 기재)
+        source:
+          "팀 저장소 문서에는 26만으로 기재 (docs/custom-embedding-plan.md L4). 정확한 건수는 kosis_stat_catalog 행 수, 2026.05 EC2 이관 기록 (리포 밖)",
+        href: `${SV}/blob/${SV_MAIN}/docs/custom-embedding-plan.md?plain=1#L4`,
+        hrefLabel: "custom-embedding-plan.md L4",
+        srcLinks: [
+          {
+            token: "docs/custom-embedding-plan.md L4",
+            label: "docs/custom-embedding-plan.md L4",
+            href: `${SV}/blob/${SV_MAIN}/docs/custom-embedding-plan.md?plain=1#L4`,
+          },
+        ],
         marks: ["262,783건", "262,783"],
       },
       {
@@ -241,9 +270,9 @@ export const projects: Project[] = [
       },
       {
         id: "cos085",
-        grade: "확인 필요",
+        grade: "본인 기재",
         claim: "코사인 유사도 0.85",
-        source: "리포·로그에서 코사인 유사도 기록을 찾지 못함",
+        source: "리포·로그에 유사도 기록이 남아 있지 않음",
       },
       {
         id: "backoff",
@@ -309,10 +338,12 @@ export const projects: Project[] = [
       },
       {
         // [2.5단계] 1단계에서 빠졌던 KOSIS 세마포어 내용 (main L138–139, 이 커밋에서는 L137–138)
+        // [3단계 B3] 이전 값 15·5는 코드 주석에만 있고 그 값이 들어간 커밋은 없다
         id: "semKosis",
         grade: "코드",
-        claim: "임베딩 갱신 스크립트: KOSIS 호출 동시 실행 15 → 5, HCX 임베딩 호출 5 → 3",
-        source: "update_embeddings.py semaphore_api = Semaphore(5), semaphore_hcx = Semaphore(3) (본인 커밋)",
+        claim: "임베딩 갱신 스크립트: KOSIS 호출 동시 실행 5, HCX 임베딩 호출 3",
+        source:
+          "update_embeddings.py semaphore_api = Semaphore(5), semaphore_hcx = Semaphore(3) (본인 커밋) L138–139. 이전 값은 주석에만 있음",
         href: `${SV}/commit/5866f0bb077cef3fd428bd2d78544323ba16ea9f`,
         hrefLabel: "5866f0b",
         date: "2026-04-30",
@@ -357,19 +388,21 @@ export const projects: Project[] = [
       "Adaptive Threshold 버그 + ATLOP Loss 구현 오류 수정으로 F1 +2.61pt (56.64 → 59.25)",
     oneLinerEv: ["f1"],
     summary:
-      "DocRED Document-level Relation Extraction 파이프라인의 Stage 2 (ATLOP + DREEAM) 단독 담당. 두 구현 오류(ATLOP Ranking Loss, Adaptive Threshold 평가)를 디버깅으로 잡아 v1 56.64% → v2 59.25% (+2.61pt) 도달.",
+      "DocRED Document-level Relation Extraction 파이프라인의 Stage 2 (ATLOP + DREEAM) 담당. 두 구현 오류(ATLOP Ranking Loss, Adaptive Threshold 평가)를 디버깅으로 잡아 v1 56.64% → v2 59.25% (+2.61pt) 도달.",
     description:
       "Document-level Relation Extraction. ATLOP Loss + Adaptive Threshold 두 구현 오류를 수정해 v1 56.64% → v2 59.25% (+2.61pt)",
     summaryEv: ["f1"],
     period: "2026.04 ~ 06",
     team: "4명",
-    role: "Stage 2 (ATLOP + DREEAM) 단독 담당",
+    role: "Stage 2 (ATLOP + DREEAM) 담당",
     status: "종료",
     stack: ["PyTorch", "HuggingFace", "ATLOP", "DREEAM", "BERT", "NetworkX"],
     metrics: [
       { label: "Dev F1", value: "+2.61pt", note: "56.64% → 59.25% (두 디버깅 수정의 합산 효과)", ev: ["f1"] },
-      { label: "Triple 추출", value: "10,494", note: "dev 998 문서 → NetworkX 기반 KG 시각화", ev: ["triples", "dev998"] },
-      { label: "상식 추론 관계 정밀도", value: "0~12.5%", note: "표면 패턴 관계 80~90%와의 성능 격차 (관계별 정성분석)", ev: ["relgap"] },
+      // [3단계 C8] 출처 줄은 근거 5 하나만 (비공개 기록)
+      { label: "Triple 추출", value: "10,494", note: "dev 998 문서 → NetworkX 기반 KG 시각화", ev: ["triples"] },
+      // [3단계 C8·C9] 관계별 수치는 정밀도가 아니라 F1
+      { label: "관계별 F1", value: "0~12.5%", note: "하위 10개 관계의 F1 (정답 10건 이상). 상위 3개 관계는 81.5~90.3%", ev: ["relgap"] },
     ],
     evidence: [
       {
@@ -394,9 +427,13 @@ export const projects: Project[] = [
         id: "rel97",
         grade: "코드",
         claim: "관계 97종, 라벨 0–96",
-        source: "rel2id.json 97개 항목. 파일은 팀원 yeseul 커밋(ba690a5)으로 추가, 본문의 ‘직접 생성’과 다름. 코드 예시의 P17=1 … P175=96도 리포(P6=1 … P1198=96)와 다름",
+        source:
+          "팀 파이프라인 rel2id.json 97개 항목 (PM 커밋 ba690a5). 본문의 ‘생성’은 DREEAM 재현 실행용 파일로, 노트북 셀 [NB]#L12756-L12760",
         href: `${T2G}/blob/${T2G_MAIN}/pipeline/data/meta/rel2id.json`,
         hrefLabel: "rel2id.json",
+        srcLinks: [
+          { token: "[NB]#L12756-L12760", label: "runtimeCheck.ipynb L12756–12760", href: T2G_NB },
+        ],
       },
       {
         id: "dev998",
@@ -408,21 +445,54 @@ export const projects: Project[] = [
       },
       {
         id: "triples",
-        grade: "확인 필요",
+        grade: "비공개 기록",
         claim: "10,494 triple 추출",
-        source: "리포에 없음. 가장 가까운 값은 팀 노트북 Stage 3 v6 KG의 10,484, 본인 예측 결과 파일은 빈 파일",
+        source:
+          "본인 Colab 실행 출력 ‘총 10494개 triple 생성’ (2026.04, 비공개). 팀 최종 노트북의 Stage 2 평가는 다른 체크포인트로 10,652건",
       },
       {
         id: "relgap",
-        grade: "확인 필요",
-        claim: "관계별 정밀도: 표면 패턴 80~90% vs 상식 추론 0~12.5%",
-        source: "관계별 결과가 리포에 없고 예측 파일이 비어 있어 재계산 불가",
+        grade: "비공개 기록",
+        claim: "관계별 F1: 상위 3개 81.5~90.3%, 하위 10개 0~12.5% (정답 10건 이상)",
+        source: "본인 Colab 실행 출력 (2026.04, 비공개). 결과 파일은 리포에 없음",
       },
       {
         id: "bench",
-        grade: "확인 필요",
-        claim: "논문 ATLOP-BERT 64.19%, distant pre-training 데이터 30배",
-        source: "64.19는 팀 발표자료 PDF에만 있음. ATLOP·DREEAM 원 논문 표의 ATLOP-BERT-base Dev F1은 61.09. 30배 비교의 출처 미확인",
+        grade: "문서",
+        claim: "ATLOP-BERT Dev F1 64.19% (distant supervision), 학습 문서 약 33배",
+        source:
+          "팀 최종 보고서 표 3.2 (p.7, †=distantly supervised pre-training)와 2.1 (p.5, 3,053 / 101,873) [RPT]. 원 논문의 사람 라벨만 쓴 BERT-base Dev F1은 61.09",
+        href: T2G_RPT,
+        hrefLabel: "레포트최종본.pdf",
+        srcLinks: [{ token: "[RPT]", label: "레포트최종본.pdf", href: T2G_RPT }],
+        // 형광 없음: 이 문단의 형광은 61.71%(근거 8)와 59.25%(근거 1) 두 곳만
+      },
+      {
+        // [3단계 C13] 8번 추가 — DREEAM 공식 코드 재현 (jaeyoon·dev 브랜치 노트북 출력)
+        id: "dreeam",
+        grade: "코드",
+        claim: "DREEAM 공식 코드 재현: dev F1 61.71, Ign F1 59.79, Evidence F1 52.21 (bert-base, 30 epoch)",
+        source: "본인 노트북 출력 [NB]#L12676-L12678 (jaeyoon·dev 브랜치)",
+        href: T2G_NB,
+        hrefLabel: "runtimeCheck.ipynb L12676–12678",
+        srcLinks: [
+          { token: "[NB]#L12676-L12678", label: "runtimeCheck.ipynb L12676–12678", href: T2G_NB },
+        ],
+        marks: ["61.71%"],
+      },
+      {
+        // [3단계 C13] 9번 추가 — 담당 범위
+        id: "owner",
+        grade: "문서",
+        claim: "Stage 2 담당",
+        source:
+          "2026-04-08 팀 README 담당 분배 표 [R0408]. 현재 README 담당 표는 ‘ATLOP ranking loss 구현, 평가 단계 adaptive threshold 보강’으로 기재 [Rnow]",
+        href: T2G_R0408,
+        hrefLabel: "README L51–58 @269da67",
+        srcLinks: [
+          { token: "[R0408]", label: "README L51–58 @269da67", href: T2G_R0408 },
+          { token: "[Rnow]", label: "README L97–103 @504504f", href: T2G_RNOW },
+        ],
       },
     ],
     repo: { label: "yeseul-kim01/2026-Text2Graph @504504f", href: `${T2G}/tree/${T2G_MAIN}` },
@@ -430,7 +500,7 @@ export const projects: Project[] = [
     results: [
       { text: "Dev F1 56.64% → 59.25% (+2.61pt)", ev: ["f1"] },
       { text: "dev 998 문서 → 10,494 triple 추출", ev: ["dev998", "triples"] },
-      { text: "관계별 정밀도 80~90% vs 0~12.5% (표면 패턴 vs 상식 추론)", ev: ["relgap"] },
+      { text: "관계별 F1 81.5~90.3% vs 0~12.5% (표면 패턴 vs 상식 추론)", ev: ["relgap"] },
     ],
     flow: [
       { tag: "Stage 1", name: "Baseline", detail: "BERT + Mean Pooling" },
@@ -454,7 +524,7 @@ export const projects: Project[] = [
       "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인(Qwen2.5-7B, ChromaDB)과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락이 측정돼 오답 케이스로 원인을 분석했습니다.",
     oneLinerEv: ["ablation"],
     summary:
-      "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% (−2.3pt) 하락을 측정해 distraction 원인을 케이스 단위로 추적.",
+      "팀 프로젝트로 만든 의료 도메인 챗봇. 그중 RAG 파이프라인과 자동 평가를 담당했고, RAG 켜기 전후 ablation에서 LLM 단독 65.4% → +RAG 63.1% (−2.3pt) 하락을 측정해 distraction 원인을 케이스 단위로 추적. 실험은 제 Colab에서 직접 구성해 돌렸고, 팀 저장소에 남은 평가 노트북·metrics.py·지식베이스 구축 코드는 팀원이 작성했습니다.",
     description:
       "팀 프로젝트 의료 도메인 챗봇. RAG 파이프라인(Qwen2.5-7B, ChromaDB) + 자동 평가 담당. ablation에서 LLM 단독 65.4% → +RAG 63.1% 하락 측정 + distraction 원인 분석.",
     summaryEv: ["ablation"],
@@ -462,56 +532,57 @@ export const projects: Project[] = [
     team: "4명 (NLP 과정 팀 프로젝트)",
     role: "RAG 파이프라인 + 자동 평가",
     status: "종료",
-    stack: ["Qwen2.5-7B (4bit)", "ChromaDB", "ko-sroberta", "Dense Retrieval", "Colab A100"],
+    stack: ["Qwen2.5-7B (4bit)", "ChromaDB·FAISS", "ko-sroberta", "Dense Retrieval", "Colab L4"],
     metrics: [
-      { label: "LLM 단독 vs +RAG", value: "−2.3pt", note: "65.4% → 63.1% (Qwen2.5-7B / VL 평가셋)", ev: ["ablation"] },
+      { label: "LLM 단독 vs +RAG", value: "−2.3pt", note: "65.4% → 63.1% (Qwen2.5-7B / VL 객관식 995문항)", ev: ["ablation"] },
     ],
+    // [3단계 D3] 팀원 파일 줄 수 근거(옛 5·6번) 삭제 → 4건
     evidence: [
       {
         id: "ablation",
-        grade: "확인 필요",
-        claim: "LLM 단독 65.4% → +RAG 63.1% (−2.3pt)",
-        source: "리포 전 브랜치에 이 값이 없음 (평가 노트북 출력 0개, 결과 CSV 없음). 리포의 결과는 팀원 README의 객관식 EM 0.69 → 0.67뿐",
-        href: `${MED}/blob/${MED_DEV}/notebooks/colab_generation_eval.ipynb`,
-        hrefLabel: "colab_generation_eval.ipynb",
+        grade: "비공개 기록",
+        claim: "객관식 995문항: LLM 단독 65.4% (651) → +RAG 63.1% (628), −2.3pt",
+        source:
+          "본인 Colab 실행 출력 (2026.04, 비공개). 결과 파일 results_A.json·results_B.json은 저장소에 없음. 팀 저장소의 결과는 팀원 측정 객관식 EM 0.69 → 0.67 [MR]",
+        srcLinks: [{ token: "[MR]", label: "README @25b0592", href: MED_MR }],
       },
       {
+        // [3단계 D8] 2026.04 Colab 실행 기록 기준 top-k = 3
         id: "topk",
-        grade: "코드",
-        claim: "top-k = 5",
-        source: "평가 노트북 TOP_K = 5 (app_config.yaml top_k: 5도 같음)",
-        href: `${MED}/blob/${MED_DEV}/notebooks/colab_generation_eval.ipynb?plain=1#L307-L308`,
-        hrefLabel: "colab_generation_eval.ipynb L307–308",
+        grade: "비공개 기록",
+        claim: "top-k = 3",
+        source:
+          "본인 실행 코드(n_results=3)와 발표 자료 기록 (2026.04, 비공개). 팀 평가 노트북은 TOP_K = 5로 따로 측정 (colab_generation_eval.ipynb L307–308)",
+        srcLinks: [
+          {
+            token: "colab_generation_eval.ipynb L307–308",
+            label: "colab_generation_eval.ipynb L307–308",
+            href: `${MED}/blob/${MED_DEV}/notebooks/colab_generation_eval.ipynb?plain=1#L307-L308`,
+          },
+        ],
       },
       {
         id: "chunk500",
-        grade: "코드",
+        grade: "문서",
         claim: "500자 단위 chunking",
-        source: "커밋된 ChromaDB의 chunk 길이 최대 500자, 중앙값 500자 (500자 분할 스크립트는 리포에 없음)",
-        href: `${MED}/blob/${MED_DEV}/chroma_db/chroma.sqlite3`,
-        hrefLabel: "chroma_db/chroma.sqlite3",
+        source:
+          "팀 README에 청킹 size 500 / overlap 50으로 기재 [MR]#L88. 팀 저장소에 커밋된 ChromaDB(팀원 구축)도 chunk 최대 500자",
+        href: `${MED_MR}#L88`,
+        hrefLabel: "팀 README L88",
+        srcLinks: [{ token: "[MR]#L88", label: "README L88", href: `${MED_MR}#L88` }],
       },
       {
         id: "corpus",
-        grade: "확인 필요",
+        grade: "문서",
         claim: "원천 의학 텍스트 3,447개 문서 → 약 27,000 chunk",
-        source: "커밋된 ChromaDB는 28,916 chunk, 고유 문서 ID 3,238, 본문 값과 다름",
-      },
-      {
-        id: "evalLines449",
-        grade: "코드",
-        claim: "notebooks/colab_generation_eval.ipynb 449줄",
-        source: "dev 기준 449줄 (git 이력상 같은 내용을 팀원 Hahyun Song 커밋이 먼저 올림)",
-        href: `${MED}/blob/${MED_DEV}/notebooks/colab_generation_eval.ipynb`,
-        hrefLabel: "colab_generation_eval.ipynb",
-      },
-      {
-        id: "evalLines216",
-        grade: "확인 필요",
-        claim: "evaluation/metrics.py 216줄",
-        source: "리포 src/evaluation/metrics.py는 230줄 (216은 본인 커밋 d32e33b의 변경 줄 수)",
-        href: `${MED}/blob/${MED_DEV}/src/evaluation/metrics.py`,
-        hrefLabel: "metrics.py",
+        source:
+          "팀 저장소 문서에 3,447 문서(약 1,229만 자), 약 27,000 chunk로 기재 [MP], [MR]#L88. 팀 저장소에 커밋된 ChromaDB(팀원 구축)는 28,916 chunk",
+        href: MED_MP,
+        hrefLabel: "portfolio.html L860",
+        srcLinks: [
+          { token: "[MP]", label: "portfolio.html L860", href: MED_MP },
+          { token: "[MR]#L88", label: "README L88", href: `${MED_MR}#L88` },
+        ],
       },
     ],
     repo: { label: "ljhljh0703-cmd/Medical-Chatbot (dev) @f2bc415", href: `${MED}/tree/${MED_DEV}` },
@@ -522,8 +593,8 @@ export const projects: Project[] = [
     flow: [
       { name: "원천 의학 텍스트", detail: "3,447개 문서", mine: true, ev: ["corpus"] },
       { name: "chunking", detail: "500자 단위 → 약 27,000 chunk", mine: true, ev: ["chunk500", "corpus"] },
-      { name: "임베딩, 저장", detail: "ko-sroberta 임베딩 → ChromaDB persist", mine: true },
-      { name: "검색 (Mode B)", detail: "Dense retrieval, top-k = 5", mine: true, ev: ["topk"] },
+      { name: "임베딩, 저장", detail: "ko-sroberta 임베딩 → ChromaDB 저장 (측정 때는 FAISS 인덱스)", mine: true },
+      { name: "검색 (Mode B)", detail: "Dense retrieval, top-k = 3", mine: true, ev: ["topk"] },
       { name: "생성", detail: ["Qwen2.5-7B-Instruct(4bit)", "Mode A: LLM 단독 / Mode B: LLM + RAG"] },
       { name: "자동 채점", detail: "객관식 번호 매칭, 단답 키워드 매칭 (VL 데이터셋 일괄)", mine: true },
     ],
@@ -535,7 +606,7 @@ export const projects: Project[] = [
   {
     slug: "booming",
     title: "Booming",
-    subtitle: "실시간 채팅 커뮤니티 모바일 앱 (AI 대화 코칭 기능 개발 중)",
+    subtitle: "실시간 채팅 커뮤니티 모바일 앱 (AI 대화 코칭 기능은 개발하다 중단)",
     group: "Full-Stack",
     kind: "팀 프로젝트",
     headline: "토큰을 Redis로 모으고 WebSocket 브로커를 SimpleBroker로 단순화했습니다",
@@ -545,18 +616,19 @@ export const projects: Project[] = [
       "풀스택 학습 사이클의 종착점, HirePicker의 ‘Refresh DB·Redis Pub/Sub’ 반쪽/과한 설계를 받아 토큰 전부 Redis 통합 + SimpleBroker 단순화로 정리. 동시에 모바일이라는 새 환경 조건이 추가됨.",
     description:
       "HighWay Guide·HirePicker의 학습이 종착하는 세 번째 풀스택, 토큰 Redis 통합 + secure_storage + WebSocket SimpleBroker 단순화.",
-    period: "2025.11 ~ 진행 중",
+    period: "2025.11 ~ 2026.01",
+    homePeriod: "2025.11 ~ 2026.01, 팀이 흩어져 중단",
     team: "2명",
     role: "Spring Boot 백엔드(모임 도메인 제외) + Flutter 기획·디자인·구현",
-    status: "진행 중",
+    status: "중단",
     stack: ["Flutter", "Spring Boot", "JWT + Redis", "WebSocket(STOMP)", "MySQL", "MongoDB"],
     metrics: [],
     evidence: [
       {
         id: "fewMsgs",
-        grade: "확인 필요",
+        grade: "본인 기재",
         claim: "메시지 두세 개 만에 @AuthenticationPrincipal이 null",
-        source: "공개 리포가 없어 확인할 수 없음",
+        source: "공개 리포가 없음",
       },
     ],
     display: "other",

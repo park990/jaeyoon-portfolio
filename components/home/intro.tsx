@@ -71,7 +71,7 @@ export function Intro() {
             </p>
             <p>
               멋쟁이사자처럼 NLP 과정을 <span className="font-semibold">StructVerify-Lab</span>으로
-              마무리(최우수상)했고, 2026.09까지 이어서 개발했습니다.
+              마무리(최우수상)했고, 2026.08까지 이어서 개발했습니다.
             </p>
             <p>
               RAG가 정확도를 65.4% → 63.1%로 떨어뜨린 걸 직접 측정하고 원인까지 본 경험이

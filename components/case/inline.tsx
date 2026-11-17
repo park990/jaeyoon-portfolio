@@ -1,9 +1,9 @@
 import type { Evidence, Grade } from "@/lib/projects";
 
 // 문장 속 숫자 표시 (서버·클라이언트 공용, 훅 없음)
-// - 코드 · 평가표 · 문서 → <mark> (형광)
-// - 추정              → .est (점선 밑줄)
-// - 확인 필요          → 표시 없음 (일반 글자)
+// - 코드 · 평가표 · 문서     → <mark> (형광)
+// - 추정                    → .est (점선 밑줄)
+// - 비공개 기록 · 본인 기재  → 표시 없음 (일반 글자)
 // 어떤 글자를 표시할지는 lib/projects.ts의 Evidence.marks가 정한다(숫자를 정규식으로 찾지 않는다).
 // 백틱(`…`)으로 감싼 부분은 코드로 보고 고정폭 <code>로 바꾼다.
 
@@ -20,6 +20,9 @@ export type MarkSpec = { s: string; kind: MarkKind };
 export type MarkOpts = { hl?: boolean; max?: number; exclude?: readonly string[] };
 
 const MARK_GRADES: Grade[] = ["코드", "평가표", "문서"];
+
+/** 비공개 기록 근거의 주석 문구 (링크 없음, 주석색) — 여백 주석과 결과 타일 출처 줄이 같이 쓴다 */
+export const PRIVATE_NOTE = "본인 실행 기록(비공개)";
 
 export function markKind(grade: Grade): MarkKind | null {
   if (MARK_GRADES.includes(grade)) return "mark";

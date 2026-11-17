@@ -2,7 +2,15 @@
 
 import { createContext, useContext } from "react";
 import type { Evidence } from "@/lib/projects";
-import { InlineText, extProps, isCommit, looksLikePath, marksFor, type MarkOpts } from "@/components/case/inline";
+import {
+  InlineText,
+  PRIVATE_NOTE,
+  extProps,
+  isCommit,
+  looksLikePath,
+  marksFor,
+  type MarkOpts,
+} from "@/components/case/inline";
 
 // 근거 표시 (2단계)
 // - 등급 글자([코드] 등)는 화면에 쓰지 않는다. 숫자의 모양(형광·점선·일반)으로만 드러낸다.
@@ -98,6 +106,7 @@ export function SourceLink({ e, className = "", title }: { e: Evidence; classNam
 /**
  * 여백 주석 (2.5단계): 한 건 = 한 줄 — "근거 n" + 링크(커밋 7자리 또는 파일·행) + 날짜.
  * 설명 문장은 근거 표에만 두고 링크 title 속성에 남긴다. 열 수 있는 출처가 없으면 "근거 n"이 표의 그 줄로 가는 링크.
+ * [3단계] 비공개 기록은 링크 없이 "근거 n · 본인 실행 기록(비공개)".
  * 좁은 화면(960px 미만)과 근거가 6건을 넘는 덩어리에서는 CSS가 한 줄짜리 목록으로 바꾼다.
  */
 export function SideNotes({ ids }: { ids: readonly string[] }) {
@@ -107,7 +116,11 @@ export function SideNotes({ ids }: { ids: readonly string[] }) {
     <ol className="note-list">
       {items.map(({ e, n }) => (
         <li key={e.id}>
-          {e.href ? (
+          {e.grade === "비공개 기록" ? (
+            <span title={e.claim}>
+              근거 {n} · {PRIVATE_NOTE}
+            </span>
+          ) : e.href ? (
             <>
               <span>근거 {n}</span>
               <SourceLink e={e} title={e.claim} className="hit" />
@@ -124,12 +137,45 @@ export function SideNotes({ ids }: { ids: readonly string[] }) {
   );
 }
 
+/** 출처 문장: srcLinks의 token 글자를 링크로 바꿔 그린다 */
+function SourceText({ e }: { e: Evidence }) {
+  const links = e.srcLinks ?? [];
+  if (links.length === 0) return <>{e.source}</>;
+  const parts: React.ReactNode[] = [];
+  let rest = e.source;
+  let k = 0;
+  for (;;) {
+    // 남은 글에서 가장 먼저 나오는 token
+    let best: { i: number; l: (typeof links)[number] } | null = null;
+    for (const l of links) {
+      const i = rest.indexOf(l.token);
+      if (i >= 0 && (!best || i < best.i)) best = { i, l };
+    }
+    if (!best) break;
+    if (best.i > 0) parts.push(rest.slice(0, best.i));
+    const cls = looksLikePath(best.l.label) ? "font-mono text-[13px] [overflow-wrap:anywhere]" : "";
+    parts.push(
+      <a key={k++} href={best.l.href} {...extProps(best.l.href)} className={cls}>
+        {best.l.label}
+      </a>,
+    );
+    rest = rest.slice(best.i + best.l.token.length);
+  }
+  if (rest) parts.push(rest);
+  return <>{parts}</>;
+}
+
 /** 근거 목록 표: 번호 | 내용 | 출처 | 종류. 각 줄은 #ev-n */
 export function EvidenceTable() {
   const ctx = useContext(EvidenceContext);
   if (!ctx || ctx.evidence.length === 0) return null;
   return (
     <table className="tbl w-full border-collapse text-left text-[15px] leading-[1.6]">
+      {/* [3단계 A2] 표시 규칙 한 줄 */}
+      <caption className="pb-2 text-left text-[13px] leading-[1.6] text-note">
+        노란 표시는 열어 볼 수 있는 출처가 있는 숫자입니다. 점선 밑줄은 추정이고, 표시가 없는 숫자는
+        비공개 기록만 있거나 기록이 남지 않은 값입니다.
+      </caption>
       <thead className="hidden md:table-header-group">
         <tr>
           <th scope="col" className="w-[3.5rem] py-2 pr-3">번호</th>
@@ -150,8 +196,8 @@ export function EvidenceTable() {
             </td>
             <td className="border-0 align-top text-ink md:border-b md:py-3 md:pr-6">{e.claim}</td>
             <td className="border-0 align-top text-note md:border-b md:py-3 md:pr-6">
-              {e.source}
-              {e.href && (
+              <SourceText e={e} />
+              {e.href && !e.srcLinks?.some((l) => l.href === e.href) && (
                 <>
                   {" "}
                   <SourceLink e={e} />
