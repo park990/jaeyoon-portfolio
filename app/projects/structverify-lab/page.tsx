@@ -24,6 +24,7 @@ import {
   DataLayersDiagram,
   WorkScopeTable,
 } from "./_components/architecture";
+import { caseMetadata } from "@/lib/site";
 import { getProjectBySlug } from "@/lib/projects";
 
 const SLUG = "structverify-lab";
@@ -31,10 +32,7 @@ const project = getProjectBySlug(SLUG)!;
 const SV = "https://github.com/2026-StructVerify-Lab/structverify";
 const SV_MAIN = "fb4f5deb35469ec36c9b5a83cb796b1ce078748f";
 
-export const metadata: Metadata = {
-  title: project.title,
-  description: project.description,
-};
+export const metadata: Metadata = caseMetadata(project);
 
 const techStack = [
   {
@@ -94,8 +92,8 @@ const roles: Role[] = [
     title: "KOSIS 통계 메타 크롤러 + 카탈로그 검색",
     bullets: [
       {
-        // [2단계] 31 → 30 정정 (A~U 표기는 리포의 A~V와 다르지만 지시 범위 밖이라 그대로 둠)
-        text: "adaptation/kosis_crawler.py, 주제별 통계(MT_ZTITLE) 30개 카테고리(A~U + H1/H2, I1/I2, J1/J2, K1/K2, M1/M2, N1/N2 등 세분화) 전체 메타 수집",
+        // [2단계] 31 → 30 정정 / [2.5단계] A~U → A~V (kosis_crawler.py 목록의 마지막이 V)
+        text: "adaptation/kosis_crawler.py, 주제별 통계(MT_ZTITLE) 30개 카테고리(A~V + H1/H2, I1/I2, J1/J2, K1/K2, M1/M2, N1/N2 등 세분화) 전체 메타 수집",
         ev: ["categories"],
       },
       // [1단계 A-4] 임베딩 서술을 시기별로 나눔 (48cf55b → 4b6dbab)
@@ -169,11 +167,13 @@ const troubles: Trouble[] = [
     problem:
       "전체 카테고리(30개)에 대해 메타를 수집하면 통계표가 수십만 건. 한 건씩 임베딩하면 NCP HCX 임베딩 API 호출 횟수 폭증 + KOSIS API rate limit 위반. 초기엔 단순 for 루프로 돌렸다가 KOSIS 차단 직전까지 감.",
     // [1단계 A-4] 시기별로 나눠 사실대로: OpenAI 배치(48cf55b) → HCX v2 건별 + Semaphore(3)(4b6dbab)
+    // [2.5단계] 1단계에서 빠진 KOSIS 세마포어를 실제 값으로 되살림: (2) update_embeddings.py L138–139(5866f0b)
+    //           기존 (2)는 (3)으로 번호만 바뀜
     solve:
-      "(1) 처음(OpenAI 임베딩, 2026-04-27)엔 100건 단위 배치로 묶어 호출 횟수를 1/100로 줄였고, NCP HCX 임베딩 v2로 바꾼 뒤(04-29)엔 배치를 지원하지 않아 한 건씩 호출하되 asyncio.Semaphore(3)로 임베딩 동시 호출을 3개로 제한하고 429가 나면 지수 백오프로 최대 5회 재시도했습니다. (2) 메타 수집 + 임베딩 INSERT를 한 파이프라인에 묶어 ETL 중간 산출물 관리 부담 제거.",
+      "(1) 처음(OpenAI 임베딩, 2026-04-27)엔 100건 단위 배치로 묶어 호출 횟수를 1/100로 줄였고, NCP HCX 임베딩 v2로 바꾼 뒤(04-29)엔 배치를 지원하지 않아 한 건씩 호출하되 asyncio.Semaphore(3)로 임베딩 동시 호출을 3개로 제한하고 429가 나면 지수 백오프로 최대 5회 재시도했습니다. (2) 임베딩 갱신 스크립트에서 KOSIS 호출 동시 실행을 15에서 5로, HCX 임베딩 호출을 5에서 3으로 줄임. (3) 메타 수집 + 임베딩 INSERT를 한 파이프라인에 묶어 ETL 중간 산출물 관리 부담 제거.",
     lesson:
       "처음에는 메타 수집 코드를 짜기 바빠서 그냥 동기 루프로 KOSIS·HCX를 두드렸는데, 몇 분 만에 KOSIS 429와 HCX 동시 호출 한도 경고가 동시에 떴습니다. 코드를 좋게 쓰는 문제가 아니라 ‘한 번에 몇 개, 얼마 간격으로 부를지’를 처음부터 설계해야 한다는 걸 그때 알게 됐고, 이후로는 새로운 외부 API를 붙일 때 가장 먼저 배치·세마포어·재시도 자리를 비워두고 시작하게 됐습니다.",
-    ev: { problem: ["categories", "catalog"], solve: ["embedOpenAI", "embedHcx"] },
+    ev: { problem: ["categories", "catalog"], solve: ["embedOpenAI", "embedHcx", "semKosis"] },
   },
   {
     title: "KOSIS 통계표 매칭 오류, '전체 사망자'에 '영아 사망률'이 잡힘",
@@ -222,9 +222,14 @@ volumes:
 # 운영 플랫폼 계층(sv_platform)은 alembic 마이그레이션으로 4 테이블 추가 — 총 9
 `;
 
+// [2.5단계] 1단계 이전 KOSIS 세마포어 의사 코드가 있던 자리 — 실제 두 줄 인용 (main @fb4f5de L138–139, 5866f0b에서 추가)
+const semaphoreCode = `# structverify/adaptation/update_embeddings.py L138–139 (발췌)
+    semaphore_api = asyncio.Semaphore(5)   # 기존 15 -> 5 로 축소 (KOSIS 서버 과부하 방지)
+    semaphore_hcx = asyncio.Semaphore(3)   # 기존 5 -> 3 로 축소 (안정적인 임베딩 요청)
+`;
+
 // [1단계 A-4] 크롤러 예시를 현재 코드(main @fb4f5de)로 교체.
 // 기존 예시는 요약 의사 코드라 실제 파일과 글자가 달랐다.
-// (KOSIS 호출 세마포어는 따로 있다: update_embeddings.py L138 Semaphore(5), 본인 커밋 5866f0b)
 const crawlerCode = `# structverify/adaptation/kosis_crawler.py — save_to_db (main, 발췌)
 BATCH_SIZE = 100
 for i in range(0, len(catalog), BATCH_SIZE):
@@ -437,6 +442,8 @@ export default function StructVerifyPage() {
           <img
             src="/projects/structverify-lab/award.jpg"
             alt="멋쟁이사자처럼 NLP 집중과정 최우수상 상장"
+            width={736}
+            height={1069}
             loading="lazy"
             className="block h-auto w-full border border-rule"
           />
@@ -497,6 +504,23 @@ export default function StructVerifyPage() {
             lang="yaml"
             filename="docker-compose.yml"
             source={{ label: "docker-compose.yml @fb4f5de", href: `${SV}/blob/${SV_MAIN}/docker-compose.yml`, kind: "관련 파일" }}
+          />
+        </div>
+        <div>
+          <p className="mb-3 text-[15px] leading-[1.7] text-note">
+            <Graded
+              text="임베딩 갱신 스크립트의 동시 실행 제한, KOSIS 호출 15 → 5, HCX 임베딩 호출 5 → 3."
+              ev={["semKosis"]}
+            />
+          </p>
+          <CodeBlock
+            code={semaphoreCode}
+            lang="python"
+            filename="adaptation/update_embeddings.py"
+            source={{
+              label: "update_embeddings.py L138–139 @fb4f5de",
+              href: `${SV}/blob/${SV_MAIN}/structverify/adaptation/update_embeddings.py#L138-L139`,
+            }}
           />
         </div>
         <div>

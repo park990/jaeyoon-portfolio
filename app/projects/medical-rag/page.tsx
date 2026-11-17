@@ -19,6 +19,7 @@ import {
   type CaseSectionMeta,
 } from "@/components/case/case-parts";
 import { Ev } from "@/components/case/evidence";
+import { caseMetadata } from "@/lib/site";
 import { getProjectBySlug } from "@/lib/projects";
 
 const SLUG = "medical-rag";
@@ -26,10 +27,7 @@ const project = getProjectBySlug(SLUG)!;
 const MED = "https://github.com/ljhljh0703-cmd/Medical-Chatbot";
 const MED_DEV = "f2bc415fce1afb7be58bc51c898422d6c557f17d";
 
-export const metadata: Metadata = {
-  title: project.title,
-  description: project.description,
-};
+export const metadata: Metadata = caseMetadata(project);
 
 // 기존 Highlights 중 숫자가 아닌 두 장 — 각 칸 첫머리로 옮김
 const CAUSE = {

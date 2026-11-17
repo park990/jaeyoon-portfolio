@@ -37,7 +37,7 @@ export function Stage2ChangesTable() {
           <tr key={r.axis}>
             <th scope="row" className="py-2 pr-3 text-left font-semibold text-ink">{r.axis}</th>
             <td className="py-2 pr-3 text-note">
-              {r.axis === "Threshold" ? <Graded text={r.stage1} ev={["th05"]} /> : r.stage1}
+              {r.axis === "Threshold" ? <Graded text={r.stage1} ev={["th05"]} hl={false} /> : r.stage1}
             </td>
             <td className="py-2 font-semibold text-ink">{r.stage2}</td>
           </tr>
@@ -63,12 +63,12 @@ export function MetricsTable() {
         </tr>
       </thead>
       <tbody>
-        {/* 평가표 근거(f1)의 숫자라 형광 */}
+        {/* [2.5단계] 표에는 형광 없음 */}
         {T2G_SCORES.map((r) => (
           <tr key={r.metric}>
             <th scope="row" className="py-2 pr-3 text-left font-semibold text-ink">{r.metric}</th>
-            <td className="py-2 pr-3 text-right text-ink"><mark>{r.v1}</mark></td>
-            <td className="py-2 text-right text-ink"><mark>{r.v2}</mark></td>
+            <td className="py-2 pr-3 text-right text-note">{r.v1}</td>
+            <td className="py-2 text-right text-ink">{r.v2}</td>
           </tr>
         ))}
       </tbody>

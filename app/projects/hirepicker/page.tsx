@@ -16,15 +16,13 @@ import {
   SubHead,
   type CaseSectionMeta,
 } from "@/components/case/case-parts";
+import { caseMetadata } from "@/lib/site";
 import { getProjectBySlug } from "@/lib/projects";
 
 const SLUG = "hirepicker";
 const project = getProjectBySlug(SLUG)!;
 
-export const metadata: Metadata = {
-  title: project.title,
-  description: project.description,
-};
+export const metadata: Metadata = caseMetadata(project);
 
 const techStack = [
   { category: "Frontend", items: ["Next.js (SSR/ISR)", "React", "Axios"] },

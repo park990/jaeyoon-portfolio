@@ -113,7 +113,7 @@ export function DataLayersDiagram() {
             <p className="mt-0.5 text-[12px] leading-[1.5] text-note">{l.role}</p>
           </div>
           <p className="px-3 py-2 text-[14px] leading-[1.6] text-ink">
-            <Graded text={l.detail} ev={l.ev} />
+            <Graded text={l.detail} ev={l.ev} hl={false} />
           </p>
         </div>
       ))}
@@ -198,7 +198,7 @@ export function WorkScopeTable() {
               {r.area}
             </th>
             <td className="border-0 align-top text-[14px] leading-[1.6] text-ink sm:border-b sm:py-2.5">
-              {r.ev ? <Graded text={r.module} ev={r.ev} /> : r.module}
+              {r.ev ? <Graded text={r.module} ev={r.ev} hl={false} /> : r.module}
             </td>
           </tr>
         ))}

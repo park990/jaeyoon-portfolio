@@ -35,8 +35,12 @@ export function Hero() {
         <div className="claim-row">
           <p>
             {ex.claim.before}
-            <s className="struck">{ex.claim.struck}</s>
-            {ex.claim.after}
+            {/* "600%에"가 줄 끝에서 갈라지지 않게 묶는다 */}
+            <span className="whitespace-nowrap">
+              <s className="struck">{ex.claim.struck}</s>
+              {ex.claim.after.slice(0, 1)}
+            </span>
+            {ex.claim.after.slice(1)}
           </p>
           <span className="dots" aria-hidden="true" />
           <span className="src">

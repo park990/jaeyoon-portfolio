@@ -17,15 +17,13 @@ import {
   SubHead,
   type CaseSectionMeta,
 } from "@/components/case/case-parts";
+import { caseMetadata } from "@/lib/site";
 import { getProjectBySlug } from "@/lib/projects";
 
 const SLUG = "booming";
 const project = getProjectBySlug(SLUG)!;
 
-export const metadata: Metadata = {
-  title: project.title,
-  description: project.description,
-};
+export const metadata: Metadata = caseMetadata(project);
 
 const techStack = [
   { category: "Mobile", items: ["Flutter", "Riverpod 2.x", "flutter_secure_storage"] },

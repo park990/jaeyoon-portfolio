@@ -25,8 +25,9 @@ export type Evidence = {
   /** 링크에 보일 짧은 표기 — SHA, 파일·줄 등 */
   hrefLabel?: string;
   /**
-   * 이 근거가 뒷받침하는 숫자 표기. 화면에서 이 글자에 형광(코드·평가표·문서)이나
+   * 이 근거가 뒷받침하는 "결과로 내세우는 숫자" 표기. 화면에서 이 글자에 형광(코드·평가표·문서)이나
    * 점선 밑줄(추정)을 단다. 확인 필요는 표시하지 않는다. "{…}"가 있으면 그 부분만 표시.
+   * [2.5단계] 설정값·차원·개수(1024차원, Semaphore(3), 500자, top-k 등)는 결과가 아니라 넣지 않는다.
    */
   marks?: string[];
   /** 커밋 근거의 커밋 날짜 (클론에서 git show -s --date=short) */
@@ -35,6 +36,7 @@ export type Evidence = {
 
 export type Metric = {
   label: string;
+  /** 타일의 큰 값 — 숫자나 핵심어만, 8자 이내 한 줄. 단위·수식어·전후 값은 label·note로 */
   value: string;
   /** 값 아래 보조 설명 (기존 Highlights 카드의 note) */
   note?: string;
@@ -137,9 +139,9 @@ export const projects: Project[] = [
     status: "종료",
     stack: ["NCP HCX", "Pydantic", "PostgreSQL+pgvector", "KOSIS API", "FastAPI", "AWS EC2"],
     metrics: [
-      { label: "수상", value: "6팀 중 최우수상", note: "멋쟁이사자처럼 NLP 집중과정", ev: ["award"] },
-      { label: "데이터 적재", value: "262,783건", note: "KOSIS 통계 카탈로그 + HCX 임베딩 v2 (1024차원)", ev: ["catalog", "dim"] },
-      { label: "Runtime 병렬화", value: "~7분 → ~1/3", note: "claim 8건 직렬 vs asyncio.gather + Semaphore(3)", ev: ["parallelEst", "parallel"] },
+      { label: "수상", value: "최우수", note: "6팀 중 최우수상, 멋쟁이사자처럼 NLP 집중과정", ev: ["award"] },
+      { label: "데이터 적재 건수", value: "262,783", note: "KOSIS 통계 카탈로그 + HCX 임베딩 v2 (1024차원)", ev: ["catalog", "dim"] },
+      { label: "Runtime 병렬화", value: "약 1/3", note: "직렬 ~7분 대비, claim 8건 직렬 vs asyncio.gather + Semaphore(3)", ev: ["parallelEst", "parallel"] },
       { label: "표 매칭 필터", value: "4종", note: "국제기구, 장래추계, 해외 지역, 세부 대상", ev: ["filterIntl", "filterForecast", "filterRegion"] },
     ],
     evidence: [
@@ -150,14 +152,14 @@ export const projects: Project[] = [
         source: "상장 이미지",
         href: "/projects/structverify-lab/award.jpg",
         hrefLabel: "상장",
-        marks: ["6팀 중 최우수상", "6개 팀 중 최우수"],
+        marks: ["최우수"],
       },
       {
         id: "catalog",
         grade: "문서",
         claim: "KOSIS 통계 카탈로그(kosis_stat_catalog) 262,783건 적재",
         source: "kosis_stat_catalog 행 수, 2026.05 EC2 이관 기록 (리포 밖)",
-        marks: ["262,783건"],
+        marks: ["262,783건", "262,783"],
       },
       {
         id: "parallel",
@@ -167,7 +169,6 @@ export const projects: Project[] = [
         href: `${SV}/commit/bb04054419fded016f71b1568f88a04e8e4815b6`,
         hrefLabel: "bb04054",
         date: "2026-05-12",
-        marks: ["Semaphore(3)", "{3}개 동시"],
       },
       {
         id: "parallelEst",
@@ -176,7 +177,7 @@ export const projects: Project[] = [
         source: "runtime_agent.py 주석의 추정치, 측정 로그 없음 (주석은 팀원 머지 커밋 b2e52e8에서 처음 등장)",
         href: `${SV}/blob/${SV_MAIN}/structverify/agent/runtime_agent.py#L339-L341`,
         hrefLabel: "runtime_agent.py L339–341",
-        marks: ["~7분 → 병렬 ~1/3", "~7분 → ~1/3", "~7분→~1/3", "14~40초", "~7분", "~1/3"],
+        marks: ["~7분 → 병렬 ~1/3", "~7분 → ~1/3", "~7분→~1/3", "14~40초", "약 1/3", "~7분", "~1/3"],
       },
       {
         id: "embedOpenAI",
@@ -186,7 +187,6 @@ export const projects: Project[] = [
         href: `${SV}/commit/48cf55b79995b2135bdcc2175b0e8da83e80888a`,
         hrefLabel: "48cf55b",
         date: "2026-04-27",
-        marks: ["100건 단위", "1/100"],
       },
       {
         id: "embedHcx",
@@ -196,7 +196,6 @@ export const projects: Project[] = [
         href: `${SV}/commit/4b6dbab5717e00e120c6f61658b7800500cd6403`,
         hrefLabel: "4b6dbab",
         date: "2026-04-29",
-        marks: ["Semaphore(3)", "최대 5회"],
       },
       {
         id: "embedNow",
@@ -205,7 +204,6 @@ export const projects: Project[] = [
         source: "embedding_client.py (_BATCH_CONCURRENCY = 3, _BATCH_MAX_RETRY = 5)",
         href: `${SV}/blob/${SV_MAIN}/structverify/utils/embedding_client.py#L210-L235`,
         hrefLabel: "embedding_client.py L210–235",
-        marks: ["100건 단위", "Semaphore(3)", "최대 5회"],
       },
       {
         id: "dim",
@@ -215,7 +213,6 @@ export const projects: Project[] = [
         href: `${SV}/commit/9fa3c26b676258f74e77bb5bdee8556ad6d4c79f`,
         hrefLabel: "9fa3c26",
         date: "2026-04-28",
-        marks: ["1024차원"],
       },
       {
         id: "tables",
@@ -224,7 +221,6 @@ export const projects: Project[] = [
         source: "init_db.py CREATE TABLE 5개",
         href: `${SV}/blob/${SV_MAIN}/structverify/storage/init_db.py#L34-L99`,
         hrefLabel: "init_db.py L34–99",
-        marks: ["핵심 5 테이블", "5 테이블"],
       },
       {
         id: "tablesAlembic",
@@ -233,7 +229,6 @@ export const projects: Project[] = [
         source: "0001_initial.py op.create_table 4개 (팀원 yeseul 커밋). memory/schema.sql의 2개 테이블은 별도",
         href: `${SV}/blob/${SV_MAIN}/sv_platform/alembic/versions/0001_initial.py#L20-L94`,
         hrefLabel: "0001_initial.py L20–94",
-        marks: ["4 테이블", "총 9 테이블", "총 9", "= {9}"],
       },
       {
         id: "categories",
@@ -243,7 +238,6 @@ export const projects: Project[] = [
         source: "kosis_crawler.py KOSIS_TOP_CATEGORIES 30개 항목 (A~V)",
         href: `${SV}/blob/${SV_MAIN}/structverify/adaptation/kosis_crawler.py#L91-L124`,
         hrefLabel: "kosis_crawler.py L91–124",
-        marks: ["30개 카테고리", "30 카테고리", "30개"],
       },
       {
         id: "cos085",
@@ -259,7 +253,6 @@ export const projects: Project[] = [
         href: `${SV}/commit/24ac3a97b4c58d599b5a9bae7c5c418572dfed28`,
         hrefLabel: "24ac3a9",
         date: "2026-05-14",
-        marks: ["최대 3회 시도", "1초 → 2초", "1→2s"],
       },
       {
         id: "backoffStructured",
@@ -269,7 +262,6 @@ export const projects: Project[] = [
         href: `${SV}/commit/6cfc82ed121ee954e24cfbba09d098b3dbc7f7fa`,
         hrefLabel: "6cfc82e",
         date: "2026-05-18",
-        marks: ["최대 3회 시도", "1초 → 2초", "1→2s"],
       },
       {
         id: "filterIntl",
@@ -279,7 +271,6 @@ export const projects: Project[] = [
         href: `${SV}/commit/da34cba63de418be93cedcb97ca94ea66a7edbd7`,
         hrefLabel: "da34cba",
         date: "2026-05-19",
-        marks: ["4종"],
       },
       {
         id: "filterForecast",
@@ -289,7 +280,6 @@ export const projects: Project[] = [
         href: `${SV}/commit/1d4a90a7fb3e0c5166a0b74eda892de501d81e2b`,
         hrefLabel: "1d4a90a",
         date: "2026-05-15",
-        marks: ["4종"],
       },
       {
         id: "filterRegion",
@@ -299,7 +289,6 @@ export const projects: Project[] = [
         href: `${SV}/commit/38b1041d66f7b5851c37fa1cbad992da7ae8079c`,
         hrefLabel: "38b1041",
         date: "2026-05-15",
-        marks: ["4종"],
       },
       {
         id: "year",
@@ -309,7 +298,6 @@ export const projects: Project[] = [
         href: `${SV}/commit/8d46a4b02d196fabf6bde036d91c5848980907a7`,
         hrefLabel: "8d46a4b",
         date: "2026-05-15",
-        marks: ["±2"],
       },
       {
         id: "over90",
@@ -318,7 +306,16 @@ export const projects: Project[] = [
         source: "verification/config.yaml mismatch_max_error: 0.90 (90% 임계는 팀원 김예슬 2026-05-06 추가)",
         href: `${SV}/blob/${SV_MAIN}/structverify/verification/config.yaml#L20`,
         hrefLabel: "config.yaml L20",
-        marks: ["90% 초과", "90%+", "90%"],
+      },
+      {
+        // [2.5단계] 1단계에서 빠졌던 KOSIS 세마포어 내용 (main L138–139, 이 커밋에서는 L137–138)
+        id: "semKosis",
+        grade: "코드",
+        claim: "임베딩 갱신 스크립트: KOSIS 호출 동시 실행 15 → 5, HCX 임베딩 호출 5 → 3",
+        source: "update_embeddings.py semaphore_api = Semaphore(5), semaphore_hcx = Semaphore(3) (본인 커밋)",
+        href: `${SV}/commit/5866f0bb077cef3fd428bd2d78544323ba16ea9f`,
+        hrefLabel: "5866f0b",
+        date: "2026-04-30",
       },
     ],
     repo: { label: "2026-StructVerify-Lab/structverify @fb4f5de", href: `${SV}/tree/${SV_MAIN}` },
@@ -372,7 +369,7 @@ export const projects: Project[] = [
     metrics: [
       { label: "Dev F1", value: "+2.61pt", note: "56.64% → 59.25% (두 디버깅 수정의 합산 효과)", ev: ["f1"] },
       { label: "Triple 추출", value: "10,494", note: "dev 998 문서 → NetworkX 기반 KG 시각화", ev: ["triples", "dev998"] },
-      { label: "관계별 정성분석", value: "80~90% vs 0~12.5%", note: "표면 패턴 관계 vs 상식 추론 관계의 성능 격차", ev: ["relgap"] },
+      { label: "상식 추론 관계 정밀도", value: "0~12.5%", note: "표면 패턴 관계 80~90%와의 성능 격차 (관계별 정성분석)", ev: ["relgap"] },
     ],
     evidence: [
       {
@@ -382,7 +379,7 @@ export const projects: Project[] = [
         source: "README 버전별 성능 표 (본인 커밋 0a6285e가 처음 추가, 학습 로그는 리포에 없음)",
         href: `${T2G}/blob/${T2G_MAIN}/README.md#L446-L447`,
         hrefLabel: "README L446–447",
-        marks: ["v1 56.64% → v2 59.25%", "56.64% → 59.25%", "56.64 → 59.25", "+2.61pt", "56.64%", "59.25%", "60.74%", "63.11%", "53.06%", "55.83%"],
+        marks: ["v1 56.64% → v2 59.25%", "56.64% → 59.25%", "56.64 → 59.25", "+2.61pt", "59.25%"],
       },
       {
         id: "th05",
@@ -392,7 +389,6 @@ export const projects: Project[] = [
         href: `${T2G}/commit/31e47dc9c412651bbfc1db31fd8f72d5cf47a9d1`,
         hrefLabel: "31e47dc",
         date: "2026-04-08",
-        marks: ["0.5"],
       },
       {
         id: "rel97",
@@ -401,7 +397,6 @@ export const projects: Project[] = [
         source: "rel2id.json 97개 항목. 파일은 팀원 yeseul 커밋(ba690a5)으로 추가, 본문의 ‘직접 생성’과 다름. 코드 예시의 P17=1 … P175=96도 리포(P6=1 … P1198=96)와 다름",
         href: `${T2G}/blob/${T2G_MAIN}/pipeline/data/meta/rel2id.json`,
         hrefLabel: "rel2id.json",
-        marks: ["97종", "97개", "0–96", "0-96"],
       },
       {
         id: "dev998",
@@ -410,7 +405,6 @@ export const projects: Project[] = [
         source: "파이프라인 노트북 출력 ‘Loaded 998 documents from dev.json’",
         href: `${T2G}/blob/${T2G_MAIN}/pipeline/notebooks/run_pipeline_colab_final.ipynb?plain=1#L693-L695`,
         hrefLabel: "run_pipeline_colab_final.ipynb L693–695",
-        marks: ["998 문서"],
       },
       {
         id: "triples",
@@ -488,7 +482,6 @@ export const projects: Project[] = [
         source: "평가 노트북 TOP_K = 5 (app_config.yaml top_k: 5도 같음)",
         href: `${MED}/blob/${MED_DEV}/notebooks/colab_generation_eval.ipynb?plain=1#L307-L308`,
         hrefLabel: "colab_generation_eval.ipynb L307–308",
-        marks: ["top-k = 5", "top-k=5", "top_k=5"],
       },
       {
         id: "chunk500",
@@ -497,7 +490,6 @@ export const projects: Project[] = [
         source: "커밋된 ChromaDB의 chunk 길이 최대 500자, 중앙값 500자 (500자 분할 스크립트는 리포에 없음)",
         href: `${MED}/blob/${MED_DEV}/chroma_db/chroma.sqlite3`,
         hrefLabel: "chroma_db/chroma.sqlite3",
-        marks: ["500자"],
       },
       {
         id: "corpus",
@@ -512,7 +504,6 @@ export const projects: Project[] = [
         source: "dev 기준 449줄 (git 이력상 같은 내용을 팀원 Hahyun Song 커밋이 먼저 올림)",
         href: `${MED}/blob/${MED_DEV}/notebooks/colab_generation_eval.ipynb`,
         hrefLabel: "colab_generation_eval.ipynb",
-        marks: ["449줄"],
       },
       {
         id: "evalLines216",
@@ -625,7 +616,6 @@ export const projects: Project[] = [
         source: "restAreaModal.jsp를 include하는 MapInfo.jsp, mypage.jsp, restArea.jsp (모달은 본인 ‘즐겨찾기’ 커밋 ae7cbb2에서 생성, 본문의 modal.jsp는 실제 파일명과 다름)",
         href: `${HW}/blob/${HW_JAEYOON}/Project_4team/src/main/webapp/restArea.jsp#L20`,
         hrefLabel: "restArea.jsp L20",
-        marks: ["세 페이지", "3페이지"],
       },
     ],
     repo: {

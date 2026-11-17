@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans_KR, Noto_Serif_KR } from "next/font/google";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { BASE_OPEN_GRAPH, OG_IMAGE, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 // 글꼴 세 가지 (next/font/google). 한글 글꼴은 unicode-range 조각으로 쓰는 글자만 받는다.
@@ -30,16 +31,11 @@ const mono = IBM_Plex_Mono({
   preload: false,
 });
 
-const SITE_URL = "https://jaeyoon-portfolio.vercel.app";
-const SITE_TITLE = "박재윤 — AI · NLP 엔지니어 (수치 검증 · 데이터 파이프라인)";
-const SITE_DESCRIPTION =
-  "숫자를 말할 때는 출처를 같이 붙입니다. 기사 속 수치 주장을 공식 통계와 대조하는 LLM 파이프라인을 만들었고, 지금은 흩어진 공공 자료를 모아 검사 규칙으로 자동 점검하는 서비스를 혼자 만들고 있습니다.";
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_TITLE,
-    template: "%s · 박재윤",
+    template: "%s | 박재윤",
   },
   description: SITE_DESCRIPTION,
   keywords: [
@@ -58,18 +54,18 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Jaeyoon Park", url: SITE_URL }],
   creator: "Jaeyoon Park",
+  // og:image는 app/opengraph-image.tsx(파일 규칙)가 붙인다. twitter:image는 같은 주소를 직접 적는다
   openGraph: {
-    type: "website",
-    locale: "ko_KR",
+    ...BASE_OPEN_GRAPH,
     url: SITE_URL,
-    siteName: "박재윤 · Portfolio",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
+    images: [OG_IMAGE.url],
   },
   alternates: {
     canonical: SITE_URL,

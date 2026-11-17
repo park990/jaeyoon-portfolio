@@ -26,6 +26,7 @@ export const HOME_HERO = {
   example: {
     head: ["팀에서 만든 검증기 StructVerify의 예시", "기준 데이터와 판정"],
     // docs/공모전_결과보고서.md L55(예시 문장) · L121(600% vs 543.1% → 위반)
+    // struck + "에"는 줄 끝에서 갈라지지 않게 묶는다(hero.tsx)
     claim: { before: "“한국전력공사의 2023년 부채비율은 ", struck: "600%", after: "에 달했다”" },
     reference: "기준 데이터 543.1%",
     verdict: "불일치",
@@ -52,8 +53,9 @@ export const HOME_HERO = {
       src: { label: "DB 이관 기록 (2026.05, 비공개)" },
     },
     {
-      before: "교육 과정 ",
-      mark: "6개 팀 중 최우수",
+      // [2.5단계] 형광은 "최우수"만 — 상장 이미지에 팀 수는 없다("6개 팀 중"은 일반 글자)
+      before: "교육 과정 6개 팀 중 ",
+      mark: "최우수",
       after: " 팀으로 뽑혔습니다",
       // public/projects/structverify-lab/award.jpg 가 있어 링크로 둔다
       src: { label: "멋쟁이사자처럼 NLP 과정 상장 사진", href: "/projects/structverify-lab/award.jpg" },

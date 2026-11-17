@@ -10,6 +10,15 @@ import type { Evidence, Grade } from "@/lib/projects";
 export type MarkKind = "mark" | "est";
 export type MarkSpec = { s: string; kind: MarkKind };
 
+/**
+ * [2.5단계] 형광 줄이기
+ * - hl=false: 형광(mark)은 빼고 추정 점선(est)만 남긴다 (띠 요약 문장·단계 설명·표·타일 설명 줄 등)
+ * - max: 한 문장(문단)에 붙일 형광 수 상한 (추정 점선은 세지 않는다)
+ * - exclude: 이미 쓴 형광 글자 (한 띠 안에서 같은 값은 처음 한 번)
+ * - 괄호에 바로 붙은 값은 형광을 넣지 않는다("( 값 )"처럼 벌어지지 않게)
+ */
+export type MarkOpts = { hl?: boolean; max?: number; exclude?: readonly string[] };
+
 const MARK_GRADES: Grade[] = ["코드", "평가표", "문서"];
 
 export function markKind(grade: Grade): MarkKind | null {
@@ -34,7 +43,8 @@ export function marksFor(evidence: Evidence[], ids: readonly string[] | undefine
 
 type Range = { start: number; end: number; kind: MarkKind };
 
-function findRanges(text: string, marks: MarkSpec[]): Range[] {
+function findRanges(text: string, marks: MarkSpec[], opts: MarkOpts = {}): Range[] {
+  const { hl = true, max = Infinity, exclude = [] } = opts;
   const specs = marks
     .map((m) => {
       const i = m.s.indexOf("{");
@@ -51,20 +61,40 @@ function findRanges(text: string, marks: MarkSpec[]): Range[] {
       const k = text.indexOf(sp.plain, from);
       if (k < 0) break;
       const pe = k + sp.plain.length;
-      // 더 긴 표기가 이미 잡은 자리와 겹치면 건너뛴다
+      const start = k + sp.hs;
+      const end = start + sp.hl;
+      // 더 긴 표기가 이미 잡은 자리와 겹치면 건너뛴다 (겹치는 자리는 형광이든 아니든 다시 잡지 않는다)
       if (!takenPlain.some(([a, b]) => k < b && pe > a)) {
         takenPlain.push([k, pe]);
-        taken.push({ start: k + sp.hs, end: k + sp.hs + sp.hl, kind: sp.kind });
+        const word = text.slice(start, end);
+        const inParen = text[start - 1] === "(" || text[end] === ")";
+        const skip =
+          sp.kind === "mark" && (!hl || inParen || exclude.includes(word));
+        if (!skip) taken.push({ start, end, kind: sp.kind });
       }
       from = pe;
     }
   }
-  return taken.sort((a, b) => a.start - b.start);
+  taken.sort((a, b) => a.start - b.start);
+  // 형광 상한: 앞에서부터 max개만
+  let n = 0;
+  return taken.filter((r) => r.kind !== "mark" || ++n <= max);
 }
 
-function MarkedSegment({ text, marks, k }: { text: string; marks: MarkSpec[]; k: string }) {
+/** 이 문장에서 실제로 형광이 붙는 글자들 (띠 안 중복 확인용) */
+export function markedWords(text: string, marks: MarkSpec[], opts: MarkOpts = {}): string[] {
+  return text
+    .split(/`[^`]+`/g)
+    .flatMap((seg) =>
+      findRanges(seg, marks, opts)
+        .filter((r) => r.kind === "mark")
+        .map((r) => seg.slice(r.start, r.end)),
+    );
+}
+
+function MarkedSegment({ text, marks, k, opts }: { text: string; marks: MarkSpec[]; k: string; opts?: MarkOpts }) {
   if (marks.length === 0) return <>{text}</>;
-  const ranges = findRanges(text, marks);
+  const ranges = findRanges(text, marks, opts);
   if (ranges.length === 0) return <>{text}</>;
   const parts: React.ReactNode[] = [];
   let at = 0;
@@ -87,7 +117,7 @@ function MarkedSegment({ text, marks, k }: { text: string; marks: MarkSpec[]; k:
 }
 
 /** 문장 하나를 표시 규칙대로 그린다 */
-export function InlineText({ text, marks = [] }: { text: string; marks?: MarkSpec[] }) {
+export function InlineText({ text, marks = [], opts }: { text: string; marks?: MarkSpec[]; opts?: MarkOpts }) {
   const segs = text.split(/`([^`]+)`/g);
   return (
     <>
@@ -95,7 +125,7 @@ export function InlineText({ text, marks = [] }: { text: string; marks?: MarkSpe
         i % 2 === 1 ? (
           <code key={i}>{seg}</code>
         ) : (
-          <MarkedSegment key={i} k={String(i)} text={seg} marks={marks} />
+          <MarkedSegment key={i} k={String(i)} text={seg} marks={marks} opts={opts} />
         ),
       )}
     </>

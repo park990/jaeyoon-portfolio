@@ -13,6 +13,7 @@ import { CaseLayout } from "@/components/case/case-layout";
 import { CaseSection, SubHead, type CaseSectionMeta } from "@/components/case/case-parts";
 import { Graded } from "@/components/case/evidence";
 import { LineText, type Line } from "@/components/project-detail/blocks";
+import { caseMetadata } from "@/lib/site";
 import { getProjectBySlug, HIGHWAY_SERVICE_LINE } from "@/lib/projects";
 
 const SLUG = "highway-guide";
@@ -210,10 +211,7 @@ function RoleGridCard({
   );
 }
 
-export const metadata: Metadata = {
-  title: project.title,
-  description: project.description,
-};
+export const metadata: Metadata = caseMetadata(project);
 
 const techStack = [
   { category: "Frontend", items: ["JSP", "JavaScript", "AJAX", "Kakao Map, Mobility API", "Naver Geocoding API"] },

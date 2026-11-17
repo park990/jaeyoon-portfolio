@@ -310,13 +310,6 @@
     font: 700 clamp(32px, 3vw, 44px) / 1.25 var(--font-serif);
     letter-spacing: -0.02em;
   }
-  /* 큰 값의 형광은 좁은 칸에서 줄바꿈을 허용한다 */
-  .results .num mark,
-  .results .num .est {
-    white-space: normal;
-    -webkit-box-decoration-break: clone;
-    box-decoration-break: clone;
-  }
   .case-body {
     display: flex;
     flex-wrap: wrap;
@@ -343,6 +336,111 @@
     font-size: 17px;
     line-height: 1.85;
   }
+  /* 여백 주석: 한 건 = 한 줄 ("근거 n" + 링크 + 날짜) */
+  .note-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--note);
+  }
+  .note-list > li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 10px;
+  }
+  /* 옆 주석(960px 이상)은 한 건 = 한 줄을 지킨다: 긴 파일명은 말줄임(전체는 title 속성과 근거 표) */
+  @media (min-width: 960px) {
+    .case-body > aside:not(.below) .note-list > li {
+      flex-wrap: nowrap;
+      white-space: nowrap;
+      min-width: 0;
+    }
+    .case-body > aside:not(.below) .note-list > li > * {
+      flex-shrink: 0;
+    }
+    .case-body > aside:not(.below) .note-list > li > a {
+      flex-shrink: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+  /* 근거가 6건을 넘는 덩어리, 그리고 960px 미만: 덩어리 아래 한 줄짜리 목록(13px, 줄바꿈 허용) */
+  .case-body > aside.below {
+    flex-basis: 100%;
+  }
+  .case-body > aside.below .note-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 2px 20px;
+    font-size: 13px;
+  }
+  @media (max-width: 959px) {
+    .case-body > aside {
+      flex-basis: 100%;
+    }
+    .case-body > aside .note-list {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 2px 20px;
+      font-size: 13px;
+    }
+  }
+
+  /* 소개 구역: 960px 미만에서는 사진(aside)을 글 위로 */
+  @media (max-width: 959px) {
+    .intro-body > aside {
+      order: -1;
+    }
+  }
+
+  /* 사례 머리: 메타 항목을 머리의 직계로 두고 순서(order)만 바꾼다.
+   * 560px 미만에서는 역할·팀 항목이 결과 아래로 간다(내용 그대로). */
+  .case-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 24px;
+  }
+  .case-head > .head-meta {
+    order: 0;
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--note);
+  }
+  .case-head > .head-meta.first {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .case-head > .head-full {
+    flex: 0 0 100%;
+    min-width: 0;
+  }
+  .case-head > .head-h1 {
+    order: 1;
+  }
+  .case-head > .head-results {
+    order: 2;
+  }
+  .case-head > .head-rest {
+    order: 4;
+  }
+  @media (max-width: 559px) {
+    .case-head > .role-team {
+      order: 3;
+      margin-top: 14px;
+    }
+    .case-head > .role-team + .role-team {
+      margin-top: 0;
+    }
+  }
+
   /* 소제목만 있는 줄은 다음 줄에 붙인다 */
   .case-body:has(> .case-text > .subhead) {
     margin-bottom: -18px;

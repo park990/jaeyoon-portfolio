@@ -17,15 +17,13 @@ import {
   MetricsTable,
   Stage2ChangesTable,
 } from "./_components/stages";
+import { caseMetadata } from "@/lib/site";
 import { getProjectBySlug } from "@/lib/projects";
 
 const SLUG = "text2graph";
 const project = getProjectBySlug(SLUG)!;
 
-export const metadata: Metadata = {
-  title: project.title,
-  description: project.description,
-};
+export const metadata: Metadata = caseMetadata(project);
 
 const techStack = [
   { category: "Model", items: ["ATLOP + DREEAM (Evidence-based Supervision)", "BERT-base-uncased (110M)"] },

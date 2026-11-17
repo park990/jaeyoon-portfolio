@@ -1,14 +1,7 @@
-import { TIMELINE, type InlineGrade } from "@/lib/profile";
-import { InlineText, markKind, type MarkSpec } from "@/components/case/inline";
+import { TIMELINE } from "@/lib/profile";
 
 // 경력·교육 — 기간 | 직함(굵게)·소속 | 한 줄. 최신순 표 하나. 좁은 화면에서는 행을 세로로 쌓는다.
-// 출처가 있는 숫자(문서 등급)는 형광. 등급 글자는 쓰지 않는다.
-function marksOf(grades?: InlineGrade[]): MarkSpec[] {
-  return (grades ?? []).flatMap((g) => {
-    const kind = markKind(g.grade);
-    return kind ? [{ s: g.value, kind }] : [];
-  });
-}
+// [2.5단계] 경력 표에는 형광 없음(형광은 결과로 내세우는 숫자에만). 등급 값(TIMELINE.grades)은 데이터에 그대로 둔다.
 
 export function Career() {
   return (
@@ -26,7 +19,6 @@ export function Career() {
         </thead>
         <tbody>
           {TIMELINE.map((r) => {
-            const marks = marksOf(r.grades);
             const org = r.org === undefined ? [] : Array.isArray(r.org) ? r.org : [r.org];
             return (
               <tr
@@ -38,7 +30,7 @@ export function Career() {
                 </td>
                 <td className="border-0 align-top sm:w-[18rem] sm:border-b sm:py-3.5 sm:pr-6">
                   <span className="block text-[16px] font-semibold leading-[1.5] text-ink">
-                    <InlineText text={r.title} marks={marks} />
+                    {r.title}
                   </span>
                   {org.length > 0 && (
                     <span className="flex flex-wrap gap-x-4 text-[15px] leading-[1.6] text-note">
@@ -49,7 +41,7 @@ export function Career() {
                   )}
                 </td>
                 <td className="border-0 align-top text-[16px] leading-[1.7] text-ink sm:border-b sm:py-3.5">
-                  {r.line && <InlineText text={r.line} marks={marks} />}
+                  {r.line}
                 </td>
               </tr>
             );

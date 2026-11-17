@@ -2,7 +2,7 @@
 
 import { createContext, useContext } from "react";
 import type { Evidence } from "@/lib/projects";
-import { InlineText, extProps, isCommit, looksLikePath, marksFor } from "@/components/case/inline";
+import { InlineText, extProps, isCommit, looksLikePath, marksFor, type MarkOpts } from "@/components/case/inline";
 
 // 근거 표시 (2단계)
 // - 등급 글자([코드] 등)는 화면에 쓰지 않는다. 숫자의 모양(형광·점선·일반)으로만 드러낸다.
@@ -62,46 +62,62 @@ export function Ev({ ids }: { ids: readonly string[] }) {
   );
 }
 
-/** 근거가 붙는 문장: 숫자 표시 + 끝에 "근거 n" (refs=false면 숫자 표시만) */
-export function Graded({ text, ev, refs = true }: { text: string; ev?: readonly string[]; refs?: boolean }) {
+/**
+ * 근거가 붙는 문장: 숫자 표시 + 끝에 "근거 n" (refs=false면 숫자 표시만)
+ * 형광은 결과로 내세우는 숫자에만, 한 문단에 2개까지(max). hl=false면 형광 없이 추정 점선만.
+ */
+export function Graded({
+  text,
+  ev,
+  refs = true,
+  hl = true,
+  max = 2,
+  exclude,
+}: { text: string; ev?: readonly string[]; refs?: boolean } & MarkOpts) {
   const ctx = useContext(EvidenceContext);
   return (
     <>
-      <InlineText text={text} marks={marksFor(ctx?.evidence ?? [], ev)} />
+      <InlineText text={text} marks={marksFor(ctx?.evidence ?? [], ev)} opts={{ hl, max, exclude }} />
       {refs && ev && ev.length > 0 && <Ev ids={ev} />}
     </>
   );
 }
 
 /** 근거 하나의 열 수 있는 출처 링크 (커밋 = .sha, 파일 = 고정폭 이름, 그 밖 = 고딕) */
-export function SourceLink({ e, className = "" }: { e: Evidence; className?: string }) {
+export function SourceLink({ e, className = "", title }: { e: Evidence; className?: string; title?: string }) {
   if (!e.href) return null;
   const label = e.hrefLabel ?? e.href;
   const cls = isCommit(e) ? "sha" : looksLikePath(label) ? "font-mono text-[13px] [overflow-wrap:anywhere]" : "";
   return (
-    <a href={e.href} {...extProps(e.href)} className={`${cls} ${className}`}>
+    <a href={e.href} {...extProps(e.href)} title={title} className={`${cls} ${className}`}>
       {label}
     </a>
   );
 }
 
-/** 여백 주석: 그 문단이 기대는 근거 */
+/**
+ * 여백 주석 (2.5단계): 한 건 = 한 줄 — "근거 n" + 링크(커밋 7자리 또는 파일·행) + 날짜.
+ * 설명 문장은 근거 표에만 두고 링크 title 속성에 남긴다. 열 수 있는 출처가 없으면 "근거 n"이 표의 그 줄로 가는 링크.
+ * 좁은 화면(960px 미만)과 근거가 6건을 넘는 덩어리에서는 CSS가 한 줄짜리 목록으로 바꾼다.
+ */
 export function SideNotes({ ids }: { ids: readonly string[] }) {
   const items = useEvidence(ids);
   if (items.length === 0) return null;
   return (
-    <ol className="space-y-3">
+    <ol className="note-list">
       {items.map(({ e, n }) => (
         <li key={e.id}>
-          <span className="text-[13px]">근거 {n}</span>
-          {e.href && (
-            <span className="block">
-              <SourceLink e={e} className="hit" />
-              {e.date && <span className="ml-2 text-[13px]">{e.date}</span>}
-            </span>
+          {e.href ? (
+            <>
+              <span>근거 {n}</span>
+              <SourceLink e={e} title={e.claim} className="hit" />
+            </>
+          ) : (
+            <a href={`#ev-${n}`} title={e.claim} className="hit">
+              근거 {n}
+            </a>
           )}
-          <span className="block">{e.claim}</span>
-          {!e.href && <span className="block">{e.source}</span>}
+          {e.date && <span>{e.date}</span>}
         </li>
       ))}
     </ol>
