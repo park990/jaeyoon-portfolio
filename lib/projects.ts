@@ -141,6 +141,8 @@ const MED_DEV = "f2bc415fce1afb7be58bc51c898422d6c557f17d";
 // [3단계] 근거 링크 (지시문 [MR] [MP]) — 팀 README·문서 (juhyeong 브랜치 @25b0592)
 const MED_MR = `${MED}/blob/25b0592c82ab2491c1388590a6a6135b302659f8/README.md?plain=1`;
 const MED_MP = `${MED}/blob/25b0592c82ab2491c1388590a6a6135b302659f8/docs/portfolio.html#L860`;
+// [4단계] 재개발 스캐너 근거 12 — ‘모두의 창업’ 2기 1라운드 선발 규모 (정책브리핑)
+const KR_BRIEFING = "https://www.korea.kr/multi/visualNewsView.do?newsId=148974005";
 const HP = "https://github.com/wlsksekf/hire-picker";
 const HP_JAEYOON = "d99d665dae4097cfc96e67bd478fb3262f18501a";
 const HW = "https://github.com/CodeGlove/-SIST-Project2-HighwayRestInfo";
@@ -386,6 +388,143 @@ export const projects: Project[] = [
       { name: "설명 (explainer)", detail: "자연어 설명은 explainer에서 LLM이 맡음" },
     ],
     flowCaption: "본문에 적힌 검증 단계. 굵은 글씨 단계를 맡았습니다.",
+    display: "work",
+  },
+
+  // ─── 재개발 스캐너 (4단계) ──────────────────────────────────────────
+  // 저장소가 비공개라 근거는 12번(정책브리핑)만 문서, 8번은 추정, 나머지는 비공개 기록.
+  // 서비스 주소·화면 캡처·저장소 링크·자료 원천 이름·내부 파일 이름·해시값은 넣지 않는다.
+  {
+    slug: "redev-scanner",
+    title: "재개발 스캐너",
+    subtitle: "서울 재개발 분석 서비스",
+    group: "AI/NLP",
+    kind: "1인 개발 (예비창업자)",
+    headline: "잘 나온 모델 지표가 누수 때문이었다는 걸 찾아내고, 절반 아래로 내려간 값을 기준으로 다시 시작했습니다",
+    oneLiner:
+      "서울 약 90만 필지의 공공 자료를 모아 재개발 가능성의 방향을 근거와 함께 보여 주는 분석 서비스. 흩어진 공공 자료를 모으고, 틀린 값이 섞이지 않도록 검사 규칙으로 자동 점검합니다.",
+    summary:
+      "서울 약 90만 필지의 공공 자료를 모아 재개발 가능성의 방향을 근거와 함께 보여 주는 분석 서비스를 혼자 만들고 있습니다. 결론은 내리지 않고 방향과 근거만 보여 주는 것이 원칙이라, 틀린 값이 섞이지 않게 검사 규칙으로 스스로 점검하게 했습니다. 2026.10에는 이 서비스로 중소벤처기업부 ‘모두의 창업’ 2기 1라운드에 선정됐습니다(지원 9.3만 명 중 1만 명 선발, 예비창업자, 일반·기술 트랙, 멘토기관 서울시립대학교). 저장소가 비공개라 이 페이지의 숫자는 모두 비공개 기록입니다.",
+    summaryEv: ["selected"],
+    // 이 페이지의 형광은 요약의 「9.3만 명 중 1만 명」 한 곳
+    summaryHl: true,
+    description:
+      "서울 약 90만 필지의 공공 자료를 모아 재개발 가능성의 방향을 근거와 함께 보여 주는 분석 서비스. 흩어진 공공 자료를 모으고, 틀린 값이 섞이지 않도록 검사 규칙으로 자동 점검합니다.",
+    period: "2026.05 ~ 현재",
+    role: "자료 수집·모델·검사·화면 전 구간",
+    status: "진행 중",
+    stack: ["Python", "XGBoost", "FastAPI", "React", "Claude Haiku 5.5"],
+    // 타일 설명은 한 문장 그대로 label에 (note를 쓰면 ", "로 이어져 문구가 바뀐다)
+    metrics: [
+      { label: "누수를 걷어낸 PR-AUC. 이전 값 0.3426 (같은 평가셋 493,221필지)", value: "0.1453", ev: ["leak"] },
+      { label: "평가한 모델과 화면이 쓰는 모델의 점수 차 최댓값 (표본 1,000필지)", value: "0.0", ev: ["sameModel"] },
+      { label: "LLM 리포트에서 제목만 있고 본문이 빈 절. thinking을 끈 쪽을 채택", value: "23 → 0", ev: ["thinking"] },
+    ],
+    evidence: [
+      {
+        id: "leak",
+        grade: "비공개 기록",
+        claim: "같은 평가셋 493,221필지(기저율 3.33%)에서 PR-AUC 0.3426 → 0.1453 (−57.6%), lift 10.29× → 4.36×",
+        source: "비공개 실험 기록, 2026-08-09",
+      },
+      {
+        id: "noBldg",
+        grade: "비공개 기록",
+        claim: "음성 482,329필지 중 건물이 없는 필지 1건",
+        source: "비공개 실험 기록, 2026-08-09",
+      },
+      {
+        id: "temporal",
+        grade: "비공개 기록",
+        claim:
+          "시간 분할: 40개 구역 학습 → 50개 구역 18,227필지 검증(모집단 605,606필지, 기저율 3.01%). PR-AUC 0.1124, lift 3.74×, 공간 교차검증 lift 5.40×",
+        source: "비공개 실험 기록, 2026-08-11",
+      },
+      {
+        id: "scoreFile",
+        grade: "비공개 기록",
+        claim: "화면 점 색과 군집 판정의 점수 파일 불일치: 공통 722,566필지 중 722,561건, 최대 차이 0.995",
+        source: "비공개 진단 기록, 2026-08-05",
+      },
+      {
+        id: "sameModel",
+        grade: "비공개 기록",
+        claim:
+          "다른 프로세스 3회 학습: sha 모두 다름, 점수 차 최대 0.555, 상위 1% 일치 90.3%. 교체 후: 모델 sha 일치, 재현 지표 소수 4자리 일치, 표본 1,000필지 점수 차 최댓값 0.0",
+        source: "비공개 실험 기록과 커밋, 2026-08-11",
+      },
+      {
+        id: "altSource",
+        grade: "비공개 기록",
+        claim: "대체 원천 재현율 95.9% (4,686/4,886필지), 미리 정한 기준 ±1%p",
+        source: "비공개 기록, 2026-09-04",
+      },
+      {
+        id: "thinking",
+        grade: "비공개 기록",
+        claim:
+          "thinking 켬/끔 비교: 표본 20, 유효 15쌍. 빈 절 23 → 0, 출력 토큰 48,684 → 3,373 (−93.1%), 건당 비용 중앙값 $0.000853 (당시 gemini-2.5-flash, 공식 단가로 계산)",
+        source: "비공개 설계 문서와 커밋, 2026-08-11",
+      },
+      {
+        id: "cache",
+        grade: "추정",
+        claim: "캐시 적중률 46.6~84.1%",
+        source: "설계 문서의 추정값, 실측 아님",
+        marks: ["46.6~84.1%"],
+      },
+      {
+        id: "harness",
+        grade: "비공개 기록",
+        claim:
+          "하네스: 규칙 약 27개, 메타모픽 관계 9개, 화면 75칸 매트릭스 위반 0, 테스트 함수 4,409개(파이썬 3,992, JS 417)",
+        source: "코드에서 셈 2026-11-17 (규칙 수는 추정), 매트릭스는 2026-08-11 기록",
+        estMarks: ["약 27개"],
+      },
+      {
+        id: "scope",
+        grade: "비공개 기록",
+        claim: "서빙 898,286필지(2026-10-31), 라벨 90개 구역 36,796필지(2026-10-18), 지표 45개(2026-08-11), 저장소 3개",
+        source: "비공개 기록. 착수 2026.05는 본인 기재이고 저장소 첫 커밋은 2026-06-09",
+      },
+      {
+        id: "aiCommits",
+        grade: "비공개 기록",
+        claim: "main 커밋 5,609개 중 5,248개(93.6%)에 AI 공동 작성 표시. 제품 코드 109,742줄, 테스트 86,836줄",
+        source: "git 집계 2026-11-17 (비공개 저장소)",
+      },
+      {
+        id: "selected",
+        grade: "문서",
+        claim: "‘모두의 창업’ 2기: 지원 9.3만 명 중 1라운드 1만 명 선발",
+        source: "정책브리핑. 본인 선정(2026-10-14)은 운영 기관 통지(비공개)",
+        href: KR_BRIEFING,
+        hrefLabel: "정책브리핑",
+        srcLinks: [{ token: "정책브리핑", label: "정책브리핑", href: KR_BRIEFING }],
+        marks: ["9.3만 명 중 1만 명"],
+      },
+    ],
+    results: [
+      { text: "누수를 걷어낸 PR-AUC 0.3426 → 0.1453 (같은 평가셋 493,221필지)", ev: ["leak"] },
+      { text: "평가한 모델과 화면이 쓰는 모델의 점수 차 0.0 (표본 1,000필지)", ev: ["sameModel"] },
+      { text: "LLM 리포트 빈 절 23 → 0, 출력 토큰 −93.1%", ev: ["thinking"] },
+    ],
+    homeMeta: ["재개발 스캐너", "서울 재개발 분석 서비스", "1인 개발 (예비창업자)", "2026.05 ~ 현재", "진행 중"],
+    homeNote: {
+      text: "2026.10 중소벤처기업부 ‘모두의 창업’ 2기 1라운드 선정 (지원 9.3만 명 중 1만 명), 멘토기관 서울시립대학교",
+      ev: ["selected"],
+      link: { label: "정책브리핑", href: KR_BRIEFING },
+    },
+    flow: [
+      { name: "공공 자료 수집·정리", detail: "필지 단위로 묶음", mine: true },
+      { name: "지표 계산", detail: "45개", mine: true },
+      { name: "점수 모델", detail: "XGBoost", mine: true },
+      { name: "자가 검사", detail: "규칙, 메타모픽, 화면 매트릭스", mine: true },
+      { name: "리포트", detail: "숫자는 코드, 서술은 LLM", mine: true },
+      { name: "화면", detail: "지도와 리포트", mine: true },
+    ],
+    flowCaption: "전 구간을 직접 맡았습니다.",
+    privateNote: "비공개 기록",
     display: "work",
   },
 
@@ -727,6 +866,7 @@ export const HIGHWAY_SERVICE_LINE =
 // 사례 페이지 순서 (다음 사례 링크). 마지막 다음은 처음으로 돌아간다.
 export const CASE_ORDER = [
   "structverify-lab",
+  "redev-scanner",
   "text2graph",
   "medical-rag",
   "booming",
